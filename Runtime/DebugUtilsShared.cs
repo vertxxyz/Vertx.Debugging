@@ -159,6 +159,32 @@ namespace Vertx.Debugging
 
 		#endregion
 
+		#region Capsule
+
+		public static void DrawCapsuleFast(Vector3 point1, Vector3 point2, float radius, Vector3 axis, Vector3 crossA, Vector3 crossB, LineDelegate lineDelegate)
+		{
+			//Circles
+			DrawCircleFast(point1, axis, crossB, radius, lineDelegate);
+			DrawCircleFast(point2, axis, crossB, radius, lineDelegate);
+			
+			//Caps
+			DrawArc(point1, crossB, crossA, radius, 180, lineDelegate, 25);
+			DrawArc(point1, crossA, crossB, radius, -180, lineDelegate, 25);
+			
+			DrawArc(point2, crossB, crossA, radius, -180, lineDelegate, 25);
+			DrawArc(point2, crossA, crossB, radius, 180, lineDelegate, 25);
+			
+			//Joining Lines
+			Vector3 a = crossA * radius;
+			Vector3 b = crossB * radius;
+			lineDelegate.Invoke(point1 + a, point2 + a, 0);
+			lineDelegate.Invoke(point1 - a, point2 - a, 0);
+			lineDelegate.Invoke(point1 + b, point2 + b, 0);
+			lineDelegate.Invoke(point1 - b, point2 - b, 0);
+		}
+
+		#endregion
+
 		#endregion
 	}
 }

@@ -9,6 +9,22 @@ namespace Vertx.Debugging
 		#region SphereCast
 
 		public static void DrawSphereCast(
+			Ray ray,
+			float radius,
+			float distance,
+			int iterationCount = 10)
+			=> DrawSphereCast(ray, radius, distance, StartColor, EndColor, iterationCount);
+
+		public static void DrawSphereCast(
+			Ray ray,
+			float radius,
+			float distance,
+			Color colorStart,
+			Color colorEnd,
+			int iterationCount = 10)
+			=> DrawSphereCast(ray.origin, radius, ray.direction, distance, colorStart, colorEnd, iterationCount);
+
+		public static void DrawSphereCast(
 			Vector3 origin,
 			float radius,
 			Vector3 direction,
@@ -251,7 +267,92 @@ namespace Vertx.Debugging
 
 		#endregion
 
+		#region CapsuleCast
+
+		public static void DrawCapsuleCast(
+			Vector3 point1,
+			Vector3 point2,
+			float radius,
+			Vector3 direction,
+			float distance,
+			int iterationCount = 10)
+			=> DrawCapsuleCast(point1, point2, radius, direction, distance, StartColor, EndColor, iterationCount);
+
+		public static void DrawCapsuleCast(
+			Vector3 point1,
+			Vector3 point2,
+			float radius,
+			Vector3 direction,
+			float distance,
+			Color colorStart,
+			Color colorEnd,
+			int iterationCount = 10)
+		{
+			direction.EnsureNormalized();
+
+			Vector3 alignment = (point1 - point2).normalized;
+
+			Vector3 crossA = GetAxisAlignedPerpendicular(alignment);
+			Vector3 crossB = Vector3.Cross(crossA, alignment);
+			Color color = colorStart;
+			DrawCapsuleFast(point1, point2, radius, alignment, crossA, crossB, DrawLine);
+
+			Vector3 dCrossA = Vector3.Cross(direction, alignment).normalized;
+			//Vector3 dCrossB = Vector3.Cross(dCrossA, direction);
+
+			Vector3 scaledDCrossA = dCrossA * radius;
+			Vector3 a1 = point1 + scaledDCrossA;
+			Vector3 a2 = point2 + scaledDCrossA;
+			Vector3 b1 = point1 - scaledDCrossA;
+			Vector3 b2 = point2 - scaledDCrossA;
+			Vector3 scaledDirection = direction * distance;
+
+			Vector3 aFrom1 = a1;
+			Vector3 bFrom1 = b1;
+			Vector3 aFrom2 = a2;
+			Vector3 bFrom2 = b2;
+
+			iterationCount += 2; //Add caps
+			for (int i = 1; i < iterationCount; i++)
+			{
+				float t = i / (float) (iterationCount - 1);
+				color = Color.Lerp(colorStart, colorEnd, t);
+				Vector3 sDir = scaledDirection * t;
+
+				Vector3 aTo1 = a1 + sDir;
+				Vector3 bTo1 = b1 + sDir;
+				Vector3 aTo2 = a2 + sDir;
+				Vector3 bTo2 = b2 + sDir;
+
+				DrawLine(aFrom1, aTo1, 0.5f);
+				DrawLine(aFrom2, aTo2, 0.5f);
+				DrawLine(bFrom2, bTo2, 0.5f);
+				DrawLine(bFrom1, bTo1, 0.5f);
+
+				aFrom1 = aTo1;
+				bFrom1 = bTo1;
+				aFrom2 = aTo2;
+				bFrom2 = bTo2;
+			}
+
+			Vector3 end1 = point1 + scaledDirection;
+			Vector3 end2 = point2 + scaledDirection;
+			color = colorEnd;
+
+			DrawCapsuleFast(end1, end2, radius, alignment, crossA, crossB, DrawLine);
+
+			void DrawLine(Vector3 a, Vector3 b, float f) => Debug.DrawLine(a, b, color);
+		}
+
+		#endregion
+
 		#region RaycastHits
+
+		public static void DrawSphereCastHits(RaycastHit[] hits, Ray ray, float radius, int maxCount = -1) =>
+			DrawSphereCastHits(hits, ray, radius, new Color(1, 0.1f, 0.2f), maxCount);
+
+		public static void DrawSphereCastHits(RaycastHit[] hits, Ray ray, float radius, Color color, int maxCount = -1)
+			=> DrawSphereCastHits(hits, ray.origin, radius, ray.direction, color, maxCount);
 
 		public static void DrawSphereCastHits(RaycastHit[] hits, Vector3 origin, float radius, Vector3 direction, int maxCount = -1) =>
 			DrawSphereCastHits(hits, origin, radius, direction, new Color(1, 0.1f, 0.2f), maxCount);
@@ -260,16 +361,16 @@ namespace Vertx.Debugging
 		{
 			if (maxCount < 0)
 				maxCount = hits.Length;
-			
+
 			if (maxCount == 0) return;
-			
+
 			direction.EnsureNormalized();
 
 			Vector3 zero = Vector3.zero;
 			for (int i = 0; i < maxCount; i++)
 			{
 				RaycastHit hit = hits[i];
-				
+
 				//Zero position is to be interpreted as colliding with the start of the spherecast.
 				if (hit.point == zero)
 				{
@@ -279,11 +380,11 @@ namespace Vertx.Debugging
 					DrawCircleFast(origin, crossA, crossB, radius, DrawLineSolid);
 					DrawCircleFast(origin, crossB, crossA, radius, DrawLineSolid);
 					DrawCircleFast(origin, direction, crossA, radius, DrawLineSolid);
-					
+
 					void DrawLineSolid(Vector3 a, Vector3 b, float f) => Debug.DrawLine(a, b, color);
 					continue;
 				}
-				
+
 				Vector3 localDirection = GetAxisAlignedAlternateWhereRequired(hit.normal, direction);
 				Vector3 cross = Vector3.Cross(localDirection, hit.normal);
 
@@ -303,6 +404,8 @@ namespace Vertx.Debugging
 		{
 			if (maxCount < 0)
 				maxCount = hits.Length;
+
+			if (maxCount == 0) return;
 
 			DrawBoxStructure structure = new DrawBoxStructure(halfExtents, orientation);
 
@@ -325,6 +428,31 @@ namespace Vertx.Debugging
 				maxCount = hits.Length;
 			for (int i = 0; i < maxCount; i++)
 				Debug.DrawRay(hits[i].point, hits[i].normal * rayLength, color, duration);
+		}
+
+		public static void DrawCapsuleCastHits(RaycastHit[] hits, Vector3 point1, Vector3 point2, float radius, Vector3 direction, int maxCount = -1)
+			=> DrawCapsuleCastHits(hits, new Color(1, 0.1f, 0.2f), point1, point2, radius, direction, maxCount);
+
+		public static void DrawCapsuleCastHits(RaycastHit[] hits, Color color, Vector3 point1, Vector3 point2, float radius, Vector3 direction, int maxCount = -1)
+		{
+			if (maxCount < 0)
+				maxCount = hits.Length;
+
+			if (maxCount == 0) return;
+
+			Vector3 alignment = (point1 - point2).normalized;
+
+			Vector3 crossA = GetAxisAlignedPerpendicular(alignment);
+			Vector3 crossB = Vector3.Cross(crossA, alignment);
+
+			for (int i = 0; i < maxCount; i++)
+			{
+				RaycastHit hit = hits[i];
+				Vector3 dir = direction * hit.distance;
+				DrawCapsuleFast(point1 + dir, point2 + dir, radius, alignment, crossA, crossB, DrawLine);
+			}
+
+			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
 		}
 
 		#endregion
