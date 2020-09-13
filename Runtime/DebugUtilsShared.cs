@@ -11,6 +11,8 @@ namespace Vertx.Debugging
 		public static Color StartColor => new Color(1f, 0.4f, 0.3f);
 		public static Color EndColor => new Color(0.4f, 1f, 0.3f);
 
+		public static Color HitColor => new Color(1, 0.1f, 0.2f);
+
 		private static void EnsureNormalized(this ref Vector3 vector3)
 		{
 			float sqrMag = vector3.sqrMagnitude;
@@ -18,7 +20,15 @@ namespace Vertx.Debugging
 				return;
 			vector3 /= Mathf.Sqrt(sqrMag);
 		}
-		
+
+		private static void EnsureNormalized(this ref Vector2 vector2)
+		{
+			float sqrMag = vector2.sqrMagnitude;
+			if (Mathf.Approximately(sqrMag, 1))
+				return;
+			vector2 /= Mathf.Sqrt(sqrMag);
+		}
+
 		private static Vector3 GetAxisAlignedAlternateWhereRequired(Vector3 normal, Vector3 alternate)
 		{
 			if (Mathf.Abs(Vector3.Dot(normal, alternate)) > 0.999f)
@@ -95,9 +105,11 @@ namespace Vertx.Debugging
 
 		#region Boxes
 
-		public struct DrawBoxStructure
+		#region 3D
+
+		public readonly struct DrawBoxStructure
 		{
-			public Vector3 UFL, UFR, UBL, UBR, DFL, DFR, DBL, DBR;
+			public readonly Vector3 UFL, UFR, UBL, UBR, DFL, DFR, DBL, DBR;
 
 			public DrawBoxStructure(
 				Vector3 halfExtents,
@@ -159,6 +171,105 @@ namespace Vertx.Debugging
 
 		#endregion
 
+		#region 2D
+
+		public readonly struct DrawBoxStructure2D
+		{
+			public readonly Vector2 UR, UL, BR, BL;
+			public readonly Vector2 UROrigin, ULOrigin;
+
+			public DrawBoxStructure2D(
+				Vector2 size,
+				float angle,
+				Vector2 offset = default)
+			{
+				size *= 0.5f;
+				GetRotationCoefficients(angle, out var s, out var c);
+
+				UROrigin = RotateFast(size, s, c);
+				ULOrigin = RotateFast(new Vector2(-size.x, size.y), s, c);
+				UR = offset + UROrigin;
+				UL = offset + ULOrigin;
+				BR = offset - ULOrigin;
+				BL = offset - UROrigin;
+			}
+		}
+
+		private static void GetRotationCoefficients(float angle, out float s, out float c)
+		{
+			float a = angle * Mathf.Deg2Rad;
+			s = Mathf.Sin(a);
+			c = Mathf.Cos(a);
+		}
+
+		private static Vector2 RotateFast(Vector2 vector, float s, float c)
+		{
+			float u = vector.x * c - vector.y * s;
+			float v = vector.x * s + vector.y * c;
+			return new Vector2(u, v);
+		}
+
+		public static void DrawBox2DFast(
+			Vector2 offset,
+			DrawBoxStructure2D boxStructure2D,
+			LineDelegateSimple lineDelegate)
+		{
+			Vector2 uRPosition = offset + boxStructure2D.UR;
+			Vector2 uLPosition = offset + boxStructure2D.UL;
+			Vector2 bRPosition = offset + boxStructure2D.BR;
+			Vector2 bLPosition = offset + boxStructure2D.BL;
+			lineDelegate(uLPosition, uRPosition);
+			lineDelegate(uRPosition, bRPosition);
+			lineDelegate(bRPosition, bLPosition);
+			lineDelegate(bLPosition, uLPosition);
+		}
+		
+		public readonly struct DrawCapsuleStructure2D
+		{
+			public readonly float Radius;
+			public readonly Vector3 Normal;
+			public readonly Vector2 VerticalOffset;
+			public readonly Vector2 Left, ScaledLeft, ScaledRight;
+
+			public DrawCapsuleStructure2D(
+				Vector2 size,
+				CapsuleDirection2D capsuleDirection, 
+				float angle)
+			{
+				if (capsuleDirection == CapsuleDirection2D.Horizontal)
+				{
+					float temp = size.y;
+					size.y = size.x;
+					size.x = temp;
+					angle += 180;
+				}
+				
+				Normal = Vector3.back;
+				Radius = size.x * 0.5f;
+				float vertical = Mathf.Max(0, size.y - size.x) * 0.5f;
+				GetRotationCoefficients(angle, out var s, out var c);
+				VerticalOffset = RotateFast(new Vector2(0, vertical), s, c);
+			
+				Left = new Vector2(c, s);
+				ScaledLeft = Left * Radius;
+				ScaledRight = -ScaledLeft;
+			}
+		}
+
+		public static void DrawCapsule2DFast(Vector2 offset, DrawCapsuleStructure2D capsuleStructure2D, LineDelegate lineDelegate)
+		{
+			Vector2 r1 = offset + capsuleStructure2D.VerticalOffset;
+			Vector2 r2 = offset - capsuleStructure2D.VerticalOffset;
+			DrawArc(r1, capsuleStructure2D.Normal, capsuleStructure2D.Left, capsuleStructure2D.Radius, -180, lineDelegate);
+			DrawArc(r2, capsuleStructure2D.Normal, capsuleStructure2D.Left, capsuleStructure2D.Radius, 180, lineDelegate);
+			lineDelegate(r1 + capsuleStructure2D.ScaledLeft, r2 + capsuleStructure2D.ScaledLeft, 0);
+			lineDelegate(r1 + capsuleStructure2D.ScaledRight, r2 + capsuleStructure2D.ScaledRight, 0);
+		}
+
+		#endregion
+
+		#endregion
+
 		#region Capsule
 
 		public static void DrawCapsuleFast(Vector3 point1, Vector3 point2, float radius, Vector3 axis, Vector3 crossA, Vector3 crossB, LineDelegate lineDelegate)
@@ -166,14 +277,14 @@ namespace Vertx.Debugging
 			//Circles
 			DrawCircleFast(point1, axis, crossB, radius, lineDelegate);
 			DrawCircleFast(point2, axis, crossB, radius, lineDelegate);
-			
+
 			//Caps
 			DrawArc(point1, crossB, crossA, radius, 180, lineDelegate, 25);
 			DrawArc(point1, crossA, crossB, radius, -180, lineDelegate, 25);
-			
+
 			DrawArc(point2, crossB, crossA, radius, -180, lineDelegate, 25);
 			DrawArc(point2, crossA, crossB, radius, 180, lineDelegate, 25);
-			
+
 			//Joining Lines
 			Vector3 a = crossA * radius;
 			Vector3 b = crossB * radius;

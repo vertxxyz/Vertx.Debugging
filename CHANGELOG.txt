@@ -4,6 +4,9 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2020-09-13
+ - Added 2D variants of the DebugUtils.Draw functions
+
 ## [1.1.1] - 2020-09-12
  - Added DebugUtils.DrawCapsuleCast and DrawCapsuleCastHits
  - Added some variants for DrawSphereCast functions

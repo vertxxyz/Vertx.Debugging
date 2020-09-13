@@ -349,13 +349,13 @@ namespace Vertx.Debugging
 		#region RaycastHits
 
 		public static void DrawSphereCastHits(RaycastHit[] hits, Ray ray, float radius, int maxCount = -1) =>
-			DrawSphereCastHits(hits, ray, radius, new Color(1, 0.1f, 0.2f), maxCount);
+			DrawSphereCastHits(hits, ray, radius, HitColor, maxCount);
 
 		public static void DrawSphereCastHits(RaycastHit[] hits, Ray ray, float radius, Color color, int maxCount = -1)
 			=> DrawSphereCastHits(hits, ray.origin, radius, ray.direction, color, maxCount);
 
 		public static void DrawSphereCastHits(RaycastHit[] hits, Vector3 origin, float radius, Vector3 direction, int maxCount = -1) =>
-			DrawSphereCastHits(hits, origin, radius, direction, new Color(1, 0.1f, 0.2f), maxCount);
+			DrawSphereCastHits(hits, origin, radius, direction, HitColor, maxCount);
 
 		public static void DrawSphereCastHits(RaycastHit[] hits, Vector3 origin, float radius, Vector3 direction, Color color, int maxCount = -1)
 		{
@@ -398,7 +398,7 @@ namespace Vertx.Debugging
 		}
 
 		public static void DrawBoxCastHits(RaycastHit[] hits, Vector3 origin, Vector3 halfExtents, Vector3 direction, Quaternion orientation, int maxCount = -1) =>
-			DrawBoxCastHits(hits, origin, halfExtents, direction, orientation, new Color(1, 0.1f, 0.2f), maxCount);
+			DrawBoxCastHits(hits, origin, halfExtents, direction, orientation, HitColor, maxCount);
 
 		public static void DrawBoxCastHits(RaycastHit[] hits, Vector3 origin, Vector3 halfExtents, Vector3 direction, Quaternion orientation, Color color, int maxCount = -1)
 		{
@@ -406,6 +406,8 @@ namespace Vertx.Debugging
 				maxCount = hits.Length;
 
 			if (maxCount == 0) return;
+			
+			direction.EnsureNormalized();
 
 			DrawBoxStructure structure = new DrawBoxStructure(halfExtents, orientation);
 
@@ -420,7 +422,7 @@ namespace Vertx.Debugging
 		}
 
 		public static void DrawRaycastHits(RaycastHit[] hits, float rayLength = 1, int maxCount = -1, float duration = 0)
-			=> DrawRaycastHits(hits, new Color(1, 0.1f, 0.2f), rayLength, maxCount, duration);
+			=> DrawRaycastHits(hits, HitColor, rayLength, maxCount, duration);
 
 		public static void DrawRaycastHits(RaycastHit[] hits, Color color, float rayLength = 1, int maxCount = -1, float duration = 0)
 		{
@@ -431,7 +433,7 @@ namespace Vertx.Debugging
 		}
 
 		public static void DrawCapsuleCastHits(RaycastHit[] hits, Vector3 point1, Vector3 point2, float radius, Vector3 direction, int maxCount = -1)
-			=> DrawCapsuleCastHits(hits, new Color(1, 0.1f, 0.2f), point1, point2, radius, direction, maxCount);
+			=> DrawCapsuleCastHits(hits, HitColor, point1, point2, radius, direction, maxCount);
 
 		public static void DrawCapsuleCastHits(RaycastHit[] hits, Color color, Vector3 point1, Vector3 point2, float radius, Vector3 direction, int maxCount = -1)
 		{
@@ -440,6 +442,8 @@ namespace Vertx.Debugging
 
 			if (maxCount == 0) return;
 
+			direction.EnsureNormalized();
+			
 			Vector3 alignment = (point1 - point2).normalized;
 
 			Vector3 crossA = GetAxisAlignedPerpendicular(alignment);
