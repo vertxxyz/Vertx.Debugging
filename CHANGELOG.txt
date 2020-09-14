@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2020-09-15
+ - Added cast lines for 2D Draw functions
+ - Added simple variants for all Draw functions that combine drawing the cast and hits
+
 ## [1.1.2] - 2020-09-13
  - Added 2D variants of the DebugUtils.Draw functions
 

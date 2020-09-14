@@ -346,6 +346,8 @@ namespace Vertx.Debugging
 
 		#endregion
 
+		#endregion
+		
 		#region RaycastHits
 
 		public static void DrawSphereCastHits(RaycastHit[] hits, Ray ray, float radius, int maxCount = -1) =>
@@ -460,6 +462,26 @@ namespace Vertx.Debugging
 		}
 
 		#endregion
+
+		#region Both
+
+		public static void DrawSphereCast(Vector3 origin, float radius, Vector3 direction, RaycastHit[] hits, float distance, int count)
+		{
+			DrawSphereCast(origin, radius, direction, distance);
+			DrawSphereCastHits(hits, origin, radius, direction, count);
+		}
+		
+		public static void DrawBoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] hits, Quaternion orientation, float distance, int count)
+		{
+			DrawBoxCast(center, halfExtents, direction, orientation, distance);
+			DrawBoxCastHits(hits, center, halfExtents, direction, orientation, count);
+		}
+		
+		public static void DrawCapsuleCast(Vector3 point1, Vector3 point2, float radius, Vector3 direction, RaycastHit[] hits, float distance, int count)
+		{
+			DrawCapsuleCast(point1, point2, radius, direction, distance);
+			DrawCapsuleCastHits(hits, point1, point2, radius, direction, count);
+		}
 
 		#endregion
 	}
