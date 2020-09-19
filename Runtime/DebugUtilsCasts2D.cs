@@ -8,9 +8,6 @@ namespace Vertx.Debugging
 
 		#region CircleCast2D
 
-		public static void DrawCircleCast2D(Vector2 origin, float radius, Vector2 direction, float distance)
-			=> DrawCircleCast2D(origin, radius, direction, distance, StartColor, EndColor);
-
 		public static void DrawCircleCast2D(Vector2 origin,
 			float radius,
 			Vector2 direction,
@@ -61,10 +58,7 @@ namespace Vertx.Debugging
 
 		#region BoxCast2D
 
-		public static void DrawBoxCast2D(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance)
-			=> BoxCast2D(origin, size, angle, direction, distance, StartColor, EndColor);
-
-		public static void BoxCast2D(
+		public static void DrawBoxCast2D(
 			Vector2 origin,
 			Vector2 size,
 			float angle,
@@ -127,9 +121,6 @@ namespace Vertx.Debugging
 
 		#region CapsuleCast2D
 
-		public static void DrawCapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance)
-			=> DrawCapsuleCast2D(origin, size, capsuleDirection, angle, direction, distance, StartColor, EndColor);
-
 		public static void DrawCapsuleCast2D(
 			Vector2 origin, 
 			Vector2 size,
@@ -188,9 +179,6 @@ namespace Vertx.Debugging
 		
 		#region RaycastHits
 
-		public static void DrawBoxCast2DHits(RaycastHit2D[] hits, Vector2 origin, Vector2 size, float angle, Vector2 direction, int maxCount = -1)
-			=> DrawBoxCast2DHits(hits, origin, size, angle, direction, HitColor, maxCount);
-
 		public static void DrawBoxCast2DHits(RaycastHit2D[] hits, Vector2 origin, Vector2 size, float angle, Vector2 direction, Color color, int maxCount = -1)
 		{
 			if (maxCount < 0)
@@ -207,9 +195,6 @@ namespace Vertx.Debugging
 
 			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
 		}
-		
-		public static void DrawCircleCast2DHits(RaycastHit2D[] hits, Vector2 origin, float radius, Vector2 direction, int maxCount = -1)
-			=> DrawCircleCast2DHits(hits, origin, radius, direction, HitColor, maxCount);
 
 		public static void DrawCircleCast2DHits(RaycastHit2D[] hits, Vector2 origin, float radius, Vector2 direction, Color color, int maxCount = -1)
 		{
@@ -228,13 +213,6 @@ namespace Vertx.Debugging
 
 			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
 		}
-		
-		public static void DrawCapsuleCast2DHits(RaycastHit2D[] hits, Vector2 origin, 
-			Vector2 size,
-			CapsuleDirection2D capsuleDirection, 
-			float angle,
-			Vector2 direction, int maxCount = -1)
-			=> DrawCapsuleCast2DHits(hits, origin, size, capsuleDirection, angle, direction, HitColor, maxCount);
 
 		public static void DrawCapsuleCast2DHits(RaycastHit2D[] hits, 
 			Vector2 origin, 
