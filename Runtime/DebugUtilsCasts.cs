@@ -317,6 +317,14 @@ namespace Vertx.Debugging
 		
 		#region RaycastHits
 
+		public static void DrawRaycastHits(RaycastHit[] hits, Color color, int maxCount = -1, float rayLength = 1, float duration = 0)
+		{
+			if (maxCount < 0)
+				maxCount = hits.Length;
+			for (int i = 0; i < maxCount; i++)
+				Debug.DrawRay(hits[i].point, hits[i].normal * rayLength, color, duration);
+		}
+		
 		public static void DrawSphereCastHits(RaycastHit[] hits, Ray ray, float radius, Color color, int maxCount = -1)
 			=> DrawSphereCastHits(hits, ray.origin, radius, ray.direction, color, maxCount);
 
@@ -381,17 +389,6 @@ namespace Vertx.Debugging
 			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
 		}
 
-		public static void DrawRaycastHits(RaycastHit[] hits, float rayLength = 1, int maxCount = -1, float duration = 0)
-			=> DrawRaycastHits(hits, HitColor, rayLength, maxCount, duration);
-
-		public static void DrawRaycastHits(RaycastHit[] hits, Color color, float rayLength = 1, int maxCount = -1, float duration = 0)
-		{
-			if (maxCount < 0)
-				maxCount = hits.Length;
-			for (int i = 0; i < maxCount; i++)
-				Debug.DrawRay(hits[i].point, hits[i].normal * rayLength, color, duration);
-		}
-
 		public static void DrawCapsuleCastHits(RaycastHit[] hits, Color color, Vector3 point1, Vector3 point2, float radius, Vector3 direction, int maxCount = -1)
 		{
 			if (maxCount < 0)
@@ -419,23 +416,60 @@ namespace Vertx.Debugging
 		#endregion
 
 		#region Both
+		
+		public static void DrawRaycast(Ray ray, RaycastHit[] hits, float distance, Color rayColor, Color hitColor, int maxCount = -1, float hitRayLength = 1, float duration = 0)
+		{
+			if (float.IsInfinity(distance))
+				distance = 10000000;
+			Debug.DrawRay(ray.origin, ray.direction * distance, rayColor, duration);
+			DrawRaycastHits(hits, hitColor, maxCount, hitRayLength, duration);
+		}
 
-		public static void DrawSphereCast(Vector3 origin, float radius, Vector3 direction, RaycastHit[] hits, float distance, int count)
+		public static void DrawSphereCast(
+			Vector3 origin,
+			float radius,
+			Vector3 direction, 
+			RaycastHit[] hits,
+			float distance,
+			int count,
+			Color startColor,
+			Color endColor,
+			Color hitColor)
 		{
-			DrawSphereCast(origin, radius, direction, distance);
-			DrawSphereCastHits(hits, origin, radius, direction, count);
+			DrawSphereCast(origin, radius, direction, distance, startColor, endColor);
+			DrawSphereCastHits(hits, origin, radius, direction, hitColor, count);
 		}
 		
-		public static void DrawBoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] hits, Quaternion orientation, float distance, int count)
+		public static void DrawBoxCast(
+			Vector3 center,
+			Vector3 halfExtents,
+			Vector3 direction, 
+			RaycastHit[] hits, 
+			Quaternion orientation, 
+			float distance, 
+			int count,
+			Color startColor,
+			Color endColor,
+			Color hitColor)
 		{
-			DrawBoxCast(center, halfExtents, direction, orientation, distance);
-			DrawBoxCastHits(hits, center, halfExtents, direction, orientation, count);
+			DrawBoxCast(center, halfExtents, direction, orientation, distance, startColor, endColor);
+			DrawBoxCastHits(hits, center, halfExtents, direction, orientation, hitColor, count);
 		}
 		
-		public static void DrawCapsuleCast(Vector3 point1, Vector3 point2, float radius, Vector3 direction, RaycastHit[] hits, float distance, int count)
+		public static void DrawCapsuleCast(
+			Vector3 point1,
+			Vector3 point2,
+			float radius,
+			Vector3 direction,
+			RaycastHit[] hits,
+			float distance,
+			int count,
+			Color startColor,
+			Color endColor,
+			Color hitColor)
 		{
-			DrawCapsuleCast(point1, point2, radius, direction, distance);
-			DrawCapsuleCastHits(hits, point1, point2, radius, direction, count);
+			DrawCapsuleCast(point1, point2, radius, direction, distance, startColor, endColor);
+			DrawCapsuleCastHits(hits, hitColor, point1, point2, radius, direction, count);
 		}
 
 		#endregion

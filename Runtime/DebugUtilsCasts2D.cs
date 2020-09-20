@@ -19,7 +19,7 @@ namespace Vertx.Debugging
 
 			Vector3 back = Vector3.back;
 			Vector3 up = Vector3.up;
-			
+
 			Color color = colorStart;
 			DrawCircleFast(origin, back, up, radius, DrawLine);
 
@@ -27,12 +27,12 @@ namespace Vertx.Debugging
 			Vector2 perpendicularCounterClockwise = PerpendicularCounterClockwise(direction);
 
 			Vector2 scaledDirection = direction * distance;
-			
+
 			Vector2 originA = origin + perpendicularClockwise * radius;
 			Vector2 originB = origin + perpendicularCounterClockwise * radius;
 			Vector2 currentA = originA;
 			Vector2 currentB = originB;
-			
+
 			for (int i = 1; i <= 10; i++)
 			{
 				float t = i / (float) 10;
@@ -46,11 +46,11 @@ namespace Vertx.Debugging
 				currentA = nextA;
 				currentB = nextB;
 			}
-			
+
 
 			color = colorEnd;
 			DrawCircleFast(origin + scaledDirection, back, up, radius, DrawLine);
-			
+
 			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
 		}
 
@@ -73,7 +73,7 @@ namespace Vertx.Debugging
 
 			Color color = colorStart;
 			DrawBox2DFast(Vector2.zero, boxStructure2D, DrawLine);
-			
+
 			Vector2 scaledDirection = direction * distance;
 			float dotUR = Vector2.Dot(direction, boxStructure2D.UROrigin);
 			float dotBL = Vector2.Dot(direction, boxStructure2D.ULOrigin);
@@ -90,12 +90,12 @@ namespace Vertx.Debugging
 				p1 = boxStructure2D.UL;
 				p2 = boxStructure2D.BR;
 			}
-			
+
 			Vector2 originA = p1;
 			Vector2 originB = p2;
 			Vector2 currentA = originA;
 			Vector2 currentB = originB;
-			
+
 			for (int i = 1; i <= 10; i++)
 			{
 				float t = i / (float) 10;
@@ -122,9 +122,9 @@ namespace Vertx.Debugging
 		#region CapsuleCast2D
 
 		public static void DrawCapsuleCast2D(
-			Vector2 origin, 
+			Vector2 origin,
 			Vector2 size,
-			CapsuleDirection2D capsuleDirection, 
+			CapsuleDirection2D capsuleDirection,
 			float angle,
 			Vector2 direction,
 			float distance,
@@ -132,7 +132,7 @@ namespace Vertx.Debugging
 			Color colorEnd)
 		{
 			direction.EnsureNormalized();
-			
+
 			DrawCapsuleStructure2D capsuleStructure2D = new DrawCapsuleStructure2D(size, capsuleDirection, angle);
 
 			Color color = colorStart;
@@ -145,14 +145,14 @@ namespace Vertx.Debugging
 			float dot = Vector2.Dot(PerpendicularClockwise(capsuleStructure2D.VerticalOffset), direction);
 			float sign = Mathf.Sign(dot);
 			float scaledRadius = capsuleStructure2D.Radius * sign;
-			
+
 			Vector2 o1 = PerpendicularCounterClockwise(direction) * scaledRadius;
 			Vector2 o2 = PerpendicularClockwise(direction) * scaledRadius;
 			Vector2 originA = origin + capsuleStructure2D.VerticalOffset + o1;
 			Vector2 originB = origin - capsuleStructure2D.VerticalOffset + o2;
 			Vector2 currentA = originA;
 			Vector2 currentB = originB;
-			
+
 			for (int i = 1; i <= 10; i++)
 			{
 				float t = i / (float) 10;
@@ -166,7 +166,7 @@ namespace Vertx.Debugging
 				currentA = nextA;
 				currentB = nextB;
 			}
-			
+
 			color = colorEnd;
 			DrawCapsule2DFast(destination, capsuleStructure2D, DrawLine);
 
@@ -176,8 +176,16 @@ namespace Vertx.Debugging
 		#endregion
 
 		#endregion
-		
+
 		#region RaycastHits
+		
+		public static void DrawRaycast2DHits(RaycastHit2D[] hits, Color color, int maxCount = -1, float rayLength = 1, float duration = 0)
+		{
+			if (maxCount < 0)
+				maxCount = hits.Length;
+			for (int i = 0; i < maxCount; i++)
+				Debug.DrawRay(hits[i].point, hits[i].normal * rayLength, color, duration);
+		}
 
 		public static void DrawBoxCast2DHits(RaycastHit2D[] hits, Vector2 origin, Vector2 size, float angle, Vector2 direction, Color color, int maxCount = -1)
 		{
@@ -185,11 +193,11 @@ namespace Vertx.Debugging
 				maxCount = hits.Length;
 
 			if (maxCount == 0) return;
-			
+
 			direction.EnsureNormalized();
-			
+
 			DrawBoxStructure2D boxStructure2D = new DrawBoxStructure2D(size, angle, origin);
-			
+
 			for (int i = 0; i < maxCount; i++)
 				DrawBox2DFast(direction * hits[i].distance, boxStructure2D, DrawLine);
 
@@ -202,24 +210,24 @@ namespace Vertx.Debugging
 				maxCount = hits.Length;
 
 			if (maxCount == 0) return;
-			
+
 			direction.EnsureNormalized();
-			
+
 			Vector3 back = Vector3.back;
 			Vector3 up = Vector3.up;
-			
+
 			for (int i = 0; i < maxCount; i++)
 				DrawCircleFast(origin + direction * hits[i].distance, back, up, radius, DrawLine);
 
 			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
 		}
 
-		public static void DrawCapsuleCast2DHits(RaycastHit2D[] hits, 
-			Vector2 origin, 
+		public static void DrawCapsuleCast2DHits(RaycastHit2D[] hits,
+			Vector2 origin,
 			Vector2 size,
-			CapsuleDirection2D capsuleDirection, 
+			CapsuleDirection2D capsuleDirection,
 			float angle,
-			Vector2 direction, 
+			Vector2 direction,
 			Color color,
 			int maxCount = -1)
 		{
@@ -227,11 +235,11 @@ namespace Vertx.Debugging
 				maxCount = hits.Length;
 
 			if (maxCount == 0) return;
-			
+
 			direction.EnsureNormalized();
-			
+
 			DrawCapsuleStructure2D capsuleStructure2D = new DrawCapsuleStructure2D(size, capsuleDirection, angle);
-			
+
 			for (int i = 0; i < maxCount; i++)
 				DrawCapsule2DFast(origin + direction * hits[i].distance, capsuleStructure2D, DrawLine);
 
@@ -241,23 +249,68 @@ namespace Vertx.Debugging
 		#endregion
 
 		#region Both
+		
+		public static void DrawRaycast2D(
+			Vector2 origin,
+			Vector2 direction,
+			RaycastHit2D[] hits,
+			float distance, 
+			Color rayColor, 
+			Color hitColor,
+			int maxCount = -1,
+			float hitRayLength = 1,
+			float duration = 0)
+		{
+			if (float.IsInfinity(distance))
+				distance = 10000000;
+			Debug.DrawRay(origin, direction * distance, rayColor, duration);
+			DrawRaycast2DHits(hits, hitColor, maxCount, hitRayLength, duration);
+		}
 
-		public static void DrawCircleCast2D(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] hits, float distance, int count)
+		public static void DrawCircleCast2D(
+			Vector2 origin,
+			float radius,
+			Vector2 direction,
+			RaycastHit2D[] hits,
+			float distance,
+			int count,
+			Color startColor,
+			Color endColor,
+			Color hitColor)
 		{
-			DrawCircleCast2D(origin, radius, direction, distance);
-			DrawCircleCast2DHits(hits, origin, radius, direction, count);
+			DrawCircleCast2D(origin, radius, direction, distance, startColor, endColor);
+			DrawCircleCast2DHits(hits, origin, radius, direction, hitColor, count);
 		}
-		
-		public static void DrawBoxCast2D(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] hits, float distance, int count)
+
+		public static void DrawBoxCast2D(Vector2 origin,
+			Vector2 size,
+			float angle,
+			Vector2 direction,
+			RaycastHit2D[] hits,
+			float distance,
+			int count,
+			Color startColor,
+			Color endColor,
+			Color hitColor)
 		{
-			DrawBoxCast2D(origin, size, angle, direction, distance);
-			DrawBoxCast2DHits(hits, origin, size, angle, direction, count);
+			DrawBoxCast2D(origin, size, angle, direction, distance, startColor, endColor);
+			DrawBoxCast2DHits(hits, origin, size, angle, direction, hitColor, count);
 		}
-		
-		public static void DrawCapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] hits, float distance, int count)
+
+		public static void DrawCapsuleCast2D(Vector2 origin,
+			Vector2 size,
+			CapsuleDirection2D capsuleDirection,
+			float angle,
+			Vector2 direction,
+			RaycastHit2D[] hits,
+			float distance,
+			int count,
+			Color startColor,
+			Color endColor,
+			Color hitColor)
 		{
-			DrawCapsuleCast2D(origin, size, capsuleDirection, angle, direction, distance);
-			DrawCapsuleCast2DHits(hits, origin, size, capsuleDirection, angle, direction, count);
+			DrawCapsuleCast2D(origin, size, capsuleDirection, angle, direction, distance, startColor, endColor);
+			DrawCapsuleCast2DHits(hits, origin, size, capsuleDirection, angle, direction, hitColor, count);
 		}
 
 		#endregion
