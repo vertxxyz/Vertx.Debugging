@@ -39,7 +39,7 @@ namespace Vertx.Debugging
 			=> DrawCapsuleCastHits(hits, HitColor, point1, point2, radius, direction, maxCount);
 
 		public static void DrawRaycast(Ray ray, RaycastHit[] hits, float distance, int maxCount = -1, float hitRayLength = 1, float duration = 0)
-			=> DrawRaycast(ray, hits, distance, StartColor, HitColor, maxCount, hitRayLength, duration);
+			=> DrawRaycast(ray, hits, distance, RayColor, HitColor, maxCount, hitRayLength, duration);
 
 		public static void DrawSphereCast(Vector3 origin, float radius, Vector3 direction, RaycastHit[] hits, float distance, int count)
 			=> DrawSphereCast(origin, radius, direction, hits, distance, count, StartColor, EndColor, HitColor);
@@ -71,8 +71,11 @@ namespace Vertx.Debugging
 		public static void DrawCapsuleCast2DHits(RaycastHit2D[] hits, Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, int maxCount = -1)
 			=> DrawCapsuleCast2DHits(hits, origin, size, capsuleDirection, angle, direction, HitColor, maxCount);
 
+		public static void DrawRaycast2D(Ray ray, RaycastHit2D[] hits, float distance, int maxCount = -1, float hitRayLength = 1, float duration = 0)
+			=> DrawRaycast2D(ray, hits, distance, RayColor, HitColor, maxCount, hitRayLength, duration);
+
 		public static void DrawRaycast2D(Vector2 origin, Vector2 direction, RaycastHit2D[] hits, float distance, int maxCount = -1, float hitRayLength = 1, float duration = 0)
-			=> DrawRaycast2D(origin, direction, hits, distance, StartColor, HitColor, maxCount, hitRayLength, duration);
+			=> DrawRaycast2D(origin, direction, hits, distance, RayColor, HitColor, maxCount, hitRayLength, duration);
 
 		public static void DrawCircleCast2D(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] hits, float distance, int count)
 			=> DrawCircleCast2D(origin, radius, direction, hits, distance, count, StartColor, EndColor, HitColor);
@@ -83,6 +86,28 @@ namespace Vertx.Debugging
 		public static void DrawCapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] hits, float distance, int count)
 			=> DrawCapsuleCast2D(origin, size, capsuleDirection, angle, direction, hits, distance, count, StartColor, EndColor, HitColor);
 
+		public static void DrawArea2D(Vector2 point1, Vector2 point2)
+			=> DrawArea2D(point1, point2, RayColor);
 
+		public static void DrawArea2D(Vector2 point1, Vector2 point2, bool hit)
+			=> DrawArea2D(point1, point2, hit ? HitColor : RayColor);
+
+		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle)
+			=> DrawBox2D(origin, size, angle, RayColor);
+
+		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, bool hit)
+			=> DrawBox2D(origin, size, angle, hit ? HitColor : RayColor);
+
+		public static void DrawCircle2D(Vector2 origin, float radius)
+			=> DrawCircle2D(origin, radius, RayColor);
+
+		public static void DrawCircle2D(Vector2 origin, float radius, bool hit)
+			=> DrawCircle2D(origin, radius, hit ? HitColor : RayColor);
+
+		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle)
+			=> DrawCapsule2D(origin, size, capsuleDirection, angle, RayColor);
+
+		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, bool hit)
+			=> DrawCapsule2D(origin, size, capsuleDirection, angle, hit ? HitColor : RayColor);
 	}
 }

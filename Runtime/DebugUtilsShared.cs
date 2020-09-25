@@ -12,6 +12,7 @@ namespace Vertx.Debugging
 		public static Color EndColor => new Color(0.4f, 1f, 0.3f);
 
 		public static Color HitColor => new Color(1, 0.1f, 0.2f);
+		public static Color RayColor => new Color(0.4f, 1f, 0.3f);
 
 		private static void EnsureNormalized(this ref Vector3 vector3)
 		{
@@ -59,7 +60,7 @@ namespace Vertx.Debugging
 
 		#region Circles And Arcs
 
-		public static void DrawCircle(Vector3 center, Vector3 normal, float radius, LineDelegate lineDelegate, int segmentCount = 100)
+		internal static void DrawCircle(Vector3 center, Vector3 normal, float radius, LineDelegate lineDelegate, int segmentCount = 100)
 		{
 			Vector3 cross = GetAxisAlignedPerpendicular(normal);
 			Vector3 direction = cross * radius;
@@ -75,7 +76,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		public static void DrawCircleFast(Vector3 center, Vector3 normal, Vector3 cross, float radius, LineDelegate lineDelegate, int segmentCount = 100)
+		internal static void DrawCircleFast(Vector3 center, Vector3 normal, Vector3 cross, float radius, LineDelegate lineDelegate, int segmentCount = 100)
 		{
 			Vector3 direction = cross * radius;
 			Vector3 lastPos = center + direction;
@@ -90,7 +91,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		public static void DrawArc(Vector3 center, Vector3 normal, Vector3 startDirection, float radius, float totalAngle, LineDelegate lineDelegate, int segmentCount = 50)
+		internal static void DrawArc(Vector3 center, Vector3 normal, Vector3 startDirection, float radius, float totalAngle, LineDelegate lineDelegate, int segmentCount = 50)
 		{
 			Vector3 direction = startDirection * radius;
 			Vector3 lastPos = center + direction;
@@ -111,7 +112,7 @@ namespace Vertx.Debugging
 
 		#region 3D
 
-		public readonly struct DrawBoxStructure
+		internal readonly struct DrawBoxStructure
 		{
 			public readonly Vector3 UFL, UFR, UBL, UBR, DFL, DFR, DBL, DBR;
 
@@ -134,7 +135,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		public static void DrawBox(
+		internal static void DrawBox(
 			Vector3 center,
 			Vector3 halfExtents,
 			Quaternion orientation,
@@ -144,7 +145,7 @@ namespace Vertx.Debugging
 			DrawBox(center, box, lineDelegate);
 		}
 
-		public static void DrawBox(Vector3 center, DrawBoxStructure structure, LineDelegateSimple lineDelegate)
+		internal static void DrawBox(Vector3 center, DrawBoxStructure structure, LineDelegateSimple lineDelegate)
 		{
 			Vector3
 				posUFL = structure.UFL + center,
@@ -177,7 +178,7 @@ namespace Vertx.Debugging
 
 		#region 2D
 
-		public readonly struct DrawBoxStructure2D
+		internal readonly struct DrawBoxStructure2D
 		{
 			public readonly Vector2 UR, UL, BR, BL;
 			public readonly Vector2 UROrigin, ULOrigin;
@@ -213,7 +214,7 @@ namespace Vertx.Debugging
 			return new Vector2(u, v);
 		}
 
-		public static void DrawBox2DFast(
+		internal static void DrawBox2DFast(
 			Vector2 offset,
 			DrawBoxStructure2D boxStructure2D,
 			LineDelegateSimple lineDelegate)
@@ -228,7 +229,7 @@ namespace Vertx.Debugging
 			lineDelegate(bLPosition, uLPosition);
 		}
 		
-		public readonly struct DrawCapsuleStructure2D
+		internal readonly struct DrawCapsuleStructure2D
 		{
 			public readonly float Radius;
 			public readonly Vector3 Normal;
@@ -260,7 +261,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		public static void DrawCapsule2DFast(Vector2 offset, DrawCapsuleStructure2D capsuleStructure2D, LineDelegate lineDelegate)
+		internal static void DrawCapsule2DFast(Vector2 offset, DrawCapsuleStructure2D capsuleStructure2D, LineDelegate lineDelegate)
 		{
 			Vector2 r1 = offset + capsuleStructure2D.VerticalOffset;
 			Vector2 r2 = offset - capsuleStructure2D.VerticalOffset;
@@ -276,7 +277,7 @@ namespace Vertx.Debugging
 
 		#region Capsule
 
-		public static void DrawCapsuleFast(Vector3 point1, Vector3 point2, float radius, Vector3 axis, Vector3 crossA, Vector3 crossB, LineDelegate lineDelegate)
+		internal static void DrawCapsuleFast(Vector3 point1, Vector3 point2, float radius, Vector3 axis, Vector3 crossA, Vector3 crossB, LineDelegate lineDelegate)
 		{
 			//Circles
 			DrawCircleFast(point1, axis, crossB, radius, lineDelegate);
