@@ -236,7 +236,6 @@ namespace Vertx.Debugging
 		internal readonly struct DrawCapsuleStructure2D
 		{
 			public readonly float Radius;
-			public readonly Vector3 Normal;
 			public readonly Vector2 VerticalOffset;
 			public readonly Vector2 Left, ScaledLeft, ScaledRight;
 
@@ -253,7 +252,6 @@ namespace Vertx.Debugging
 					angle += 180;
 				}
 				
-				Normal = Vector3.back;
 				Radius = size.x * 0.5f;
 				float vertical = Mathf.Max(0, size.y - size.x) * 0.5f;
 				GetRotationCoefficients(angle, out var s, out var c);
@@ -264,13 +262,29 @@ namespace Vertx.Debugging
 				ScaledRight = -ScaledLeft;
 			}
 		}
+		
+		internal static void DrawArc2D(Vector2 center, Vector2 startDirection, float radius, float totalAngle, LineDelegate lineDelegate, int segmentCount = 50)
+		{
+			Vector2 direction = startDirection * radius;
+			Vector2 lastPos = center + direction;
+			GetRotationCoefficients(1 / (float) segmentCount * totalAngle, out var s, out var c);
+
+			Vector2 currentDirection = direction;
+			for (int i = 1; i <= segmentCount; i++)
+			{
+				currentDirection = RotateFast(currentDirection, s, c);
+				Vector2 nextPos = center + currentDirection;
+				lineDelegate(lastPos, nextPos, (i - 1) / (float) segmentCount);
+				lastPos = nextPos;
+			}
+		}
 
 		internal static void DrawCapsule2DFast(Vector2 offset, DrawCapsuleStructure2D capsuleStructure2D, LineDelegate lineDelegate)
 		{
 			Vector2 r1 = offset + capsuleStructure2D.VerticalOffset;
 			Vector2 r2 = offset - capsuleStructure2D.VerticalOffset;
-			DrawArc(r1, capsuleStructure2D.Normal, capsuleStructure2D.Left, capsuleStructure2D.Radius, -180, lineDelegate);
-			DrawArc(r2, capsuleStructure2D.Normal, capsuleStructure2D.Left, capsuleStructure2D.Radius, 180, lineDelegate);
+			DrawArc2D(r1, capsuleStructure2D.Left, capsuleStructure2D.Radius, 180, lineDelegate);
+			DrawArc2D(r2, capsuleStructure2D.Left, capsuleStructure2D.Radius, -180, lineDelegate);
 			lineDelegate(r1 + capsuleStructure2D.ScaledLeft, r2 + capsuleStructure2D.ScaledLeft, 0);
 			lineDelegate(r1 + capsuleStructure2D.ScaledRight, r2 + capsuleStructure2D.ScaledRight, 0);
 		}

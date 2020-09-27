@@ -26,7 +26,7 @@ namespace Vertx.Debugging
 
 		public static void DrawCircle2D(Vector2 origin, float radius, Color color)
 		{
-			DrawCircleFast(origin, Vector3.forward, Vector3.up, radius, DrawLine);
+			DrawArc2D(origin, Vector2.up, radius, 360, DrawLine);
 			void DrawLine(Vector3 a, Vector3 b, float t) => Debug.DrawLine(a, b, color);
 		}
 
@@ -40,22 +40,21 @@ namespace Vertx.Debugging
 		public static void DrawPoint2D(Vector2 point, Color color, float rayLength = 0.3f, float highlightRadius = 0.05f)
 		{
 			//Draw rays
-			Vector3 up = new Vector3(0, rayLength, 0);
-			Vector3 perpendicular = Vector3.back;
+			Vector2 up = new Vector2(0, rayLength);
 			Debug.DrawRay(point, up, color);
-			Quaternion rot = Quaternion.AngleAxis(120, perpendicular);
-			var dir1 = rot * up;
+			GetRotationCoefficients(120, out float s, out float c);
+			var dir1 = RotateFast(up, s, c);
 			Debug.DrawRay(point, dir1, color);
-			var dir2 = rot * dir1;
+			var dir2 = RotateFast(dir1, s, c);
 			Debug.DrawRay(point, dir2, color);
 
 			if (Mathf.Approximately(highlightRadius, 0))
 				return;
 			
 			//Draw triangle
-			Vector3 p1 = new Vector3(0, -highlightRadius, 0);
-			Vector3 p2 = rot * p1;
-			Vector3 p3 = rot * p2;
+			Vector3 p1 = new Vector3(0, -highlightRadius);
+			Vector3 p2 = RotateFast(p1, s, c);
+			Vector3 p3 = RotateFast(p2, s, c);
 			Vector3 o = point;
 			p1 += o;
 			p2 += o;
@@ -68,9 +67,9 @@ namespace Vertx.Debugging
 		public static void DrawAxis2D(Vector2 point, float angle, bool arrowHeads = false)
 		{
 			//Draw rays
-			var rot = Quaternion.AngleAxis(angle, Vector3.forward);
-			Vector2 r = rot * Vector2.right;
-			Vector2 u = rot * Vector2.up;
+			GetRotationCoefficients(angle, out float s, out float c);
+			Vector2 r = RotateFast(Vector2.right, s, c);
+			Vector2 u = RotateFast(Vector2.up, s, c);
 			Debug.DrawRay(point, r, ColorX);
 			Debug.DrawRay(point, u, ColorY);
 			DrawArrowHead(r, u, ColorX);
