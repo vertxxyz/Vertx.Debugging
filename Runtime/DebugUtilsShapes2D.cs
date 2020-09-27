@@ -64,5 +64,31 @@ namespace Vertx.Debugging
 			Debug.DrawLine(p2, p3, color);
 			Debug.DrawLine(p3, p1, color);
 		}
+		
+		public static void DrawAxis2D(Vector2 point, float angle, bool arrowHeads = false)
+		{
+			//Draw rays
+			var rot = Quaternion.AngleAxis(angle, Vector3.forward);
+			Vector2 r = rot * Vector2.right;
+			Vector2 u = rot * Vector2.up;
+			Debug.DrawRay(point, r, ColorX);
+			Debug.DrawRay(point, u, ColorY);
+			DrawArrowHead(r, u, ColorX);
+			DrawArrowHead(u, r, ColorY);
+			
+			const float arrowLength = 0.075f;
+			const float arrowWidth = 0.05f;
+			
+			void DrawArrowHead(Vector2 dir, Vector2 cross, Color color)
+			{
+				Vector2 arrowPoint = point + dir;
+				Vector2 a = arrowPoint + cross * arrowWidth;
+				Vector2 b = arrowPoint - cross * arrowWidth;
+				Vector2 arrowEnd = arrowPoint + dir * arrowLength;
+				Debug.DrawLine(a, b, color);
+				Debug.DrawLine(a, arrowEnd, color);
+				Debug.DrawLine(b, arrowEnd, color);
+			}
+		}
 	}
 }

@@ -89,67 +89,67 @@ namespace Vertx.Debugging
 		public static void DrawSphere(Vector3 position, float radius)
 			=> DrawSphere(position, radius, RayColor);
 
-		public static void DrawSphere(Vector3 position, float radius, bool hit = false)
+		public static void DrawSphere(Vector3 position, float radius, bool hit)
 			=> DrawSphere(position, radius, hit ? HitColor : RayColor);
 
 		public static void DrawBox(Vector3 center, Vector3 halfExtents, Quaternion orientation)
 			=> DrawBox(center, halfExtents, orientation, RayColor);
 
-		public static void DrawBox(Vector3 center, Vector3 halfExtents, Quaternion orientation, bool hit = false)
+		public static void DrawBox(Vector3 center, Vector3 halfExtents, Quaternion orientation, bool hit)
 			=> DrawBox(center, halfExtents, orientation, hit ? HitColor : RayColor);
 
 		public static void DrawBox(Vector3 center, Vector3 halfExtents)
 			=> DrawBox(center, halfExtents, RayColor);
 
-		public static void DrawBox(Vector3 center, Vector3 halfExtents, bool hit = false)
+		public static void DrawBox(Vector3 center, Vector3 halfExtents, bool hit)
 			=> DrawBox(center, halfExtents, hit ? HitColor : RayColor);
 
 		public static void DrawCapsule(Vector3 start, Vector3 end, float radius)
 			=> DrawCapsule(start, end, radius, RayColor);
 
-		public static void DrawCapsule(Vector3 start, Vector3 end, float radius, bool hit = false)
+		public static void DrawCapsule(Vector3 start, Vector3 end, float radius, bool hit)
 			=> DrawCapsule(start, end, radius, hit ? HitColor : RayColor);
 
 		public static void DrawSurfacePoint(Vector3 point, Vector3 normal)
 			=> DrawSurfacePoint(point, normal, RayColor);
 
-		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, bool hit = false)
+		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, bool hit)
 			=> DrawSurfacePoint(point, normal, hit ? HitColor : RayColor);
 
-		public static void DrawPoint(Vector3 point)
-			=> DrawPoint(point, RayColor);
+		public static void DrawPoint(Vector3 point, float rayLength = 0.3f, float highlightRadius = 0.05f)
+			=> DrawPoint(point, RayColor, rayLength, highlightRadius);
 
-		public static void DrawPoint(Vector3 point, bool hit = false)
-			=> DrawPoint(point, hit ? HitColor : RayColor);
+		public static void DrawPoint(Vector3 point, bool hit, float rayLength = 0.3f, float highlightRadius = 0.05f)
+			=> DrawPoint(point, hit ? HitColor : RayColor, rayLength, highlightRadius);
 
 		public static void DrawArea2D(Vector2 point1, Vector2 point2)
 			=> DrawArea2D(point1, point2, RayColor);
 
-		public static void DrawArea2D(Vector2 point1, Vector2 point2, bool hit = false)
+		public static void DrawArea2D(Vector2 point1, Vector2 point2, bool hit)
 			=> DrawArea2D(point1, point2, hit ? HitColor : RayColor);
 
 		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle)
 			=> DrawBox2D(origin, size, angle, RayColor);
 
-		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, bool hit = false)
+		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, bool hit)
 			=> DrawBox2D(origin, size, angle, hit ? HitColor : RayColor);
 
 		public static void DrawCircle2D(Vector2 origin, float radius)
 			=> DrawCircle2D(origin, radius, RayColor);
 
-		public static void DrawCircle2D(Vector2 origin, float radius, bool hit = false)
+		public static void DrawCircle2D(Vector2 origin, float radius, bool hit)
 			=> DrawCircle2D(origin, radius, hit ? HitColor : RayColor);
 
 		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle)
 			=> DrawCapsule2D(origin, size, capsuleDirection, angle, RayColor);
 
-		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, bool hit = false)
+		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, bool hit)
 			=> DrawCapsule2D(origin, size, capsuleDirection, angle, hit ? HitColor : RayColor);
 
 		public static void DrawPoint2D(Vector2 point, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint2D(point, RayColor, rayLength, highlightRadius);
 
-		public static void DrawPoint2D(Vector2 point, float rayLength = 0.3f, float highlightRadius = 0.05f, bool hit = false)
+		public static void DrawPoint2D(Vector2 point, bool hit, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint2D(point, hit ? HitColor : RayColor, rayLength, highlightRadius);
 	}
 }
