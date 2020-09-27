@@ -13,6 +13,10 @@ namespace Vertx.Debugging
 
 		public static Color HitColor => new Color(1, 0.1f, 0.2f);
 		public static Color RayColor => new Color(0.4f, 1f, 0.3f);
+		
+		public static Color ColorX => new Color(1, 0.1f, 0.2f);
+		public static Color ColorY => new Color(0.3f, 1, 0.1f);
+		public static Color ColorZ => new Color(0.1f, 0.4f, 1);
 
 		private static void EnsureNormalized(this ref Vector3 vector3)
 		{
@@ -40,7 +44,7 @@ namespace Vertx.Debugging
 		private static Vector3 GetAxisAlignedAlternate(Vector3 normal)
 		{
 			Vector3 alternate = new Vector3(0, 0, 1);
-			if (Mathf.Abs(Vector3.Dot(normal, alternate)) > 0.9f)
+			if (Mathf.Abs(Vector3.Dot(normal, alternate)) > 0.707f)
 				alternate = new Vector3(0, 1, 0);
 			return alternate;
 		}

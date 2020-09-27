@@ -70,5 +70,38 @@ namespace Vertx.Debugging
 			Debug.DrawLine(p2, p3, color);
 			Debug.DrawLine(p3, p1, color);
 		}
+
+		public static void DrawAxis(Vector3 point, Quaternion rotation, bool arrowHeads = false)
+		{
+			Vector3 right = rotation * Vector3.right;
+			Vector3 up = rotation * Vector3.up;
+			Vector3 forward = rotation * Vector3.forward;
+			Color colorRight = ColorX;
+			Debug.DrawRay(point, right, colorRight);
+			Color colorUp = ColorY;
+			Debug.DrawRay(point, up, colorUp);
+			Color colorForward = ColorZ;
+			Debug.DrawRay(point, forward, colorForward);
+
+			if (!arrowHeads)
+				return;
+
+			const float arrowLength = 0.075f;
+			const float arrowWidth = 0.05f;
+			const int segments = 3;
+			DrawArrowHead(right, colorRight);
+			DrawArrowHead(up, colorUp);
+			DrawArrowHead(forward, colorForward);
+
+			void DrawArrowHead(Vector3 dir, Color color)
+			{
+				Vector3 arrowPoint = point + dir;
+				DrawCircle(point + dir - dir * arrowLength, dir, arrowWidth, (a, b, f) =>
+				{
+					Debug.DrawLine(a, b, color);
+					Debug.DrawLine(a, arrowPoint, color);
+				}, segments);
+			}
+		}
 	}
 }
