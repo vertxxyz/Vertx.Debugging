@@ -11,7 +11,7 @@ namespace Vertx.Debugging
 		public Capsule(Vector3 center, Quaternion rotation, float height, float radius)
 		{
 			float pointHeight = height - radius;
-			Vector3 direction = rotation * new Vector3(0, 0, pointHeight);
+			Vector3 direction = rotation * new Vector3(0, pointHeight, 0);
 			SpherePosition1 = center + direction;
 			SpherePosition2 = center - direction;
 			Radius = radius;
