@@ -64,7 +64,7 @@ namespace Vertx.Debugging
 			Debug.DrawLine(p3, p1, color);
 		}
 		
-		public static void DrawAxis2D(Vector2 point, float angle, bool arrowHeads = false)
+		public static void DrawAxis2D(Vector2 point, float angle = 0, bool arrowHeads = false)
 		{
 			//Draw rays
 			GetRotationCoefficients(angle, out float s, out float c);
@@ -72,6 +72,10 @@ namespace Vertx.Debugging
 			Vector2 u = RotateFast(Vector2.up, s, c);
 			Debug.DrawRay(point, r, ColorX);
 			Debug.DrawRay(point, u, ColorY);
+
+			if (!arrowHeads)
+				return;
+			
 			DrawArrowHead(r, u, ColorX);
 			DrawArrowHead(u, r, ColorY);
 			

@@ -71,6 +71,9 @@ namespace Vertx.Debugging
 			Debug.DrawLine(p3, p1, color);
 		}
 
+		public static void DrawAxis(Vector3 point, bool arrowHeads = false)
+			=> DrawAxis(point, Quaternion.identity, arrowHeads);
+		
 		public static void DrawAxis(Vector3 point, Quaternion rotation, bool arrowHeads = false)
 		{
 			Vector3 right = rotation * Vector3.right;
