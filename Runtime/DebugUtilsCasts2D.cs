@@ -251,6 +251,22 @@ namespace Vertx.Debugging
 		#region Both
 		
 		public static void DrawRaycast2D(
+			Ray ray,
+			RaycastHit2D[] hits,
+			float distance, 
+			Color rayColor, 
+			Color hitColor,
+			int maxCount = -1,
+			float hitRayLength = 1,
+			float duration = 0)
+		{
+			if (float.IsInfinity(distance))
+				distance = 10000000;
+			Debug.DrawRay(ray.origin, ray.direction * distance, rayColor, duration);
+			DrawRaycast2DHits(hits, hitColor, maxCount, hitRayLength, duration);
+		}
+		
+		public static void DrawRaycast2D(
 			Vector2 origin,
 			Vector2 direction,
 			RaycastHit2D[] hits,
