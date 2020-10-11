@@ -108,7 +108,8 @@ namespace Vertx.Debugging
 			const int segments = 3;
 
 			Vector3 arrowPoint = point + dir;
-			DrawCircle(point + dir - dir * arrowLength, dir, arrowWidth, (a, b, f) =>
+			dir.EnsureNormalized();
+			DrawCircle(arrowPoint - dir * arrowLength, dir, arrowWidth, (a, b, f) =>
 			{
 				Debug.DrawLine(a, b, color);
 				Debug.DrawLine(a, arrowPoint, color);

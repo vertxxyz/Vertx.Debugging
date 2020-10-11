@@ -100,8 +100,10 @@ namespace Vertx.Debugging
 			const float arrowLength = 0.075f;
 			const float arrowWidth = 0.05f;
 			Vector2 arrowPoint = point + dir;
+			cross.EnsureNormalized();
 			Vector2 a = arrowPoint + cross * arrowWidth;
 			Vector2 b = arrowPoint - cross * arrowWidth;
+			dir.EnsureNormalized();
 			Vector2 arrowEnd = arrowPoint + dir * arrowLength;
 			Debug.DrawLine(a, b, color);
 			Debug.DrawLine(a, arrowEnd, color);
