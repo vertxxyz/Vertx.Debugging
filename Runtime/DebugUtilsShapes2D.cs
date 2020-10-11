@@ -64,6 +64,21 @@ namespace Vertx.Debugging
 			Debug.DrawLine(p3, p1, color);
 		}
 		
+		public static void DrawArrow2D(Vector2 point, float angle, Color color)
+		{
+			//Draw rays
+			GetRotationCoefficients(angle, out float s, out float c);
+			Vector2 dir = RotateFast(Vector2.right, s, c);
+			DrawArrow2D(point, dir,color );
+		}
+
+		public static void DrawArrow2D(Vector2 point, Vector2 direction, Color color)
+		{
+			Debug.DrawRay(point, direction, color);
+			Vector2 cross = PerpendicularClockwise(direction);
+			DrawArrowHead(point, direction, cross, color);
+		}
+		
 		public static void DrawAxis2D(Vector2 point, float angle = 0, bool arrowHeads = false)
 		{
 			//Draw rays
@@ -76,22 +91,21 @@ namespace Vertx.Debugging
 			if (!arrowHeads)
 				return;
 			
-			DrawArrowHead(r, u, ColorX);
-			DrawArrowHead(u, r, ColorY);
-			
+			DrawArrowHead(point, r, u, ColorX);
+			DrawArrowHead(point, u, r, ColorY);
+		}
+		
+		private static void DrawArrowHead(Vector2 point, Vector2 dir, Vector2 cross, Color color)
+		{
 			const float arrowLength = 0.075f;
 			const float arrowWidth = 0.05f;
-			
-			void DrawArrowHead(Vector2 dir, Vector2 cross, Color color)
-			{
-				Vector2 arrowPoint = point + dir;
-				Vector2 a = arrowPoint + cross * arrowWidth;
-				Vector2 b = arrowPoint - cross * arrowWidth;
-				Vector2 arrowEnd = arrowPoint + dir * arrowLength;
-				Debug.DrawLine(a, b, color);
-				Debug.DrawLine(a, arrowEnd, color);
-				Debug.DrawLine(b, arrowEnd, color);
-			}
+			Vector2 arrowPoint = point + dir;
+			Vector2 a = arrowPoint + cross * arrowWidth;
+			Vector2 b = arrowPoint - cross * arrowWidth;
+			Vector2 arrowEnd = arrowPoint + dir * arrowLength;
+			Debug.DrawLine(a, b, color);
+			Debug.DrawLine(a, arrowEnd, color);
+			Debug.DrawLine(b, arrowEnd, color);
 		}
 	}
 }

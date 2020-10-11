@@ -122,6 +122,12 @@ namespace Vertx.Debugging
 		public static void DrawPoint(Vector3 point, bool hit, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint(point, hit ? HitColor : RayColor, rayLength, highlightRadius);
 
+		public static void DrawArrow(Vector3 position, Vector3 direction)
+			=> DrawArrow(position, direction, RayColor);
+
+		public static void DrawArrow(Vector3 position, Vector3 direction, bool hit)
+			=> DrawArrow(position, direction, hit ? HitColor : RayColor);
+
 		public static void DrawArea2D(Vector2 point1, Vector2 point2)
 			=> DrawArea2D(point1, point2, RayColor);
 
@@ -151,5 +157,17 @@ namespace Vertx.Debugging
 
 		public static void DrawPoint2D(Vector2 point, bool hit, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint2D(point, hit ? HitColor : RayColor, rayLength, highlightRadius);
+
+		public static void DrawArrow2D(Vector2 point, float angle)
+			=> DrawArrow2D(point, angle, RayColor);
+
+		public static void DrawArrow2D(Vector2 point, float angle, bool hit)
+			=> DrawArrow2D(point, angle, hit ? HitColor : RayColor);
+
+		public static void DrawArrow2D(Vector2 point, Vector2 direction)
+			=> DrawArrow2D(point, direction, RayColor);
+
+		public static void DrawArrow2D(Vector2 point, Vector2 direction, bool hit)
+			=> DrawArrow2D(point, direction, hit ? HitColor : RayColor);
 	}
 }

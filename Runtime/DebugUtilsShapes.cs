@@ -71,9 +71,15 @@ namespace Vertx.Debugging
 			Debug.DrawLine(p3, p1, color);
 		}
 
+		public static void DrawArrow(Vector3 position, Vector3 direction, Color color)
+		{
+			Debug.DrawRay(position, direction, color);
+			DrawArrowHead(position, direction, color);
+		}
+
 		public static void DrawAxis(Vector3 point, bool arrowHeads = false)
 			=> DrawAxis(point, Quaternion.identity, arrowHeads);
-		
+
 		public static void DrawAxis(Vector3 point, Quaternion rotation, bool arrowHeads = false)
 		{
 			Vector3 right = rotation * Vector3.right;
@@ -89,22 +95,24 @@ namespace Vertx.Debugging
 			if (!arrowHeads)
 				return;
 
+			DrawArrowHead(point, right, colorRight);
+			DrawArrowHead(point, up, colorUp);
+			DrawArrowHead(point, forward, colorForward);
+		}
+
+
+		private static void DrawArrowHead(Vector3 point, Vector3 dir, Color color)
+		{
 			const float arrowLength = 0.075f;
 			const float arrowWidth = 0.05f;
 			const int segments = 3;
-			DrawArrowHead(right, colorRight);
-			DrawArrowHead(up, colorUp);
-			DrawArrowHead(forward, colorForward);
 
-			void DrawArrowHead(Vector3 dir, Color color)
+			Vector3 arrowPoint = point + dir;
+			DrawCircle(point + dir - dir * arrowLength, dir, arrowWidth, (a, b, f) =>
 			{
-				Vector3 arrowPoint = point + dir;
-				DrawCircle(point + dir - dir * arrowLength, dir, arrowWidth, (a, b, f) =>
-				{
-					Debug.DrawLine(a, b, color);
-					Debug.DrawLine(a, arrowPoint, color);
-				}, segments);
-			}
+				Debug.DrawLine(a, b, color);
+				Debug.DrawLine(a, arrowPoint, color);
+			}, segments);
 		}
 	}
 }
