@@ -1,5 +1,5 @@
 # Debugging
-Debugging Utilities for Unity
+Editor debugging utilities for Unity.
 
 ## General
 - **DrawText**  
@@ -16,6 +16,8 @@ Draws a ray with a circle to indicate the surface
 Draws a point without specifying direction
 - **DrawAxis**  
 Draws an XYZ direction gizmo
+- **DrawArrow**  
+Draws an arrow gizmo for a vector
 ### Casts
 - **DrawRaycast**, (**DrawRaycastHits**)
 - **DrawSphereCast**, (**DrawSphereCastHits**)
@@ -29,9 +31,11 @@ Draws an XYZ direction gizmo
 - **DrawArea2D**
 - **DrawCapsule2D**
 - **DrawPoint2D**  
-  Draws a point without specifying direction
+Draws a point without specifying direction
 - **DrawAxis2D**  
-  Draws an XY direction gizmo
+Draws an XY direction gizmo
+- **DrawArrow2D**  
+Draws an arrow gizmo for a vector
 ### Casts
 - **DrawRaycast2D**, (**DrawRaycast2DHits**)
 - **DrawCircleCast2D**, (**DrawCircleCast2DHits**)

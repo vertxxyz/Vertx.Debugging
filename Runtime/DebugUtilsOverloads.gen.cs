@@ -5,168 +5,223 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+
+using System.Diagnostics;
 using UnityEngine;
 
 namespace Vertx.Debugging
 {
 	public static partial class DebugUtils
 	{
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCast(Ray ray, float radius, float distance, int iterationCount = 10)
 			=> DrawSphereCast(ray, radius, distance, StartColor, EndColor, iterationCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCast(Vector3 origin, float radius, Vector3 direction, float distance, int iterationCount = 10)
 			=> DrawSphereCast(origin, radius, direction, distance, StartColor, EndColor, iterationCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, Quaternion orientation, float distance, int iterationCount = 1)
 			=> DrawBoxCast(center, halfExtents, direction, orientation, distance, StartColor, EndColor, iterationCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast(Vector3 point1, Vector3 point2, float radius, Vector3 direction, float distance, int iterationCount = 10)
 			=> DrawCapsuleCast(point1, point2, radius, direction, distance, StartColor, EndColor, iterationCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycastHits(RaycastHit[] hits, int maxCount = -1, float rayLength = 1, float duration = 0)
 			=> DrawRaycastHits(hits, HitColor, maxCount, rayLength, duration);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCastHits(RaycastHit[] hits, Ray ray, float radius, int maxCount = -1)
 			=> DrawSphereCastHits(hits, ray, radius, HitColor, maxCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCastHits(RaycastHit[] hits, Vector3 origin, float radius, Vector3 direction, int maxCount = -1)
 			=> DrawSphereCastHits(hits, origin, radius, direction, HitColor, maxCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCastHits(RaycastHit[] hits, Vector3 origin, Vector3 halfExtents, Vector3 direction, Quaternion orientation, int maxCount = -1)
 			=> DrawBoxCastHits(hits, origin, halfExtents, direction, orientation, HitColor, maxCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCastHits(RaycastHit[] hits, Vector3 point1, Vector3 point2, float radius, Vector3 direction, int maxCount = -1)
 			=> DrawCapsuleCastHits(hits, HitColor, point1, point2, radius, direction, maxCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycast(Ray ray, RaycastHit[] hits, float distance, int maxCount = -1, float hitRayLength = 1, float duration = 0)
 			=> DrawRaycast(ray, hits, distance, RayColor, HitColor, maxCount, hitRayLength, duration);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCast(Vector3 origin, float radius, Vector3 direction, RaycastHit[] hits, float distance, int count)
 			=> DrawSphereCast(origin, radius, direction, hits, distance, count, StartColor, EndColor, HitColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] hits, Quaternion orientation, float distance, int count)
 			=> DrawBoxCast(center, halfExtents, direction, hits, orientation, distance, count, StartColor, EndColor, HitColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast(Vector3 point1, Vector3 point2, float radius, Vector3 direction, RaycastHit[] hits, float distance, int count)
 			=> DrawCapsuleCast(point1, point2, radius, direction, hits, distance, count, StartColor, EndColor, HitColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircleCast2D(Vector2 origin, float radius, Vector2 direction, float distance)
 			=> DrawCircleCast2D(origin, radius, direction, distance, StartColor, EndColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast2D(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance)
 			=> DrawBoxCast2D(origin, size, angle, direction, distance, StartColor, EndColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance)
 			=> DrawCapsuleCast2D(origin, size, capsuleDirection, angle, direction, distance, StartColor, EndColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycast2DHits(RaycastHit2D[] hits, int maxCount = -1, float rayLength = 1, float duration = 0)
 			=> DrawRaycast2DHits(hits, HitColor, maxCount, rayLength, duration);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast2DHits(RaycastHit2D[] hits, Vector2 origin, Vector2 size, float angle, Vector2 direction, int maxCount = -1)
 			=> DrawBoxCast2DHits(hits, origin, size, angle, direction, HitColor, maxCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircleCast2DHits(RaycastHit2D[] hits, Vector2 origin, float radius, Vector2 direction, int maxCount = -1)
 			=> DrawCircleCast2DHits(hits, origin, radius, direction, HitColor, maxCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast2DHits(RaycastHit2D[] hits, Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, int maxCount = -1)
 			=> DrawCapsuleCast2DHits(hits, origin, size, capsuleDirection, angle, direction, HitColor, maxCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycast2D(Ray ray, RaycastHit2D[] hits, float distance, int maxCount = -1, float hitRayLength = 1, float duration = 0)
 			=> DrawRaycast2D(ray, hits, distance, RayColor, HitColor, maxCount, hitRayLength, duration);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycast2D(Vector2 origin, Vector2 direction, RaycastHit2D[] hits, float distance, int maxCount = -1, float hitRayLength = 1, float duration = 0)
 			=> DrawRaycast2D(origin, direction, hits, distance, RayColor, HitColor, maxCount, hitRayLength, duration);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircleCast2D(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] hits, float distance, int count)
 			=> DrawCircleCast2D(origin, radius, direction, hits, distance, count, StartColor, EndColor, HitColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast2D(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] hits, float distance, int count)
 			=> DrawBoxCast2D(origin, size, angle, direction, hits, distance, count, StartColor, EndColor, HitColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] hits, float distance, int count)
 			=> DrawCapsuleCast2D(origin, size, capsuleDirection, angle, direction, hits, distance, count, StartColor, EndColor, HitColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphere(Vector3 position, float radius)
 			=> DrawSphere(position, radius, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphere(Vector3 position, float radius, bool hit)
 			=> DrawSphere(position, radius, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBox(Vector3 center, Vector3 halfExtents, Quaternion orientation)
 			=> DrawBox(center, halfExtents, orientation, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBox(Vector3 center, Vector3 halfExtents, Quaternion orientation, bool hit)
 			=> DrawBox(center, halfExtents, orientation, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBox(Vector3 center, Vector3 halfExtents)
 			=> DrawBox(center, halfExtents, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBox(Vector3 center, Vector3 halfExtents, bool hit)
 			=> DrawBox(center, halfExtents, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsule(Vector3 start, Vector3 end, float radius)
 			=> DrawCapsule(start, end, radius, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsule(Vector3 start, Vector3 end, float radius, bool hit)
 			=> DrawCapsule(start, end, radius, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSurfacePoint(Vector3 point, Vector3 normal)
 			=> DrawSurfacePoint(point, normal, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, bool hit)
 			=> DrawSurfacePoint(point, normal, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawPoint(Vector3 point, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint(point, RayColor, rayLength, highlightRadius);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawPoint(Vector3 point, bool hit, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint(point, hit ? HitColor : RayColor, rayLength, highlightRadius);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow(Vector3 position, Vector3 direction)
 			=> DrawArrow(position, direction, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow(Vector3 position, Vector3 direction, bool hit)
 			=> DrawArrow(position, direction, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArea2D(Vector2 point1, Vector2 point2)
 			=> DrawArea2D(point1, point2, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArea2D(Vector2 point1, Vector2 point2, bool hit)
 			=> DrawArea2D(point1, point2, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle)
 			=> DrawBox2D(origin, size, angle, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, bool hit)
 			=> DrawBox2D(origin, size, angle, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircle2D(Vector2 origin, float radius)
 			=> DrawCircle2D(origin, radius, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircle2D(Vector2 origin, float radius, bool hit)
 			=> DrawCircle2D(origin, radius, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle)
 			=> DrawCapsule2D(origin, size, capsuleDirection, angle, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, bool hit)
 			=> DrawCapsule2D(origin, size, capsuleDirection, angle, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawPoint2D(Vector2 point, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint2D(point, RayColor, rayLength, highlightRadius);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawPoint2D(Vector2 point, bool hit, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint2D(point, hit ? HitColor : RayColor, rayLength, highlightRadius);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow2D(Vector2 point, float angle)
 			=> DrawArrow2D(point, angle, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow2D(Vector2 point, float angle, bool hit)
 			=> DrawArrow2D(point, angle, hit ? HitColor : RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow2D(Vector2 point, Vector2 direction)
 			=> DrawArrow2D(point, direction, RayColor);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow2D(Vector2 point, Vector2 direction, bool hit)
 			=> DrawArrow2D(point, direction, hit ? HitColor : RayColor);
 	}

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Diagnostics;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Vertx.Debugging
 {
@@ -8,6 +10,7 @@ namespace Vertx.Debugging
 
 		#region CircleCast2D
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircleCast2D(Vector2 origin,
 			float radius,
 			Vector2 direction,
@@ -58,6 +61,7 @@ namespace Vertx.Debugging
 
 		#region BoxCast2D
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast2D(
 			Vector2 origin,
 			Vector2 size,
@@ -121,6 +125,7 @@ namespace Vertx.Debugging
 
 		#region CapsuleCast2D
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast2D(
 			Vector2 origin,
 			Vector2 size,
@@ -178,7 +183,8 @@ namespace Vertx.Debugging
 		#endregion
 
 		#region RaycastHits
-		
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycast2DHits(RaycastHit2D[] hits, Color color, int maxCount = -1, float rayLength = 1, float duration = 0)
 		{
 			if (maxCount < 0)
@@ -187,6 +193,7 @@ namespace Vertx.Debugging
 				Debug.DrawRay(hits[i].point, hits[i].normal * rayLength, color, duration);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast2DHits(RaycastHit2D[] hits, Vector2 origin, Vector2 size, float angle, Vector2 direction, Color color, int maxCount = -1)
 		{
 			if (maxCount < 0)
@@ -204,6 +211,7 @@ namespace Vertx.Debugging
 			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircleCast2DHits(RaycastHit2D[] hits, Vector2 origin, float radius, Vector2 direction, Color color, int maxCount = -1)
 		{
 			if (maxCount < 0)
@@ -222,6 +230,7 @@ namespace Vertx.Debugging
 			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast2DHits(RaycastHit2D[] hits,
 			Vector2 origin,
 			Vector2 size,
@@ -249,12 +258,13 @@ namespace Vertx.Debugging
 		#endregion
 
 		#region Both
-		
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycast2D(
 			Ray ray,
 			RaycastHit2D[] hits,
-			float distance, 
-			Color rayColor, 
+			float distance,
+			Color rayColor,
 			Color hitColor,
 			int maxCount = -1,
 			float hitRayLength = 1,
@@ -265,13 +275,14 @@ namespace Vertx.Debugging
 			Debug.DrawRay(ray.origin, ray.direction * distance, rayColor, duration);
 			DrawRaycast2DHits(hits, hitColor, maxCount, hitRayLength, duration);
 		}
-		
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycast2D(
 			Vector2 origin,
 			Vector2 direction,
 			RaycastHit2D[] hits,
-			float distance, 
-			Color rayColor, 
+			float distance,
+			Color rayColor,
 			Color hitColor,
 			int maxCount = -1,
 			float hitRayLength = 1,
@@ -283,6 +294,7 @@ namespace Vertx.Debugging
 			DrawRaycast2DHits(hits, hitColor, maxCount, hitRayLength, duration);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircleCast2D(
 			Vector2 origin,
 			float radius,
@@ -298,6 +310,7 @@ namespace Vertx.Debugging
 			DrawCircleCast2DHits(hits, origin, radius, direction, hitColor, count);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast2D(Vector2 origin,
 			Vector2 size,
 			float angle,
@@ -313,6 +326,7 @@ namespace Vertx.Debugging
 			DrawBoxCast2DHits(hits, origin, size, angle, direction, hitColor, count);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast2D(Vector2 origin,
 			Vector2 size,
 			CapsuleDirection2D capsuleDirection,

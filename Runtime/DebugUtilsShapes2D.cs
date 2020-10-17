@@ -1,9 +1,12 @@
+using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Vertx.Debugging
 {
 	public static partial class DebugUtils
 	{
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArea2D(
 			Vector2 point1,
 			Vector2 point2,
@@ -17,6 +20,7 @@ namespace Vertx.Debugging
 			Debug.DrawLine(point4, point1, color);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, Color color)
 		{
 			DrawBoxStructure2D boxStructure2D = new DrawBoxStructure2D(size, angle, origin);
@@ -24,12 +28,14 @@ namespace Vertx.Debugging
 			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircle2D(Vector2 origin, float radius, Color color)
 		{
 			DrawArc2D(origin, Vector2.up, radius, 360, DrawLine);
 			void DrawLine(Vector3 a, Vector3 b, float t) => Debug.DrawLine(a, b, color);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Color color)
 		{
 			DrawCapsuleStructure2D capsuleStructure2D = new DrawCapsuleStructure2D(size, capsuleDirection, angle);
@@ -37,6 +43,7 @@ namespace Vertx.Debugging
 			void DrawLine(Vector3 a, Vector3 b, float t) => Debug.DrawLine(a, b, color);
 		}
 		
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawPoint2D(Vector2 point, Color color, float rayLength = 0.3f, float highlightRadius = 0.05f)
 		{
 			//Draw rays
@@ -64,6 +71,7 @@ namespace Vertx.Debugging
 			Debug.DrawLine(p3, p1, color);
 		}
 		
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow2D(Vector2 point, float angle, Color color)
 		{
 			//Draw rays
@@ -72,6 +80,7 @@ namespace Vertx.Debugging
 			DrawArrow2D(point, dir,color );
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow2D(Vector2 point, Vector2 direction, Color color)
 		{
 			Debug.DrawRay(point, direction, color);
@@ -79,6 +88,7 @@ namespace Vertx.Debugging
 			DrawArrowHead(point, direction, cross, color);
 		}
 		
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawAxis2D(Vector2 point, float angle = 0, bool arrowHeads = false)
 		{
 			//Draw rays
