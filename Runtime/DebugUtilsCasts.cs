@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Vertx.Debugging
 {
@@ -8,6 +10,7 @@ namespace Vertx.Debugging
 
 		#region SphereCast
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCast(
 			Ray ray,
 			float radius,
@@ -17,6 +20,7 @@ namespace Vertx.Debugging
 			int iterationCount = 10)
 			=> DrawSphereCast(ray.origin, radius, ray.direction, distance, colorStart, colorEnd, iterationCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCast(
 			Vector3 origin,
 			float radius,
@@ -54,6 +58,7 @@ namespace Vertx.Debugging
 
 		#region BoxCast
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast(
 			Vector3 center,
 			Vector3 halfExtents,
@@ -245,6 +250,7 @@ namespace Vertx.Debugging
 
 		#region CapsuleCast
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast(
 			Vector3 point1,
 			Vector3 point2,
@@ -314,9 +320,10 @@ namespace Vertx.Debugging
 		#endregion
 
 		#endregion
-		
+
 		#region RaycastHits
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycastHits(RaycastHit[] hits, Color color, int maxCount = -1, float rayLength = 1, float duration = 0)
 		{
 			if (maxCount < 0)
@@ -324,10 +331,12 @@ namespace Vertx.Debugging
 			for (int i = 0; i < maxCount; i++)
 				Debug.DrawRay(hits[i].point, hits[i].normal * rayLength, color, duration);
 		}
-		
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCastHits(RaycastHit[] hits, Ray ray, float radius, Color color, int maxCount = -1)
 			=> DrawSphereCastHits(hits, ray.origin, radius, ray.direction, color, maxCount);
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCastHits(RaycastHit[] hits, Vector3 origin, float radius, Vector3 direction, Color color, int maxCount = -1)
 		{
 			if (maxCount < 0)
@@ -368,13 +377,14 @@ namespace Vertx.Debugging
 			void DrawLine(Vector3 a, Vector3 b, float f) => Debug.DrawLine(a, b, new Color(color.r, color.g, color.b, Mathf.Pow(1 - Mathf.Abs(f - 0.5f) * 2, 2) * color.a));
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCastHits(RaycastHit[] hits, Vector3 origin, Vector3 halfExtents, Vector3 direction, Quaternion orientation, Color color, int maxCount = -1)
 		{
 			if (maxCount < 0)
 				maxCount = hits.Length;
 
 			if (maxCount == 0) return;
-			
+
 			direction.EnsureNormalized();
 
 			DrawBoxStructure structure = new DrawBoxStructure(halfExtents, orientation);
@@ -389,6 +399,7 @@ namespace Vertx.Debugging
 			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCastHits(RaycastHit[] hits, Color color, Vector3 point1, Vector3 point2, float radius, Vector3 direction, int maxCount = -1)
 		{
 			if (maxCount < 0)
@@ -397,7 +408,7 @@ namespace Vertx.Debugging
 			if (maxCount == 0) return;
 
 			direction.EnsureNormalized();
-			
+
 			Vector3 alignment = (point1 - point2).normalized;
 
 			Vector3 crossA = GetAxisAlignedPerpendicular(alignment);
@@ -416,7 +427,8 @@ namespace Vertx.Debugging
 		#endregion
 
 		#region Both
-		
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycast(Ray ray, RaycastHit[] hits, float distance, Color rayColor, Color hitColor, int maxCount = -1, float hitRayLength = 1, float duration = 0)
 		{
 			if (float.IsInfinity(distance))
@@ -425,10 +437,11 @@ namespace Vertx.Debugging
 			DrawRaycastHits(hits, hitColor, maxCount, hitRayLength, duration);
 		}
 
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCast(
 			Vector3 origin,
 			float radius,
-			Vector3 direction, 
+			Vector3 direction,
 			RaycastHit[] hits,
 			float distance,
 			int count,
@@ -439,14 +452,15 @@ namespace Vertx.Debugging
 			DrawSphereCast(origin, radius, direction, distance, startColor, endColor);
 			DrawSphereCastHits(hits, origin, radius, direction, hitColor, count);
 		}
-		
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawBoxCast(
 			Vector3 center,
 			Vector3 halfExtents,
-			Vector3 direction, 
-			RaycastHit[] hits, 
-			Quaternion orientation, 
-			float distance, 
+			Vector3 direction,
+			RaycastHit[] hits,
+			Quaternion orientation,
+			float distance,
 			int count,
 			Color startColor,
 			Color endColor,
@@ -455,7 +469,8 @@ namespace Vertx.Debugging
 			DrawBoxCast(center, halfExtents, direction, orientation, distance, startColor, endColor);
 			DrawBoxCastHits(hits, center, halfExtents, direction, orientation, hitColor, count);
 		}
-		
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast(
 			Vector3 point1,
 			Vector3 point2,
