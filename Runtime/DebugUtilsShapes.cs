@@ -39,15 +39,20 @@ namespace Vertx.Debugging
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, Color color)
+		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, Color color, float duration = 0)
 		{
-			Debug.DrawRay(point, normal, color);
+			Debug.DrawRay(point, normal, color, duration);
 			DrawCircle(point, normal, 0.05f, DrawLine, 50);
-			void DrawLine(Vector3 a, Vector3 b, float f) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float f) => Debug.DrawLine(a, b, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawPoint(Vector3 point, Color color, float rayLength = 0.3f, float highlightRadius = 0.05f)
+		public static void DrawPoint(
+			Vector3 point,
+			Color color,
+			float duration = 0,
+			float rayLength = 0.3f,
+			float highlightRadius = 0.05f)
 		{
 			Vector3 up = new Vector3(0, rayLength, 0);
 			Quaternion rot = Quaternion.AngleAxis(120, Vector3.right);
@@ -56,10 +61,10 @@ namespace Vertx.Debugging
 			Vector3 d2 = rot1 * d1;
 			Vector3 d3 = rot1 * d2;
 
-			Debug.DrawRay(point, up, color);
-			Debug.DrawRay(point, d1, color);
-			Debug.DrawRay(point, d2, color);
-			Debug.DrawRay(point, d3, color);
+			Debug.DrawRay(point, up, color, duration);
+			Debug.DrawRay(point, d1, color, duration);
+			Debug.DrawRay(point, d2, color, duration);
+			Debug.DrawRay(point, d3, color, duration);
 
 			Vector3 down = new Vector3(0, -highlightRadius, 0);
 			Vector3 p1 = rot * down;
@@ -71,31 +76,31 @@ namespace Vertx.Debugging
 			p2 += point;
 			p3 += point;
 
-			Debug.DrawLine(down, p1, color);
-			Debug.DrawLine(down, p2, color);
-			Debug.DrawLine(down, p3, color);
-			Debug.DrawLine(p1, p2, color);
-			Debug.DrawLine(p2, p3, color);
-			Debug.DrawLine(p3, p1, color);
+			Debug.DrawLine(down, p1, color, duration);
+			Debug.DrawLine(down, p2, color, duration);
+			Debug.DrawLine(down, p3, color, duration);
+			Debug.DrawLine(p1, p2, color, duration);
+			Debug.DrawLine(p2, p3, color, duration);
+			Debug.DrawLine(p3, p1, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow(Vector3 position, Vector3 direction, Color color)
+		public static void DrawArrow(Vector3 position, Vector3 direction, Color color, float duration = 0, float arrowheadScale = 1)
 		{
 			Debug.DrawRay(position, direction, color);
-			DrawArrowHead(position, direction, color);
+			DrawArrowHead(position, direction, color, duration, arrowheadScale);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawAxis(Vector3 point, bool arrowHeads = false)
-			=> DrawAxis(point, Quaternion.identity, arrowHeads);
+		public static void DrawAxis(Vector3 point, bool arrowHeads = false, float scale = 1)
+			=> DrawAxis(point, Quaternion.identity, arrowHeads, scale);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawAxis(Vector3 point, Quaternion rotation, bool arrowHeads = false)
+		public static void DrawAxis(Vector3 point, Quaternion rotation, bool arrowHeads = false, float scale = 1)
 		{
-			Vector3 right = rotation * Vector3.right;
-			Vector3 up = rotation * Vector3.up;
-			Vector3 forward = rotation * Vector3.forward;
+			Vector3 right = rotation * new Vector3(scale, 0, 0);
+			Vector3 up = rotation * new Vector3(0, scale, 0);
+			Vector3 forward = rotation * new Vector3(0, 0, scale);
 			Color colorRight = ColorX;
 			Debug.DrawRay(point, right, colorRight);
 			Color colorUp = ColorY;
@@ -106,12 +111,12 @@ namespace Vertx.Debugging
 			if (!arrowHeads)
 				return;
 
-			DrawArrowHead(point, right, colorRight);
-			DrawArrowHead(point, up, colorUp);
-			DrawArrowHead(point, forward, colorForward);
+			DrawArrowHead(point, right, colorRight, scale: scale);
+			DrawArrowHead(point, up, colorUp, scale: scale);
+			DrawArrowHead(point, forward, colorForward, scale: scale);
 		}
 		
-		private static void DrawArrowHead(Vector3 point, Vector3 dir, Color color)
+		private static void DrawArrowHead(Vector3 point, Vector3 dir, Color color, float duration = 0, float scale = 1)
 		{
 			const float arrowLength = 0.075f;
 			const float arrowWidth = 0.05f;
@@ -119,10 +124,10 @@ namespace Vertx.Debugging
 
 			Vector3 arrowPoint = point + dir;
 			dir.EnsureNormalized();
-			DrawCircle(arrowPoint - dir * arrowLength, dir, arrowWidth, (a, b, f) =>
+			DrawCircle(arrowPoint - dir * (arrowLength * scale), dir, arrowWidth * scale, (a, b, f) =>
 			{
-				Debug.DrawLine(a, b, color);
-				Debug.DrawLine(a, arrowPoint, color);
+				Debug.DrawLine(a, b, color, duration);
+				Debug.DrawLine(a, arrowPoint, color, duration);
 			}, segments);
 		}
 	}

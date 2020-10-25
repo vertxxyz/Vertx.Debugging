@@ -42,22 +42,22 @@ namespace Vertx.Debugging
 			DrawCapsule2DFast(origin, capsuleStructure2D, DrawLine);
 			void DrawLine(Vector3 a, Vector3 b, float t) => Debug.DrawLine(a, b, color);
 		}
-		
+
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawPoint2D(Vector2 point, Color color, float rayLength = 0.3f, float highlightRadius = 0.05f)
+		public static void DrawPoint2D(Vector2 point, Color color, float duration = 0, float rayLength = 0.3f, float highlightRadius = 0.05f)
 		{
 			//Draw rays
 			Vector2 up = new Vector2(0, rayLength);
-			Debug.DrawRay(point, up, color);
+			Debug.DrawRay(point, up, color, duration);
 			GetRotationCoefficients(120, out float s, out float c);
 			var dir1 = RotateFast(up, s, c);
-			Debug.DrawRay(point, dir1, color);
+			Debug.DrawRay(point, dir1, color, duration);
 			var dir2 = RotateFast(dir1, s, c);
-			Debug.DrawRay(point, dir2, color);
+			Debug.DrawRay(point, dir2, color, duration);
 
 			if (Mathf.Approximately(highlightRadius, 0))
 				return;
-			
+
 			//Draw triangle
 			Vector3 p1 = new Vector3(0, -highlightRadius);
 			Vector3 p2 = RotateFast(p1, s, c);
@@ -66,58 +66,59 @@ namespace Vertx.Debugging
 			p1 += o;
 			p2 += o;
 			p3 += o;
-			Debug.DrawLine(p1, p2, color);
-			Debug.DrawLine(p2, p3, color);
-			Debug.DrawLine(p3, p1, color);
+			Debug.DrawLine(p1, p2, color, duration);
+			Debug.DrawLine(p2, p3, color, duration);
+			Debug.DrawLine(p3, p1, color, duration);
 		}
-		
+
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, float angle, Color color)
+		public static void DrawArrow2D(Vector2 point, float angle, Color color, float duration = 0)
 		{
 			//Draw rays
 			GetRotationCoefficients(angle, out float s, out float c);
 			Vector2 dir = RotateFast(Vector2.right, s, c);
-			DrawArrow2D(point, dir,color );
+			DrawArrow2D(point, dir, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, Vector2 direction, Color color)
+		public static void DrawArrow2D(Vector2 point, Vector2 direction, Color color, float duration = 0)
 		{
-			Debug.DrawRay(point, direction, color);
+			Debug.DrawRay(point, direction, color, duration);
 			Vector2 cross = PerpendicularClockwise(direction);
-			DrawArrowHead(point, direction, cross, color);
+			DrawArrowHead(point, direction, cross, color, duration);
 		}
-		
+
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawAxis2D(Vector2 point, float angle = 0, bool arrowHeads = false)
+		public static void DrawAxis2D(Vector2 point, float angle = 0, bool arrowHeads = false, float scale = 1)
 		{
 			//Draw rays
 			GetRotationCoefficients(angle, out float s, out float c);
-			Vector2 r = RotateFast(Vector2.right, s, c);
-			Vector2 u = RotateFast(Vector2.up, s, c);
+			Vector2 r = RotateFast(new Vector2(scale, 0), s, c);
+			Vector2 u = RotateFast(new Vector2(0, scale), s, c);
 			Debug.DrawRay(point, r, ColorX);
 			Debug.DrawRay(point, u, ColorY);
 
 			if (!arrowHeads)
 				return;
-			
-			DrawArrowHead(point, r, u, ColorX);
-			DrawArrowHead(point, u, r, ColorY);
+
+			DrawArrowHead(point, r, u, ColorX, scale: scale);
+			DrawArrowHead(point, u, r, ColorY, scale: scale);
 		}
-		
-		private static void DrawArrowHead(Vector2 point, Vector2 dir, Vector2 cross, Color color)
+
+		private static void DrawArrowHead(Vector2 point, Vector2 dir, Vector2 cross, Color color, float duration = 0, float scale = 1)
 		{
 			const float arrowLength = 0.075f;
 			const float arrowWidth = 0.05f;
 			Vector2 arrowPoint = point + dir;
 			cross.EnsureNormalized();
-			Vector2 a = arrowPoint + cross * arrowWidth;
-			Vector2 b = arrowPoint - cross * arrowWidth;
+			Vector2 arrowCross = cross * (arrowWidth * scale);
+			Vector2 a = arrowPoint + arrowCross;
+			Vector2 b = arrowPoint - arrowCross;
 			dir.EnsureNormalized();
-			Vector2 arrowEnd = arrowPoint + dir * arrowLength;
-			Debug.DrawLine(a, b, color);
-			Debug.DrawLine(a, arrowEnd, color);
-			Debug.DrawLine(b, arrowEnd, color);
+			Vector2 arrowEnd = arrowPoint + dir * (arrowLength * scale);
+			Debug.DrawLine(a, b, color, duration);
+			Debug.DrawLine(a, arrowEnd, color, duration);
+			Debug.DrawLine(b, arrowEnd, color, duration);
 		}
 	}
 }
