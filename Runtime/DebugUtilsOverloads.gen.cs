@@ -5,7 +5,6 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-
 using System.Diagnostics;
 using UnityEngine;
 
@@ -146,28 +145,28 @@ namespace Vertx.Debugging
 			=> DrawCapsule(start, end, radius, hit ? HitColor : RayColor);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawSurfacePoint(Vector3 point, Vector3 normal)
-			=> DrawSurfacePoint(point, normal, RayColor);
+		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, float duration = 0)
+			=> DrawSurfacePoint(point, normal, RayColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, bool hit)
-			=> DrawSurfacePoint(point, normal, hit ? HitColor : RayColor);
+		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, bool hit, float duration = 0)
+			=> DrawSurfacePoint(point, normal, hit ? HitColor : RayColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawPoint(Vector3 point, float rayLength = 0.3f, float highlightRadius = 0.05f)
-			=> DrawPoint(point, RayColor, rayLength, highlightRadius);
+		public static void DrawPoint(Vector3 point, float duration = 0, float rayLength = 0.3f, float highlightRadius = 0.05f)
+			=> DrawPoint(point, RayColor, duration, rayLength, highlightRadius);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawPoint(Vector3 point, bool hit, float rayLength = 0.3f, float highlightRadius = 0.05f)
-			=> DrawPoint(point, hit ? HitColor : RayColor, rayLength, highlightRadius);
+		public static void DrawPoint(Vector3 point, bool hit, float duration = 0, float rayLength = 0.3f, float highlightRadius = 0.05f)
+			=> DrawPoint(point, hit ? HitColor : RayColor, duration, rayLength, highlightRadius);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow(Vector3 position, Vector3 direction)
-			=> DrawArrow(position, direction, RayColor);
+		public static void DrawArrow(Vector3 position, Vector3 direction, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrow(position, direction, RayColor, duration, arrowheadScale);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow(Vector3 position, Vector3 direction, bool hit)
-			=> DrawArrow(position, direction, hit ? HitColor : RayColor);
+		public static void DrawArrow(Vector3 position, Vector3 direction, bool hit, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrow(position, direction, hit ? HitColor : RayColor, duration, arrowheadScale);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawArea2D(Vector2 point1, Vector2 point2)
@@ -202,27 +201,27 @@ namespace Vertx.Debugging
 			=> DrawCapsule2D(origin, size, capsuleDirection, angle, hit ? HitColor : RayColor);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawPoint2D(Vector2 point, float rayLength = 0.3f, float highlightRadius = 0.05f)
-			=> DrawPoint2D(point, RayColor, rayLength, highlightRadius);
+		public static void DrawPoint2D(Vector2 point, float duration = 0, float rayLength = 0.3f, float highlightRadius = 0.05f)
+			=> DrawPoint2D(point, RayColor, duration, rayLength, highlightRadius);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawPoint2D(Vector2 point, bool hit, float rayLength = 0.3f, float highlightRadius = 0.05f)
-			=> DrawPoint2D(point, hit ? HitColor : RayColor, rayLength, highlightRadius);
+		public static void DrawPoint2D(Vector2 point, bool hit, float duration = 0, float rayLength = 0.3f, float highlightRadius = 0.05f)
+			=> DrawPoint2D(point, hit ? HitColor : RayColor, duration, rayLength, highlightRadius);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, float angle)
-			=> DrawArrow2D(point, angle, RayColor);
+		public static void DrawArrow2D(Vector2 point, float angle, float duration = 0)
+			=> DrawArrow2D(point, angle, RayColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, float angle, bool hit)
-			=> DrawArrow2D(point, angle, hit ? HitColor : RayColor);
+		public static void DrawArrow2D(Vector2 point, float angle, bool hit, float duration = 0)
+			=> DrawArrow2D(point, angle, hit ? HitColor : RayColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, Vector2 direction)
-			=> DrawArrow2D(point, direction, RayColor);
+		public static void DrawArrow2D(Vector2 point, Vector2 direction, float duration = 0)
+			=> DrawArrow2D(point, direction, RayColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, Vector2 direction, bool hit)
-			=> DrawArrow2D(point, direction, hit ? HitColor : RayColor);
+		public static void DrawArrow2D(Vector2 point, Vector2 direction, bool hit, float duration = 0)
+			=> DrawArrow2D(point, direction, hit ? HitColor : RayColor, duration);
 	}
 }

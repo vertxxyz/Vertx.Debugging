@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace Vertx.Debugging
@@ -28,7 +29,7 @@ namespace Vertx.Debugging
 
 		private readonly List<Action> updateActions = new List<Action>();
 
-		void Update()
+		private void Update()
 		{
 			foreach (Action updateAction in updateActions)
 				updateAction?.Invoke();
@@ -43,7 +44,7 @@ namespace Vertx.Debugging
 
 		private readonly List<Action> fixedUpdateActions = new List<Action>();
 		
-		void FixedUpdate()
+		private void FixedUpdate()
 		{
 			foreach (Action fixedUpdateAction in fixedUpdateActions)
 				fixedUpdateAction?.Invoke();
@@ -51,6 +52,22 @@ namespace Vertx.Debugging
 		}
 		
 		public void RegisterFixedUpdateAction(Action action) => fixedUpdateActions.Add(action);
+
+		#endregion
+
+		#region OnGUI
+		
+		private readonly List<Action> guiActions = new List<Action>();
+
+		private void OnGUI()
+		{
+			foreach (Action guiAction in guiActions)
+				guiAction?.Invoke();
+			if(Event.current.type == EventType.Repaint)
+				guiActions.Clear();
+		}
+		
+		public void RegisterOnGUIAction(Action action) => guiActions.Add(action);
 
 		#endregion
 	}
