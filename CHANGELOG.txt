@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2020-10-25
+ - Added duration parameters to a few methods.
+ - Added a scale parameter to DrawAxis.
+
 ## [1.4.3] - 2020-10-18
  - Added Game-View support for DrawText.
 
