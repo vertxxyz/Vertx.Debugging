@@ -8,6 +8,22 @@ namespace Vertx.Debugging
 	{
 		#region Casts
 
+		#region Raycast
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRaycast(Ray ray, float distance, Color rayColor, float duration = 0)
+		{
+			if (float.IsInfinity(distance))
+				distance = 10000000;
+			Debug.DrawRay(ray.origin, ray.direction * distance, rayColor, duration);
+		}
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRaycast(Ray ray, Color rayColor, float duration = 0) 
+			=> Debug.DrawRay(ray.origin, ray.direction, rayColor, duration);
+
+		#endregion
+		
 		#region SphereCast
 
 		[Conditional("UNITY_EDITOR")]

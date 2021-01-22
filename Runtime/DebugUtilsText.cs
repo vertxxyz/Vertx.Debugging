@@ -202,12 +202,12 @@ namespace Vertx.Debugging
 
 			var content = new GUIContent(value);
 			Rect rect = new Rect(screenPos, BoxStyle.CalcSize(content));
-			DrawRect(rect, color);
+			DrawGUIRect(rect, color);
 			GUI.Label(rect, content, EditorStyles.boldLabel);
 			//-----------------
 		}
 		
-		private static void DrawRect(Rect rect, Color color)
+		private static void DrawGUIRect(Rect rect, Color color)
 		{
 			if (Event.current.type != EventType.Repaint)
 				return;

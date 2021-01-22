@@ -115,7 +115,7 @@ namespace Vertx.Debugging
 			DrawArrowHead(point, up, colorUp, scale: scale);
 			DrawArrowHead(point, forward, colorForward, scale: scale);
 		}
-		
+
 		private static void DrawArrowHead(Vector3 point, Vector3 dir, Color color, float duration = 0, float scale = 1)
 		{
 			const float arrowLength = 0.075f;
@@ -130,5 +130,35 @@ namespace Vertx.Debugging
 				Debug.DrawLine(a, arrowPoint, color, duration);
 			}, segments);
 		}
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawBounds(Bounds bounds, Color color, float duration = 0)
+		{
+			var lbf = new Vector3(bounds.min.x, bounds.min.y, bounds.max.z);
+			var ltb = new Vector3(bounds.min.x, bounds.max.y, bounds.min.z);
+			var rbb = new Vector3(bounds.max.x, bounds.min.y, bounds.min.z);
+			Debug.DrawLine(bounds.min, lbf, color, duration);
+			Debug.DrawLine(bounds.min, ltb, color, duration);
+			Debug.DrawLine(bounds.min, rbb, color, duration);
+
+			var rtb = new Vector3(bounds.max.x, bounds.max.y, bounds.min.z);
+			var rbf = new Vector3(bounds.max.x, bounds.min.y, bounds.max.z);
+			var ltf = new Vector3(bounds.min.x, bounds.max.y, bounds.max.z);
+			Debug.DrawLine(bounds.max, rtb, color, duration);
+			Debug.DrawLine(bounds.max, rbf, color, duration);
+			Debug.DrawLine(bounds.max, ltf, color, duration);
+
+			Debug.DrawLine(rbb, rbf, color, duration);
+			Debug.DrawLine(rbb, rtb, color, duration);
+
+			Debug.DrawLine(lbf, rbf, color, duration);
+			Debug.DrawLine(lbf, ltf, color, duration);
+
+			Debug.DrawLine(ltb, rtb, color, duration);
+			Debug.DrawLine(ltb, ltf, color, duration);
+		}
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawBounds(BoundsInt bounds, Color color, float duration = 0) => DrawBounds(new Bounds(bounds.center, bounds.size), color, duration);
 	}
 }

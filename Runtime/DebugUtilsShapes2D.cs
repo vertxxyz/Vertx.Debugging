@@ -120,5 +120,19 @@ namespace Vertx.Debugging
 			Debug.DrawLine(a, arrowEnd, color, duration);
 			Debug.DrawLine(b, arrowEnd, color, duration);
 		}
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRect(Rect rect, Color color, float duration = 0)
+		{
+			var min = (Vector3) rect.min;
+			var max = (Vector3) rect.max;
+			var lt = new Vector3(rect.xMin, rect.yMax);
+			var rb = new Vector3(rect.xMax, rect.yMin);
+			Debug.DrawLine(min, lt, color, duration);
+			Debug.DrawLine(min, rb, color, duration);
+			Debug.DrawLine(max, lt, color, duration);
+			Debug.DrawLine(max, rb, color, duration);
+			
+		}
 	}
 }

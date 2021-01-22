@@ -13,6 +13,14 @@ namespace Vertx.Debugging
 	public static partial class DebugUtils
 	{
 		[Conditional("UNITY_EDITOR")]
+		public static void DrawRaycast(Ray ray, float distance, float duration = 0)
+			=> DrawRaycast(ray, distance, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRaycast(Ray ray, float duration = 0)
+			=> DrawRaycast(ray, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphereCast(Ray ray, float radius, float distance, int iterationCount = 10)
 			=> DrawSphereCast(ray, radius, distance, StartColor, EndColor, iterationCount);
 
@@ -169,6 +177,22 @@ namespace Vertx.Debugging
 			=> DrawArrow(position, direction, hit ? HitColor : RayColor, duration, arrowheadScale);
 
 		[Conditional("UNITY_EDITOR")]
+		public static void DrawBounds(Bounds bounds, float duration = 0)
+			=> DrawBounds(bounds, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawBounds(Bounds bounds, bool hit, float duration = 0)
+			=> DrawBounds(bounds, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawBounds(BoundsInt bounds, float duration = 0)
+			=> DrawBounds(bounds, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawBounds(BoundsInt bounds, bool hit, float duration = 0)
+			=> DrawBounds(bounds, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawArea2D(Vector2 point1, Vector2 point2)
 			=> DrawArea2D(point1, point2, RayColor);
 
@@ -223,5 +247,13 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow2D(Vector2 point, Vector2 direction, bool hit, float duration = 0)
 			=> DrawArrow2D(point, direction, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRect(Rect rect, float duration = 0)
+			=> DrawRect(rect, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRect(Rect rect, bool hit, float duration = 0)
+			=> DrawRect(rect, hit ? HitColor : RayColor, duration);
 	}
 }

@@ -10,6 +10,7 @@ Draws a label in the scene view at the provided position
 - **DrawSphere**
 - **DrawBox**
 - **DrawCapsule**
+- **DrawBounds**
 - **DrawSurfacePoint**  
 Draws a ray with a circle to indicate the surface
 - **DrawPoint**  
@@ -30,6 +31,7 @@ Draws an arrow gizmo for a vector
 - **DrawBox2D**
 - **DrawArea2D**
 - **DrawCapsule2D**
+- **DrawRect**
 - **DrawPoint2D**  
 Draws a point without specifying direction
 - **DrawAxis2D**  
