@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Vertx.Debugging
 {
@@ -63,6 +65,10 @@ namespace Vertx.Debugging
 		#region Shapes
 
 		#region Circles And Arcs
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawCircle(Vector3 center, Vector3 normal, float radius, Color color, int segmentCount = 100) => 
+			DrawCircle(center, normal, radius, (a, b, v) => Debug.DrawLine(a, b, color), segmentCount);
 
 		internal static void DrawCircle(Vector3 center, Vector3 normal, float radius, LineDelegate lineDelegate, int segmentCount = 100)
 		{
