@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -19,6 +20,47 @@ namespace Vertx.Debugging
 		public static Color ColorX => new Color(1, 0.1f, 0.2f);
 		public static Color ColorY => new Color(0.3f, 1, 0.1f);
 		public static Color ColorZ => new Color(0.1f, 0.4f, 1);
+
+		#region Gizmos
+		
+		private delegate void ColouredLineDelegate(Vector3 a, Vector3 b, Color c, float duration = 0);
+
+		public static IDisposable DrawGizmosScope() => new GizmosScope(true);
+		
+		private readonly struct GizmosScope : IDisposable
+		{
+			private readonly Color gizmosColor;
+			private readonly ColouredLineDelegate colouredLineDelegate;
+
+			public GizmosScope(bool useGizmos)
+			{
+				colouredLineDelegate = lineDelegate;
+				gizmosColor = Gizmos.color;
+				if (useGizmos)
+					lineDelegate = GizmosLine;
+				else
+					lineDelegate = DebugLine;
+			}
+
+			public void Dispose()
+			{
+				Gizmos.color = gizmosColor;
+				lineDelegate = colouredLineDelegate;
+			}
+		}
+
+		private static ColouredLineDelegate lineDelegate = DebugLine;
+		private static readonly ColouredLineDelegate rayDelegate = (a, b, c, d) => lineDelegate(a, a + b, c, d);
+
+		private static void DebugLine(Vector3 a, Vector3 b, Color c, float duration = 0) => Debug.DrawLine(a, b, c, duration);
+
+		private static void GizmosLine(Vector3 a, Vector3 b, Color c, float duration = 0)
+		{
+			Gizmos.color = c;
+			Gizmos.DrawLine(a, b);
+		}
+
+		#endregion
 
 		private static void EnsureNormalized(this ref Vector3 vector3)
 		{
@@ -68,7 +110,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircle(Vector3 center, Vector3 normal, float radius, Color color, int segmentCount = 100) => 
-			DrawCircle(center, normal, radius, (a, b, v) => Debug.DrawLine(a, b, color), segmentCount);
+			DrawCircle(center, normal, radius, (a, b, v) => lineDelegate(a, b, color), segmentCount);
 
 		internal static void DrawCircle(Vector3 center, Vector3 normal, float radius, LineDelegate lineDelegate, int segmentCount = 100)
 		{
