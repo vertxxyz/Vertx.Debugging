@@ -48,6 +48,34 @@ namespace Vertx.Debugging
 				lineDelegate = colouredLineDelegate;
 			}
 		}
+		
+		public static IDisposable DrawGizmosScope(Matrix4x4 matrix) => new GizmosScopeWithMatrix(true, matrix);
+		
+		private readonly struct GizmosScopeWithMatrix : IDisposable
+		{
+			private readonly Color gizmosColor;
+			private readonly Matrix4x4 gizmosMatrix;
+			private readonly ColouredLineDelegate colouredLineDelegate;
+
+			public GizmosScopeWithMatrix(bool useGizmos, Matrix4x4 matrix)
+			{
+				colouredLineDelegate = lineDelegate;
+				gizmosColor = Gizmos.color;
+				gizmosMatrix = Gizmos.matrix;
+				Gizmos.matrix = matrix;
+				if (useGizmos)
+					lineDelegate = GizmosLine;
+				else
+					lineDelegate = DebugLine;
+			}
+
+			public void Dispose()
+			{
+				Gizmos.color = gizmosColor;
+				Gizmos.matrix = gizmosMatrix;
+				lineDelegate = colouredLineDelegate;
+			}
+		}
 
 		private static ColouredLineDelegate lineDelegate = DebugLine;
 		private static readonly ColouredLineDelegate rayDelegate = (a, b, c, d) => lineDelegate(a, a + b, c, d);
