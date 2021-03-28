@@ -255,5 +255,13 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawRect(Rect rect, bool hit, float duration = 0)
 			=> DrawRect(rect, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawCircle(Vector3 center, Vector3 normal, float radius, int segmentCount = 100)
+			=> DrawCircle(center, normal, radius, RayColor, segmentCount);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawCircle(Vector3 center, Vector3 normal, float radius, bool hit, int segmentCount = 100)
+			=> DrawCircle(center, normal, radius, hit ? HitColor : RayColor, segmentCount);
 	}
 }

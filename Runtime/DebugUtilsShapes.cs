@@ -15,14 +15,14 @@ namespace Vertx.Debugging
 			DrawCircleFast(position, up, right, radius, DrawLine);
 			DrawCircleFast(position, right, up, radius, DrawLine);
 			DrawCircleFast(position, forward, right, radius, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float f) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float f) => lineDelegate(a, b, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawBox(Vector3 center, Vector3 halfExtents, Quaternion orientation, Color color)
 		{
 			DrawBox(center, halfExtents, orientation, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b) => lineDelegate(a, b, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -35,15 +35,15 @@ namespace Vertx.Debugging
 			Vector3 crossA = GetAxisAlignedPerpendicular(alignment);
 			Vector3 crossB = Vector3.Cross(crossA, alignment);
 			DrawCapsuleFast(start, end, radius, alignment, crossA, crossB, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float f) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float f) => lineDelegate(a, b, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, Color color, float duration = 0)
 		{
-			Debug.DrawRay(point, normal, color, duration);
+			rayDelegate(point, normal, color, duration);
 			DrawCircle(point, normal, 0.05f, DrawLine, 50);
-			void DrawLine(Vector3 a, Vector3 b, float f) => Debug.DrawLine(a, b, color, duration);
+			void DrawLine(Vector3 a, Vector3 b, float f) => lineDelegate(a, b, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -61,10 +61,10 @@ namespace Vertx.Debugging
 			Vector3 d2 = rot1 * d1;
 			Vector3 d3 = rot1 * d2;
 
-			Debug.DrawRay(point, up, color, duration);
-			Debug.DrawRay(point, d1, color, duration);
-			Debug.DrawRay(point, d2, color, duration);
-			Debug.DrawRay(point, d3, color, duration);
+			rayDelegate(point, up, color, duration);
+			rayDelegate(point, d1, color, duration);
+			rayDelegate(point, d2, color, duration);
+			rayDelegate(point, d3, color, duration);
 
 			Vector3 down = new Vector3(0, -highlightRadius, 0);
 			Vector3 p1 = rot * down;
@@ -76,18 +76,18 @@ namespace Vertx.Debugging
 			p2 += point;
 			p3 += point;
 
-			Debug.DrawLine(down, p1, color, duration);
-			Debug.DrawLine(down, p2, color, duration);
-			Debug.DrawLine(down, p3, color, duration);
-			Debug.DrawLine(p1, p2, color, duration);
-			Debug.DrawLine(p2, p3, color, duration);
-			Debug.DrawLine(p3, p1, color, duration);
+			lineDelegate(down, p1, color, duration);
+			lineDelegate(down, p2, color, duration);
+			lineDelegate(down, p3, color, duration);
+			lineDelegate(p1, p2, color, duration);
+			lineDelegate(p2, p3, color, duration);
+			lineDelegate(p3, p1, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow(Vector3 position, Vector3 direction, Color color, float duration = 0, float arrowheadScale = 1)
 		{
-			Debug.DrawRay(position, direction, color);
+			rayDelegate(position, direction, color);
 			DrawArrowHead(position, direction, color, duration, arrowheadScale);
 		}
 
@@ -102,11 +102,11 @@ namespace Vertx.Debugging
 			Vector3 up = rotation * new Vector3(0, scale, 0);
 			Vector3 forward = rotation * new Vector3(0, 0, scale);
 			Color colorRight = ColorX;
-			Debug.DrawRay(point, right, colorRight);
+			rayDelegate(point, right, colorRight);
 			Color colorUp = ColorY;
-			Debug.DrawRay(point, up, colorUp);
+			rayDelegate(point, up, colorUp);
 			Color colorForward = ColorZ;
-			Debug.DrawRay(point, forward, colorForward);
+			rayDelegate(point, forward, colorForward);
 
 			if (!arrowHeads)
 				return;
@@ -126,8 +126,8 @@ namespace Vertx.Debugging
 			dir.EnsureNormalized();
 			DrawCircle(arrowPoint - dir * (arrowLength * scale), dir, arrowWidth * scale, (a, b, f) =>
 			{
-				Debug.DrawLine(a, b, color, duration);
-				Debug.DrawLine(a, arrowPoint, color, duration);
+				lineDelegate(a, b, color, duration);
+				lineDelegate(a, arrowPoint, color, duration);
 			}, segments);
 		}
 
@@ -137,25 +137,25 @@ namespace Vertx.Debugging
 			var lbf = new Vector3(bounds.min.x, bounds.min.y, bounds.max.z);
 			var ltb = new Vector3(bounds.min.x, bounds.max.y, bounds.min.z);
 			var rbb = new Vector3(bounds.max.x, bounds.min.y, bounds.min.z);
-			Debug.DrawLine(bounds.min, lbf, color, duration);
-			Debug.DrawLine(bounds.min, ltb, color, duration);
-			Debug.DrawLine(bounds.min, rbb, color, duration);
+			lineDelegate(bounds.min, lbf, color, duration);
+			lineDelegate(bounds.min, ltb, color, duration);
+			lineDelegate(bounds.min, rbb, color, duration);
 
 			var rtb = new Vector3(bounds.max.x, bounds.max.y, bounds.min.z);
 			var rbf = new Vector3(bounds.max.x, bounds.min.y, bounds.max.z);
 			var ltf = new Vector3(bounds.min.x, bounds.max.y, bounds.max.z);
-			Debug.DrawLine(bounds.max, rtb, color, duration);
-			Debug.DrawLine(bounds.max, rbf, color, duration);
-			Debug.DrawLine(bounds.max, ltf, color, duration);
+			lineDelegate(bounds.max, rtb, color, duration);
+			lineDelegate(bounds.max, rbf, color, duration);
+			lineDelegate(bounds.max, ltf, color, duration);
 
-			Debug.DrawLine(rbb, rbf, color, duration);
-			Debug.DrawLine(rbb, rtb, color, duration);
+			lineDelegate(rbb, rbf, color, duration);
+			lineDelegate(rbb, rtb, color, duration);
 
-			Debug.DrawLine(lbf, rbf, color, duration);
-			Debug.DrawLine(lbf, ltf, color, duration);
+			lineDelegate(lbf, rbf, color, duration);
+			lineDelegate(lbf, ltf, color, duration);
 
-			Debug.DrawLine(ltb, rtb, color, duration);
-			Debug.DrawLine(ltb, ltf, color, duration);
+			lineDelegate(ltb, rtb, color, duration);
+			lineDelegate(ltb, ltf, color, duration);
 		}
 		
 		[Conditional("UNITY_EDITOR")]

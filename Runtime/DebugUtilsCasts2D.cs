@@ -54,7 +54,7 @@ namespace Vertx.Debugging
 			color = colorEnd;
 			DrawCircleFast(origin + scaledDirection, back, up, radius, DrawLine);
 
-			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float v) => lineDelegate(a, b, color);
 		}
 
 		#endregion
@@ -107,8 +107,8 @@ namespace Vertx.Debugging
 				Vector2 nextA = originA + scaledDirection * t;
 				Vector2 nextB = originB + scaledDirection * t;
 
-				DrawLineV(currentA, nextA, t);
-				DrawLineV(currentB, nextB, t);
+				DrawLine(currentA, nextA);
+				DrawLine(currentB, nextB);
 
 				currentA = nextA;
 				currentB = nextB;
@@ -117,8 +117,7 @@ namespace Vertx.Debugging
 			color = colorEnd;
 			DrawBox2DFast(scaledDirection, boxStructure2D, DrawLine);
 
-			void DrawLineV(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
-			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b) => lineDelegate(a, b, color);
 		}
 
 		#endregion
@@ -175,7 +174,7 @@ namespace Vertx.Debugging
 			color = colorEnd;
 			DrawCapsule2DFast(destination, capsuleStructure2D, DrawLine);
 
-			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float v) => lineDelegate(a, b, color);
 		}
 
 		#endregion
@@ -190,7 +189,7 @@ namespace Vertx.Debugging
 			if (maxCount < 0)
 				maxCount = hits.Length;
 			for (int i = 0; i < maxCount; i++)
-				Debug.DrawRay(hits[i].point, hits[i].normal * rayLength, color, duration);
+				rayDelegate(hits[i].point, hits[i].normal * rayLength, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -208,7 +207,7 @@ namespace Vertx.Debugging
 			for (int i = 0; i < maxCount; i++)
 				DrawBox2DFast(direction * hits[i].distance, boxStructure2D, DrawLine);
 
-			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b) => lineDelegate(a, b, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -227,7 +226,7 @@ namespace Vertx.Debugging
 			for (int i = 0; i < maxCount; i++)
 				DrawCircleFast(origin + direction * hits[i].distance, back, up, radius, DrawLine);
 
-			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float v) => lineDelegate(a, b, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -252,7 +251,7 @@ namespace Vertx.Debugging
 			for (int i = 0; i < maxCount; i++)
 				DrawCapsule2DFast(origin + direction * hits[i].distance, capsuleStructure2D, DrawLine);
 
-			void DrawLine(Vector3 a, Vector3 b, float v) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float v) => lineDelegate(a, b, color);
 		}
 
 		#endregion
@@ -272,7 +271,7 @@ namespace Vertx.Debugging
 		{
 			if (float.IsInfinity(distance))
 				distance = 10000000;
-			Debug.DrawRay(ray.origin, ray.direction * distance, rayColor, duration);
+			rayDelegate(ray.origin, ray.direction * distance, rayColor, duration);
 			DrawRaycast2DHits(hits, hitColor, maxCount, hitRayLength, duration);
 		}
 
@@ -290,7 +289,7 @@ namespace Vertx.Debugging
 		{
 			if (float.IsInfinity(distance))
 				distance = 10000000;
-			Debug.DrawRay(origin, direction * distance, rayColor, duration);
+			rayDelegate(origin, direction * distance, rayColor, duration);
 			DrawRaycast2DHits(hits, hitColor, maxCount, hitRayLength, duration);
 		}
 

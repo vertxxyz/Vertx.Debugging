@@ -13,11 +13,11 @@ namespace Vertx.Debugging
 			Color color)
 		{
 			Vector2 point3 = new Vector2(point1.x, point2.y);
-			Debug.DrawLine(point1, point3, color);
-			Debug.DrawLine(point3, point2, color);
+			lineDelegate(point1, point3, color);
+			lineDelegate(point3, point2, color);
 			Vector2 point4 = new Vector2(point2.x, point1.y);
-			Debug.DrawLine(point2, point4, color);
-			Debug.DrawLine(point4, point1, color);
+			lineDelegate(point2, point4, color);
+			lineDelegate(point4, point1, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -25,14 +25,14 @@ namespace Vertx.Debugging
 		{
 			DrawBoxStructure2D boxStructure2D = new DrawBoxStructure2D(size, angle, origin);
 			DrawBox2DFast(Vector2.zero, boxStructure2D, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b) => lineDelegate(a, b, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircle2D(Vector2 origin, float radius, Color color)
 		{
 			DrawArc2D(origin, Vector2.up, radius, 360, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float t) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float t) => lineDelegate(a, b, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -40,7 +40,7 @@ namespace Vertx.Debugging
 		{
 			DrawCapsuleStructure2D capsuleStructure2D = new DrawCapsuleStructure2D(size, capsuleDirection, angle);
 			DrawCapsule2DFast(origin, capsuleStructure2D, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float t) => Debug.DrawLine(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float t) => lineDelegate(a, b, color);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -48,12 +48,12 @@ namespace Vertx.Debugging
 		{
 			//Draw rays
 			Vector2 up = new Vector2(0, rayLength);
-			Debug.DrawRay(point, up, color, duration);
+			rayDelegate(point, up, color, duration);
 			GetRotationCoefficients(120, out float s, out float c);
 			var dir1 = RotateFast(up, s, c);
-			Debug.DrawRay(point, dir1, color, duration);
+			rayDelegate(point, dir1, color, duration);
 			var dir2 = RotateFast(dir1, s, c);
-			Debug.DrawRay(point, dir2, color, duration);
+			rayDelegate(point, dir2, color, duration);
 
 			if (Mathf.Approximately(highlightRadius, 0))
 				return;
@@ -66,9 +66,9 @@ namespace Vertx.Debugging
 			p1 += o;
 			p2 += o;
 			p3 += o;
-			Debug.DrawLine(p1, p2, color, duration);
-			Debug.DrawLine(p2, p3, color, duration);
-			Debug.DrawLine(p3, p1, color, duration);
+			lineDelegate(p1, p2, color, duration);
+			lineDelegate(p2, p3, color, duration);
+			lineDelegate(p3, p1, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -83,7 +83,7 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow2D(Vector2 point, Vector2 direction, Color color, float duration = 0)
 		{
-			Debug.DrawRay(point, direction, color, duration);
+			rayDelegate(point, direction, color, duration);
 			Vector2 cross = PerpendicularClockwise(direction);
 			DrawArrowHead(point, direction, cross, color, duration);
 		}
@@ -95,8 +95,8 @@ namespace Vertx.Debugging
 			GetRotationCoefficients(angle, out float s, out float c);
 			Vector2 r = RotateFast(new Vector2(scale, 0), s, c);
 			Vector2 u = RotateFast(new Vector2(0, scale), s, c);
-			Debug.DrawRay(point, r, ColorX);
-			Debug.DrawRay(point, u, ColorY);
+			rayDelegate(point, r, ColorX);
+			rayDelegate(point, u, ColorY);
 
 			if (!arrowHeads)
 				return;
@@ -116,9 +116,9 @@ namespace Vertx.Debugging
 			Vector2 b = arrowPoint - arrowCross;
 			dir.EnsureNormalized();
 			Vector2 arrowEnd = arrowPoint + dir * (arrowLength * scale);
-			Debug.DrawLine(a, b, color, duration);
-			Debug.DrawLine(a, arrowEnd, color, duration);
-			Debug.DrawLine(b, arrowEnd, color, duration);
+			lineDelegate(a, b, color, duration);
+			lineDelegate(a, arrowEnd, color, duration);
+			lineDelegate(b, arrowEnd, color, duration);
 		}
 		
 		[Conditional("UNITY_EDITOR")]
@@ -128,10 +128,10 @@ namespace Vertx.Debugging
 			var max = (Vector3) rect.max;
 			var lt = new Vector3(rect.xMin, rect.yMax);
 			var rb = new Vector3(rect.xMax, rect.yMin);
-			Debug.DrawLine(min, lt, color, duration);
-			Debug.DrawLine(min, rb, color, duration);
-			Debug.DrawLine(max, lt, color, duration);
-			Debug.DrawLine(max, rb, color, duration);
+			lineDelegate(min, lt, color, duration);
+			lineDelegate(min, rb, color, duration);
+			lineDelegate(max, lt, color, duration);
+			lineDelegate(max, rb, color, duration);
 			
 		}
 	}
