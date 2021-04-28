@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
+using Object = UnityEngine.Object;
 #if UNITY_EDITOR
 using System;
 using System.Reflection;
@@ -52,7 +53,18 @@ namespace Vertx.Debugging
 		private static Type GameViewType => gameViewType ?? (gameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
 		
 		private static EditorWindow gameView;
-		private static EditorWindow GameView => gameView != null ? gameView : gameView = (EditorWindow) Resources.FindObjectsOfTypeAll(GameViewType)?[0];
+		private static EditorWindow GameView
+		{
+			get
+			{
+				if (gameView != null)
+					return gameView;
+				Object[] gameViewQuery = Resources.FindObjectsOfTypeAll(GameViewType);
+				if (gameViewQuery == null || gameViewQuery.Length == 0)
+					return null;
+				return gameView = (EditorWindow) gameViewQuery[0];
+			}
+		}
 
 		private static FieldInfo hasGizmos;
 		private static FieldInfo HasGizmos => hasGizmos ?? (hasGizmos = GameViewType.GetField("m_Gizmos", BindingFlags.NonPublic | BindingFlags.Instance));

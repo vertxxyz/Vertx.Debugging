@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Vertx.Debugging
 {

@@ -140,6 +140,10 @@ namespace Vertx.Debugging
 		public static void DrawCircle(Vector3 center, Vector3 normal, float radius, Color color, int segmentCount = 100) => 
 			DrawCircle(center, normal, radius, (a, b, v) => lineDelegate(a, b, color), segmentCount);
 
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArc(Vector3 center, Vector3 normal, Vector3 forward, float radius, float totalAngle, Color color, int segmentCount = 100) => 
+			DrawArc(center, normal, Quaternion.AngleAxis(-totalAngle / 2f, normal) * forward, radius, totalAngle, (a, b, v) => lineDelegate(a, b, color), segmentCount);
+
 		internal static void DrawCircle(Vector3 center, Vector3 normal, float radius, LineDelegate lineDelegate, int segmentCount = 100)
 		{
 			Vector3 cross = GetAxisAlignedPerpendicular(normal);

@@ -4,6 +4,14 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2021-04-28
+ - Added DrawArc.
+
+## [1.6.0] - 2021-04-16
+ - Fixed exception when drawing Text while the game view is not open or hidden by a maximised scene view.
+ - Added duration to many 2D debugging methods.
+ - Added DrawSpiral (helpful for debugging fast rotating objects)
+
 ## [1.5.2] - 2021-01-25
  - Added DrawCircle
  - Added DrawGizmosScope for use with OnDrawGizmos

@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Vertx.Debugging
 {
@@ -10,37 +9,38 @@ namespace Vertx.Debugging
 		public static void DrawArea2D(
 			Vector2 point1,
 			Vector2 point2,
-			Color color)
+			Color color, 
+			float duration = 0)
 		{
 			Vector2 point3 = new Vector2(point1.x, point2.y);
-			lineDelegate(point1, point3, color);
-			lineDelegate(point3, point2, color);
+			lineDelegate(point1, point3, color, duration);
+			lineDelegate(point3, point2, color, duration);
 			Vector2 point4 = new Vector2(point2.x, point1.y);
-			lineDelegate(point2, point4, color);
-			lineDelegate(point4, point1, color);
+			lineDelegate(point2, point4, color, duration);
+			lineDelegate(point4, point1, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, Color color)
+		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, Color color, float duration = 0)
 		{
 			DrawBoxStructure2D boxStructure2D = new DrawBoxStructure2D(size, angle, origin);
 			DrawBox2DFast(Vector2.zero, boxStructure2D, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b) => lineDelegate(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b) => lineDelegate(a, b, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawCircle2D(Vector2 origin, float radius, Color color)
+		public static void DrawCircle2D(Vector2 origin, float radius, Color color, float duration = 0, int segments = 50)
 		{
-			DrawArc2D(origin, Vector2.up, radius, 360, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float t) => lineDelegate(a, b, color);
+			DrawArc2D(origin, Vector2.up, radius, 360, DrawLine, segments);
+			void DrawLine(Vector3 a, Vector3 b, float t) => lineDelegate(a, b, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Color color)
+		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Color color, float duration = 0)
 		{
 			DrawCapsuleStructure2D capsuleStructure2D = new DrawCapsuleStructure2D(size, capsuleDirection, angle);
 			DrawCapsule2DFast(origin, capsuleStructure2D, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float t) => lineDelegate(a, b, color);
+			void DrawLine(Vector3 a, Vector3 b, float t) => lineDelegate(a, b, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -89,20 +89,20 @@ namespace Vertx.Debugging
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawAxis2D(Vector2 point, float angle = 0, bool arrowHeads = false, float scale = 1)
+		public static void DrawAxis2D(Vector2 point, float angle = 0, bool arrowHeads = false, float scale = 1, float duration = 0)
 		{
 			//Draw rays
 			GetRotationCoefficients(angle, out float s, out float c);
 			Vector2 r = RotateFast(new Vector2(scale, 0), s, c);
 			Vector2 u = RotateFast(new Vector2(0, scale), s, c);
-			rayDelegate(point, r, ColorX);
-			rayDelegate(point, u, ColorY);
+			rayDelegate(point, r, ColorX, duration);
+			rayDelegate(point, u, ColorY, duration);
 
 			if (!arrowHeads)
 				return;
 
-			DrawArrowHead(point, r, u, ColorX, scale: scale);
-			DrawArrowHead(point, u, r, ColorY, scale: scale);
+			DrawArrowHead(point, r, u, ColorX, duration, scale);
+			DrawArrowHead(point, u, r, ColorY, duration, scale);
 		}
 
 		private static void DrawArrowHead(Vector2 point, Vector2 dir, Vector2 cross, Color color, float duration = 0, float scale = 1)
@@ -132,7 +132,43 @@ namespace Vertx.Debugging
 			lineDelegate(min, rb, color, duration);
 			lineDelegate(max, lt, color, duration);
 			lineDelegate(max, rb, color, duration);
-			
+		}
+
+		/// <summary>
+		/// Draws a spiral inset in a circle.
+		/// </summary>
+		/// <param name="center">Center</param>
+		/// <param name="radius">Radius</param>
+		/// <param name="color">Color</param>
+		/// <param name="angularOffset">Degrees the spiral is rotated by</param>
+		/// <param name="revolutions">Total amount of spins of the spiral</param>
+		/// <param name="duration">The length of time the spiral draws for</param>
+		/// <param name="segmentsPerRevolution">Amount of segments in each spin</param>
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawSpiral(Vector2 center, float radius, Color color, float angularOffset = 0, float revolutions = 4, float duration = 0, int segmentsPerRevolution = 50)
+		{
+			const float tau = Mathf.PI * 2;
+			angularOffset += 90;
+			float offset = angularOffset * Mathf.Deg2Rad;
+			int segments = Mathf.CeilToInt(revolutions) * segmentsPerRevolution;
+			Vector3 currentPos = center;
+			for (int i = 1; i < segments; i++)
+			{
+				float v = i / (float) (segments - 1);
+				// Bias the outside revolutions to have more segments.
+				v = 1 - (1 - v) * (1 - v);
+				float rad = v * tau * revolutions + offset;
+				float x = Mathf.Cos(rad);
+				float y = Mathf.Sin(rad);
+				// Bias the outside revolutions to have more density as they approach the outer circle.
+				float multiplier = radius * (1 - Mathf.Pow(1 - v, 5));
+				x *= multiplier;
+				y *= multiplier;
+				Vector3 nextPos = new Vector3(center.x + x, center.y + y, 0);
+				lineDelegate(currentPos, nextPos, color, duration);
+				currentPos = nextPos;
+			}
+			DrawCircle2D(center, radius, color, duration, segmentsPerRevolution);
 		}
 	}
 }
