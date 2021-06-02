@@ -86,8 +86,16 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrow(Vector3 position, Vector3 direction, Color color, float duration = 0, float arrowheadScale = 1)
 		{
-			rayDelegate(position, direction, color);
+			rayDelegate(position, direction, color, duration);
 			DrawArrowHead(position, direction, color, duration, arrowheadScale);
+		}
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine(Vector3 origin, Vector3 destination, Color color, float duration = 0, float arrowheadScale = 1)
+		{
+			lineDelegate(origin, destination, color, duration);
+			Vector3 direction =  destination - origin;
+			DrawArrowHead(origin, direction, color, duration, arrowheadScale);
 		}
 
 		[Conditional("UNITY_EDITOR")]
