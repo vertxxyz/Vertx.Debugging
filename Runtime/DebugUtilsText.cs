@@ -12,7 +12,7 @@ namespace Vertx.Debugging
 {
 	public static partial class DebugUtils
 	{
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
 		static void ResetStatics()
 		{
@@ -40,19 +40,35 @@ namespace Vertx.Debugging
 			}
 		}
 
+		private static Font font;
+
+		private static Font Font
+		{
+			get
+			{
+				if (font != null)
+					return font;
+				return font = AssetDatabase.LoadAssetAtPath<Font>("Packages/com.vertx.debugging/Editor/JetbrainsMono-Regular.ttf");
+			}
+		}
+
+		private static GUIStyle textStyle;
+		private static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label)
+		{
+			font = Font
+		});
+
 		private static bool subscribedUpdate;
 		private static readonly List<DebugText> debugTextUpdate = new List<DebugText>();
 
 		private static bool subscribedFixed;
 		private static readonly List<DebugText> debugTextFixed = new List<DebugText>();
 
-		private static GUIStyle boxStyle;
-		private static GUIStyle BoxStyle => boxStyle ?? (boxStyle = new GUIStyle(EditorStyles.boldLabel));
-
 		private static Type gameViewType;
 		private static Type GameViewType => gameViewType ?? (gameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
-		
+
 		private static EditorWindow gameView;
+
 		private static EditorWindow GameView
 		{
 			get
@@ -62,14 +78,14 @@ namespace Vertx.Debugging
 				Object[] gameViewQuery = Resources.FindObjectsOfTypeAll(GameViewType);
 				if (gameViewQuery == null || gameViewQuery.Length == 0)
 					return null;
-				return gameView = (EditorWindow) gameViewQuery[0];
+				return gameView = (EditorWindow)gameViewQuery[0];
 			}
 		}
 
 		private static FieldInfo hasGizmos;
 		private static FieldInfo HasGizmos => hasGizmos ?? (hasGizmos = GameViewType.GetField("m_Gizmos", BindingFlags.NonPublic | BindingFlags.Instance));
 
-		public static bool GizmosEnabled
+		public static bool GameViewGizmosEnabled
 		{
 			get
 			{
@@ -79,11 +95,11 @@ namespace Vertx.Debugging
 				var hasGizmos = HasGizmos;
 				if (hasGizmos == null)
 					return false;
-				return (bool) hasGizmos.GetValue(gameView);
+				return (bool)hasGizmos.GetValue(gameView);
 			}
 		}
-		
-		#endif
+
+#endif
 
 		/// <summary>
 		/// Draws text at a position in space.
@@ -104,7 +120,7 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawText(Vector3 position, object text, Color color, Camera camera = null)
 		{
-			#if UNITY_EDITOR
+#if UNITY_EDITOR
 
 			if (!Application.isPlaying) return;
 
@@ -138,27 +154,27 @@ namespace Vertx.Debugging
 
 			void RegisterGUI()
 			{
-				if (!GizmosEnabled) return;
 				runtimeObject.RegisterOnGUIAction(() =>
 				{
+					if (!GameViewGizmosEnabled) return;
 					foreach (DebugText t in debugTextUpdate)
 					{
-						if(t.Camera == null) continue;
+						if (t.Camera == null) continue;
 						DoDrawText(t.Position, t.Text, t.Color, t.Camera);
 					}
 
 					foreach (DebugText t in debugTextFixed)
 					{
-						if(t.Camera == null) continue;
+						if (t.Camera == null) continue;
 						DoDrawText(t.Position, t.Text, t.Color, t.Camera);
 					}
 				});
 			}
 
-			#endif
+#endif
 		}
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		static void WaitForNextUpdate()
 		{
 			subscribedUpdate = false;
@@ -186,6 +202,9 @@ namespace Vertx.Debugging
 				return;
 			}
 
+			if (!obj.drawGizmos)
+				return;
+
 			Handles.BeginGUI();
 
 			foreach (DebugText debugText in debugTexts)
@@ -193,7 +212,7 @@ namespace Vertx.Debugging
 
 			Handles.EndGUI();
 		}
-		
+
 		private static void DoDrawText(Vector3 position, object text, Color color, Camera camera)
 		{
 			if (!WorldToGUIPoint(position, out Vector2 screenPos, camera)) return;
@@ -213,12 +232,12 @@ namespace Vertx.Debugging
 			}
 
 			var content = new GUIContent(value);
-			Rect rect = new Rect(screenPos, BoxStyle.CalcSize(content));
+			Rect rect = new Rect(screenPos, TextStyle.CalcSize(content));
 			DrawGUIRect(rect, color);
-			GUI.Label(rect, content, EditorStyles.boldLabel);
+			GUI.Label(rect, content, TextStyle);
 			//-----------------
 		}
-		
+
 		private static void DrawGUIRect(Rect rect, Color color)
 		{
 			if (Event.current.type != EventType.Repaint)
@@ -251,6 +270,6 @@ namespace Vertx.Debugging
 			point = new Vector2(viewScreenVector.x * camera.pixelWidth, (1 - viewScreenVector.y) * camera.pixelHeight);
 			return true;
 		}
-		#endif
+#endif
 	}
 }
