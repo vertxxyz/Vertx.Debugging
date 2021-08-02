@@ -1,0 +1,73 @@
+.expanded {
+	flex-grow: 1;
+}
+
+.rowExpanded {
+	flex-grow: 1;
+	flex-direction: row;
+}
+
+.row {
+	flex-direction: row;
+}
+
+.rightAligned {
+	flex-grow: 1;
+	flex-direction: row-reverse;
+}
+
+.toolbarMenuButton {
+	flex-direction: row;
+}
+
+.groupsRoot {
+	flex-grow: 1;
+	width: 250px;
+	background-color: rgb(46, 46, 46);
+	border-right-width: 1px;
+	border-right-color: rgb(31, 31, 31);
+}
+
+.header {
+	height: 20px;
+	background-color: rgb(80, 80, 80);
+	border-bottom-width: 1px;
+	border-bottom-color: rgb(40, 40, 40);
+}
+
+.boldLabel {
+	-unity-font-style: bold; 
+	-unity-text-align: middle-left;
+	margin-left: 10px;
+	flex-grow: 1;
+}
+
+.graphRoot {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	top: 20px;
+	left: 250px;
+	background-color: #282828;
+}
+
+PlotEdge.edge {
+	padding: 0;
+	margin: 0;
+}
+
+.rule {
+	position: absolute;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background-color: rgba(255, 255, 255, 0.05);
+}
+
+.ruleSecondary {
+	background-color: rgba(255, 255, 255, 0.15);
+}
+
+.rulePrimary {
+	background-color: rgba(255, 255, 255, 0.5);
+}

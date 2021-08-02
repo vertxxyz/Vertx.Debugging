@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="GraphRoot" class="graphRoot" />
+    <uie:Toolbar>
+        <uie:ToolbarSpacer class="row" />
+        <uie:ToolbarButton name="GroupsDropdown" class="toolbarMenuButton" text="Groups" />
+        <uie:ToolbarSpacer />
+        <ui:VisualElement name="RightAligned" class="rightAligned" />
+    </uie:Toolbar>
+    <ui:VisualElement name="GroupsRoot" class="groupsRoot">
+        <ui:VisualElement name="Header" class="header">
+            <ui:Label text="Active Groups" name="GroupsLabel" class="boldLabel" />
+        </ui:VisualElement>
+        <ui:ListView focusable="true" name="GroupsList" class="expanded" />
+    </ui:VisualElement>
+</ui:UXML>
