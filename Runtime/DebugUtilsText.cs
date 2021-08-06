@@ -266,8 +266,9 @@ namespace Vertx.Debugging
 				return false;
 			}
 
-			Vector2 viewScreenVector = new Vector2(viewPos.x, viewPos.y);
-			point = new Vector2(viewScreenVector.x * camera.pixelWidth, (1 - viewScreenVector.y) * camera.pixelHeight);
+			Vector2 viewScreenVector = new Vector2(viewPos.x, 1 - viewPos.y);
+			viewScreenVector /= EditorGUIUtility.pixelsPerPoint;
+			point = new Vector2(viewScreenVector.x * camera.pixelWidth, viewScreenVector.y * camera.pixelHeight);
 			return true;
 		}
 #endif
