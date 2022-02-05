@@ -17,20 +17,26 @@ namespace Vertx.Debugging.Editor
 				MaxScale = 10
 			});
 			this.AddManipulator(new ConstrainedContentDragger());
-			RegisterCallback<GeometryChangedEvent>(GeometryChangedCallback);
 
 			Insert(0, dimensionsRoot = new VisualElement());
 			dimensionsRoot.pickingMode = PickingMode.Ignore;
 			dimensionsRoot.StretchToParentSize();
 
 			EditorApplication.update += Update;
+			
+			RegisterCallback<GeometryChangedEvent>(GeometryChangedCallback);
 			RegisterCallback<DetachFromPanelEvent>(Detached);
 		}
 
 		private void Detached(DetachFromPanelEvent evt) => EditorApplication.update -= Update;
 
+		private const int rate = 2;
+		private int counter;
 		private void Update()
 		{
+			if (counter++ % rate != 0)
+				return;
+			
 			bool hasChanges = false;
 			foreach (var plotEdge in plotEdges)
 			{
@@ -40,6 +46,8 @@ namespace Vertx.Debugging.Editor
 			}
 			if(hasChanges)
 				MarkDirtyRepaint();
+			
+			HasUpdatedEdges();
 		}
 
 		private void GeometryChangedCallback(GeometryChangedEvent evt) => HasUpdatedEdges();
@@ -53,6 +61,14 @@ namespace Vertx.Debugging.Editor
 			AddElement(edge);
 			edge.StretchToParentSize();
 			HasUpdatedEdges();
+		}
+
+		public void RemoveEdge(string label)
+		{
+			PlotEdge edge = this.Q<PlotEdge>(label);
+			if (edge == null) return;
+			plotEdges.Remove(edge);
+			edge.RemoveFromHierarchy();
 		}
 
 		private (float min, float max) GetBounds(CircularBuffer<GraphedValue> points)
@@ -81,7 +97,7 @@ namespace Vertx.Debugging.Editor
 		private float CeilToNearest(float value, float round) => Mathf.Ceil(value / round) * round;
 		private float FloorToNearest(float value, float round) => Mathf.Floor(value / round) * round;
 
-		private void HasUpdatedEdges()
+		(float min, float max) GetTotalBounds()
 		{
 			float min = Mathf.Infinity;
 			float max = Mathf.NegativeInfinity;
@@ -93,6 +109,20 @@ namespace Vertx.Debugging.Editor
 				if (maxBounds > max)
 					max = maxBounds;
 			}
+
+			return (min, max);
+		}
+
+		private (float min, float max) currentBounds;
+
+		private void HasUpdatedEdges()
+		{
+			(float min, float max) newBounds = GetTotalBounds();
+			if (currentBounds.min == newBounds.min && currentBounds.max == newBounds.max)
+				return;
+			
+			currentBounds = newBounds;
+			(float min, float max) = newBounds;
 
 			float absMax = Mathf.Max(Mathf.Abs(min), max);
 			float orderOfMagnitude = GetNearestOrderOfMagnitudeBound(absMax);
@@ -125,7 +155,7 @@ namespace Vertx.Debugging.Editor
 					rule.AddToClassList("rule");
 				}
 
-				if (p % primaryOoM == 0)
+				if (p == 0 || p % primaryOoM == 0)
 				{
 					rule.AddToClassList("rulePrimary");
 				}

@@ -1,14 +1,13 @@
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Vertx.Debugging.Editor
 {
 	internal class GroupsDropdown : AdvancedDropdown
 	{
-		private readonly Plot plot;
+		private readonly DebugGraphWindow graphWindow;
 
-		public GroupsDropdown(AdvancedDropdownState state, Plot plot) : base(state) => this.plot = plot;
+		public GroupsDropdown(AdvancedDropdownState state, DebugGraphWindow graphWindow) : base(state) => this.graphWindow = graphWindow;
 
 		protected override AdvancedDropdownItem BuildRoot()
 		{
@@ -35,18 +34,9 @@ namespace Vertx.Debugging.Editor
 				Debug.LogError("Value not present in registry.");
 				return;
 			}
-
-			if (group.Visible)
-			{
-				PlotEdge edge = plot.Q<PlotEdge>(label);
-				edge?.RemoveFromHierarchy();
-				group.Visible = false;
-			}
-			else
-			{
-				plot.AddEdge(new PlotEdge(label, group));
-				group.Visible = true;
-			}
+			
+			group.Visible = !group.Visible;
+			graphWindow.OnGroupChanged((label, group));
 		}
 	}
 }

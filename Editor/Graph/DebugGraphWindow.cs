@@ -67,7 +67,7 @@ namespace Vertx.Debugging.Editor
 		
 		private void GroupsMenu()
 		{
-			GroupsDropdown dropdown = new GroupsDropdown(new AdvancedDropdownState(), plot);
+			GroupsDropdown dropdown = new GroupsDropdown(new AdvancedDropdownState(), this);
 			Rect rect = toolbarMenu.layout;
 			rect.y = rect.yMax;
 			rect.width = 240;
@@ -77,13 +77,22 @@ namespace Vertx.Debugging.Editor
 		private void OnNewGraphValueGroup((string label, GraphValueGroup group) value)
 		{
 			(string label, GraphValueGroup group) = value;
+			if (!value.group.Visible) return;
 			RegisterEdge(new PlotEdge(label, group));
 		}
-
-		internal void RegisterEdge(PlotEdge edge)
+		
+		internal void OnGroupChanged((string label, GraphValueGroup group) value)
 		{
-			plot.AddEdge(edge);
+			(string label, GraphValueGroup group) = value;
+			if (value.group.Visible)
+				RegisterEdge(new PlotEdge(label, group));
+			else
+			{
+				plot.RemoveEdge(label);
+			}
 		}
+
+		private void RegisterEdge(PlotEdge edge) => plot.AddEdge(edge);
 
 		private int groupCount = 0;
 		private Plot plot;

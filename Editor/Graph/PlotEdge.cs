@@ -20,14 +20,12 @@ namespace Vertx.Debugging.Editor
 			}
 		}
 		private readonly GraphValueGroup group;
-		private readonly Color32 color;
 		public CircularBuffer<GraphedValue> Values { get; private set; }
 		
 		public PlotEdge(string label, GraphValueGroup group)
 		{
 			this.group = group;
 			Values = group.Values;
-			color = group.Color;
 			generateVisualContent += OnGenerateVisualContent;
 			pickingMode = PickingMode.Ignore;
 			AddToClassList("edge");
@@ -40,15 +38,19 @@ namespace Vertx.Debugging.Editor
 			int capacity = Values.Capacity;
 			if (size <= 1)
 				return;
-
+			
 			uint wantedLength = size * 2;
 			uint indexCount = (wantedLength - 2) * 3;
 
 			MeshWriteData md = mgc.Allocate((int)wantedLength, (int)indexCount);
 			if (md.vertexCount == 0)
 				return;
+			
+			var color = group.Color;
 
 			float vEnd = (float)capacity - 1;
+			float totalSize = max - min;
+			totalSize = Mathf.Max(0.00001f, totalSize);
 			float width = layout.width;
 			float height = layout.height;
 			float halfEdgeWidth = EdgeWidth * 0.5f;
@@ -64,6 +66,7 @@ namespace Vertx.Debugging.Editor
 				float point = thisPoint;
 				float nextPoint = i > 0 ? Values[i - 1].Value : Values[i].Value;
 				float avg = ((point - lastPoint) + (nextPoint - point)) / 2f;
+				avg *= (vEnd / totalSize);
 				Vector2 dir = new Vector2(avg, step);
 				lastPoint = point;
 				thisPoint = nextPoint;
