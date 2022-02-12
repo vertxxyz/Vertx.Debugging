@@ -1,3 +1,4 @@
+#if VERTX_PHYSICS_2D
 using System.Diagnostics;
 using UnityEngine;
 
@@ -111,19 +112,6 @@ namespace Vertx.Debugging
 			lineDelegate(b, arrowEnd, color, duration);
 		}
 
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawRect(Rect rect, Color color, float duration = 0)
-		{
-			var min = (Vector3)rect.min;
-			var max = (Vector3)rect.max;
-			var lt = new Vector3(rect.xMin, rect.yMax);
-			var rb = new Vector3(rect.xMax, rect.yMin);
-			lineDelegate(min, lt, color, duration);
-			lineDelegate(min, rb, color, duration);
-			lineDelegate(max, lt, color, duration);
-			lineDelegate(max, rb, color, duration);
-		}
-
 		/// <summary>
 		/// Draws a spiral inset in a circle.
 		/// </summary>
@@ -163,3 +151,4 @@ namespace Vertx.Debugging
 		}
 	}
 }
+#endif
