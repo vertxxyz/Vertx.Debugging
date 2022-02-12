@@ -1,5 +1,6 @@
 # Debugging
-Editor debugging utilities for Unity.
+Editor debugging utilities for Unity.  
+All of these methods are accessed through `DebugUtils.`.
 
 ## General
 - **DrawText**  
@@ -43,6 +44,12 @@ Draws an arrow gizmo for a vector
 - **DrawCircleCast2D**, (**DrawCircleCast2DHits**)
 - **DrawBoxCast2D**, (**DrawBoxCast2DHits**)
 - **DrawCapsuleCast2D**, (**DrawCapsuleCast2DHits**)
+
+## Gizmos
+- **GameViewGizmosEnabled**  
+`bool`: whether Gizmos are enabled in the Game view.
+- **DrawGizmosScope**  
+`using (DebugUtils.DrawGizmosScope())`: allows the use of other `DebugUtils` methods inside of OnDrawGizmos methods.
 
 ## Installation
 

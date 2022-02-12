@@ -18,10 +18,12 @@ namespace Vertx.Debugging
 		{
 			subscribedUpdate = false;
 			debugTextUpdate.Clear();
-			SceneView.duringSceneGui -= SceneViewGUIUpdate;
+			if (guiUpdate != null)
+				SceneView.duringSceneGui -= guiUpdate;
 			subscribedFixed = false;
 			debugTextFixed.Clear();
-			SceneView.duringSceneGui -= SceneViewGUIFixed;
+			if (guiFixed != null)
+				SceneView.duringSceneGui -= guiFixed;
 		}
 
 		private readonly struct DebugText
@@ -132,8 +134,12 @@ namespace Vertx.Debugging
 				if (!subscribedFixed)
 				{
 					subscribedFixed = true;
-					SceneView.duringSceneGui += SceneViewGUIFixed;
-					runtimeObject.RegisterFixedUpdateAction(WaitForNextFixed);
+					if (guiFixed == null)
+						guiFixed = SceneViewGUIFixed;
+					SceneView.duringSceneGui += guiFixed;
+					if (waitForNextFixed == null)
+						waitForNextFixed = WaitForNextFixed;
+					runtimeObject.RegisterFixedUpdateAction(waitForNextFixed);
 					RegisterGUI();
 				}
 
@@ -144,8 +150,12 @@ namespace Vertx.Debugging
 				if (!subscribedUpdate)
 				{
 					subscribedUpdate = true;
-					SceneView.duringSceneGui += SceneViewGUIUpdate;
-					runtimeObject.RegisterUpdateAction(WaitForNextUpdate);
+					if (guiUpdate == null)
+						guiUpdate = SceneViewGUIUpdate;
+					SceneView.duringSceneGui += guiUpdate;
+					if (waitForNextUpdate == null)
+						waitForNextUpdate = WaitForNextUpdate;
+					runtimeObject.RegisterUpdateAction(waitForNextUpdate);
 					RegisterGUI();
 				}
 
@@ -175,18 +185,21 @@ namespace Vertx.Debugging
 		}
 
 #if UNITY_EDITOR
+		private static Action<SceneView> guiUpdate, guiFixed;
+		private static Action waitForNextUpdate, waitForNextFixed;
+
 		static void WaitForNextUpdate()
 		{
 			subscribedUpdate = false;
 			debugTextUpdate.Clear();
-			SceneView.duringSceneGui -= SceneViewGUIUpdate;
+			SceneView.duringSceneGui -= guiUpdate;
 		}
 
 		static void WaitForNextFixed()
 		{
 			subscribedFixed = false;
 			debugTextFixed.Clear();
-			SceneView.duringSceneGui -= SceneViewGUIFixed;
+			SceneView.duringSceneGui -= guiFixed;
 		}
 
 		private static void SceneViewGUIUpdate(SceneView obj) => SceneViewGUI(obj, debugTextUpdate);
@@ -197,8 +210,10 @@ namespace Vertx.Debugging
 		{
 			if (!Application.isPlaying)
 			{
-				SceneView.duringSceneGui -= SceneViewGUIFixed;
-				SceneView.duringSceneGui -= SceneViewGUIUpdate;
+				if (guiFixed != null)
+					SceneView.duringSceneGui -= guiFixed;
+				if (guiUpdate != null)
+					SceneView.duringSceneGui -= guiUpdate;
 				return;
 			}
 
@@ -213,8 +228,13 @@ namespace Vertx.Debugging
 			Handles.EndGUI();
 		}
 
+		private static GUIContent sharedContent = new GUIContent();
+
 		private static void DoDrawText(Vector3 position, object text, Color color, Camera camera)
 		{
+			if (Event.current.type != EventType.Repaint)
+				return;
+			
 			if (!WorldToGUIPoint(position, out Vector2 screenPos, camera)) return;
 			//------DRAW-------
 			string value;
@@ -230,22 +250,20 @@ namespace Vertx.Debugging
 					value = text.ToString();
 					break;
 			}
-
-			var content = new GUIContent(value);
-			Rect rect = new Rect(screenPos, TextStyle.CalcSize(content));
-			DrawGUIRect(rect, color);
-			GUI.Label(rect, content, TextStyle);
+			
+			sharedContent.text = value;
+			Rect rect = new Rect(screenPos, TextStyle.CalcSize(sharedContent));
+			DrawGUIRect();
+			GUI.Label(rect, sharedContent, TextStyle);
 			//-----------------
-		}
-
-		private static void DrawGUIRect(Rect rect, Color color)
-		{
-			if (Event.current.type != EventType.Repaint)
-				return;
-			Color color1 = GUI.color;
-			GUI.color *= color;
-			GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
-			GUI.color = color1;
+			
+			void DrawGUIRect()
+			{
+				Color color1 = GUI.color;
+				GUI.color *= color;
+				GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
+				GUI.color = color1;
+			}
 		}
 
 		/// <summary>

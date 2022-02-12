@@ -6,11 +6,13 @@ namespace Vertx.Debugging
 	public static partial class DebugUtils
 	{
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArea2D(
+		public static void DrawArea2D
+		(
 			Vector2 point1,
 			Vector2 point2,
-			Color color, 
-			float duration = 0)
+			Color color,
+			float duration = 0
+		)
 		{
 			Vector2 point3 = new Vector2(point1.x, point2.y);
 			lineDelegate(point1, point3, color, duration);
@@ -21,27 +23,15 @@ namespace Vertx.Debugging
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, Color color, float duration = 0)
-		{
-			DrawBoxStructure2D boxStructure2D = new DrawBoxStructure2D(size, angle, origin);
-			DrawBox2DFast(Vector2.zero, boxStructure2D, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b) => lineDelegate(a, b, color, duration);
-		}
+		public static void DrawBox2D(Vector2 origin, Vector2 size, float angle, Color color, float duration = 0) 
+			=> DrawBox2DFast(Vector2.zero, new DrawBoxStructure2D(size, angle, origin), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawCircle2D(Vector2 origin, float radius, Color color, float duration = 0, int segments = 50)
-		{
-			DrawArc2D(origin, Vector2.up, radius, 360, DrawLine, segments);
-			void DrawLine(Vector3 a, Vector3 b, float t) => lineDelegate(a, b, color, duration);
-		}
+		public static void DrawCircle2D(Vector2 origin, float radius, Color color, float duration = 0, int segments = 50) => DrawArc2D(origin, Vector2.up, radius, 360, color, duration, segments);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Color color, float duration = 0)
-		{
-			DrawCapsuleStructure2D capsuleStructure2D = new DrawCapsuleStructure2D(size, capsuleDirection, angle);
-			DrawCapsule2DFast(origin, capsuleStructure2D, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float t) => lineDelegate(a, b, color, duration);
-		}
+		public static void DrawCapsule2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Color color, float duration = 0) 
+			=> DrawCapsule2DFast(origin, new DrawCapsuleStructure2D(size, capsuleDirection, angle), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawPoint2D(Vector2 point, Color color, float duration = 0, float rayLength = 0.3f, float highlightRadius = 0.05f)
@@ -120,12 +110,12 @@ namespace Vertx.Debugging
 			lineDelegate(a, arrowEnd, color, duration);
 			lineDelegate(b, arrowEnd, color, duration);
 		}
-		
+
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawRect(Rect rect, Color color, float duration = 0)
 		{
-			var min = (Vector3) rect.min;
-			var max = (Vector3) rect.max;
+			var min = (Vector3)rect.min;
+			var max = (Vector3)rect.max;
 			var lt = new Vector3(rect.xMin, rect.yMax);
 			var rb = new Vector3(rect.xMax, rect.yMin);
 			lineDelegate(min, lt, color, duration);
@@ -145,7 +135,7 @@ namespace Vertx.Debugging
 		/// <param name="duration">The length of time the spiral draws for</param>
 		/// <param name="segmentsPerRevolution">Amount of segments in each spin</param>
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawSpiral(Vector2 center, float radius, Color color, float angularOffset = 0, float revolutions = 4, float duration = 0, int segmentsPerRevolution = 50)
+		public static void DrawSpiral2D(Vector2 center, float radius, Color color, float angularOffset = 0, float revolutions = 4, float duration = 0, int segmentsPerRevolution = 50)
 		{
 			const float tau = Mathf.PI * 2;
 			angularOffset += 90;
@@ -154,7 +144,7 @@ namespace Vertx.Debugging
 			Vector3 currentPos = center;
 			for (int i = 1; i < segments; i++)
 			{
-				float v = i / (float) (segments - 1);
+				float v = i / (float)(segments - 1);
 				// Bias the outside revolutions to have more segments.
 				v = 1 - (1 - v) * (1 - v);
 				float rad = v * tau * revolutions + offset;
@@ -168,6 +158,7 @@ namespace Vertx.Debugging
 				lineDelegate(currentPos, nextPos, color, duration);
 				currentPos = nextPos;
 			}
+
 			DrawCircle2D(center, radius, color, duration, segmentsPerRevolution);
 		}
 	}
