@@ -6,52 +6,51 @@ namespace Vertx.Debugging
 	public static partial class DebugUtils
 	{
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawSphere(Vector3 position, float radius, Color color)
+		public static void DrawSphere(Vector3 position, float radius, Color color, float duration = 0)
 		{
 			Vector3 up = Vector3.up;
 			Vector3 right = Vector3.right;
 			Vector3 forward = Vector3.forward;
-			DrawCircleFast(position, up, right, radius, DrawLine);
-			DrawCircleFast(position, right, up, radius, DrawLine);
-			DrawCircleFast(position, forward, right, radius, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float f) => lineDelegate(a, b, color);
+			DrawCircleFast(position, up, right, radius, color, duration);
+			DrawCircleFast(position, right, up, radius, color, duration);
+			DrawCircleFast(position, forward, right, radius, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawBox(Vector3 center, Vector3 halfExtents, Quaternion orientation, Color color)
+		public static void DrawBox(Vector3 center, Vector3 halfExtents, Quaternion orientation, Color color, float duration = 0)
 		{
-			DrawBox(center, halfExtents, orientation, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b) => lineDelegate(a, b, color);
+			DrawBoxStructure box = new DrawBoxStructure(halfExtents, orientation);
+			DrawBox(center, box, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawBox(Vector3 center, Vector3 halfExtents, Color color) => DrawBox(center, halfExtents, Quaternion.identity, color);
+		public static void DrawBox(Vector3 center, Vector3 halfExtents, Color color, float duration = 0) => DrawBox(center, halfExtents, Quaternion.identity, color, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawCapsule(Vector3 start, Vector3 end, float radius, Color color)
+		public static void DrawCapsule(Vector3 start, Vector3 end, float radius, Color color, float duration = 0)
 		{
 			Vector3 alignment = (start - end).normalized;
 			Vector3 crossA = GetAxisAlignedPerpendicular(alignment);
 			Vector3 crossB = Vector3.Cross(crossA, alignment);
-			DrawCapsuleFast(start, end, radius, alignment, crossA, crossB, DrawLine);
-			void DrawLine(Vector3 a, Vector3 b, float f) => lineDelegate(a, b, color);
+			DrawCapsuleFast(start, end, radius, alignment, crossA, crossB, color, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, Color color, float duration = 0)
 		{
 			rayDelegate(point, normal, color, duration);
-			DrawCircle(point, normal, 0.05f, DrawLine, 50);
-			void DrawLine(Vector3 a, Vector3 b, float f) => lineDelegate(a, b, color, duration);
+			DrawCircle(point, normal, 0.05f, color, duration, 50);
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawPoint(
+		public static void DrawPoint
+		(
 			Vector3 point,
 			Color color,
 			float duration = 0,
 			float rayLength = 0.3f,
-			float highlightRadius = 0.05f)
+			float highlightRadius = 0.05f
+		)
 		{
 			Vector3 up = new Vector3(0, rayLength, 0);
 			Quaternion rot = Quaternion.AngleAxis(120, Vector3.right);
@@ -89,12 +88,12 @@ namespace Vertx.Debugging
 			rayDelegate(position, direction, color, duration);
 			DrawArrowHead(position, direction, color, duration, arrowheadScale);
 		}
-		
+
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawArrowLine(Vector3 origin, Vector3 destination, Color color, float duration = 0, float arrowheadScale = 1)
 		{
 			lineDelegate(origin, destination, color, duration);
-			Vector3 direction =  destination - origin;
+			Vector3 direction = destination - origin;
 			DrawArrowHead(origin, direction, color, duration, arrowheadScale);
 		}
 
@@ -131,11 +130,26 @@ namespace Vertx.Debugging
 
 			Vector3 arrowPoint = point + dir;
 			dir.EnsureNormalized();
-			DrawCircle(arrowPoint - dir * (arrowLength * scale), dir, arrowWidth * scale, (a, b, f) =>
+
+			// Logic from DrawCircle
+			void DoDrawArrowHead(Vector3 center, Vector3 normal, float radius)
 			{
-				lineDelegate(a, b, color, duration);
-				lineDelegate(a, arrowPoint, color, duration);
-			}, segments);
+				Vector3 cross = GetAxisAlignedPerpendicular(normal);
+				Vector3 direction = cross * radius;
+				Vector3 lastPos = center + direction;
+				Quaternion rotation = Quaternion.AngleAxis(1 / (float)segments * 360, normal);
+				Quaternion currentRotation = rotation;
+				for (int i = 1; i <= segments; i++)
+				{
+					Vector3 nextPos = center + currentRotation * direction;
+					lineDelegate(lastPos, nextPos, color, duration);
+					lineDelegate(lastPos, arrowPoint, color, duration);
+					currentRotation = rotation * currentRotation;
+					lastPos = nextPos;
+				}
+			}
+
+			DoDrawArrowHead(arrowPoint - dir * (arrowLength * scale), dir, arrowWidth * scale);
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -164,7 +178,7 @@ namespace Vertx.Debugging
 			lineDelegate(ltb, rtb, color, duration);
 			lineDelegate(ltb, ltf, color, duration);
 		}
-		
+
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawBounds(BoundsInt bounds, Color color, float duration = 0) => DrawBounds(new Bounds(bounds.center, bounds.size), color, duration);
 	}
