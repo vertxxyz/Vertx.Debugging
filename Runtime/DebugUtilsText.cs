@@ -228,7 +228,7 @@ namespace Vertx.Debugging
 			Handles.EndGUI();
 		}
 
-		private static GUIContent sharedContent = new GUIContent();
+		private static readonly GUIContent sharedContent = new GUIContent();
 
 		private static void DoDrawText(Vector3 position, object text, Color color, Camera camera)
 		{

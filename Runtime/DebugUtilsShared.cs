@@ -285,8 +285,9 @@ namespace Vertx.Debugging
 
 		#endregion
 
+#if VERTX_PHYSICS_2D
 		#region 2D
-
+		
 		internal readonly struct DrawBoxStructure2D
 		{
 			public readonly Vector2 UR, UL, BR, BL;
@@ -398,6 +399,7 @@ namespace Vertx.Debugging
 		}
 
 		#endregion
+#endif
 
 		#endregion
 
@@ -436,6 +438,19 @@ namespace Vertx.Debugging
 		}
 
 		#endregion
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRect(Rect rect, Color color, float duration = 0)
+		{
+			var min = (Vector3)rect.min;
+			var max = (Vector3)rect.max;
+			var lt = new Vector3(rect.xMin, rect.yMax);
+			var rb = new Vector3(rect.xMax, rect.yMin);
+			lineDelegate(min, lt, color, duration);
+			lineDelegate(min, rb, color, duration);
+			lineDelegate(max, lt, color, duration);
+			lineDelegate(max, rb, color, duration);
+		}
 
 		#endregion
 	}
