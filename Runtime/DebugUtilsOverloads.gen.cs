@@ -108,6 +108,7 @@ namespace Vertx.Debugging
 		public static void DrawCapsuleCast(Vector3 point1, Vector3 point2, float radius, Vector3 direction, RaycastHit[] hits, float distance, int count, float duration = 0)
 			=> DrawCapsuleCast(point1, point2, radius, direction, hits, distance, count, StartColor, EndColor, HitColor, duration);
 
+#if VERTX_PHYSICS_2D
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircleCast2D(Vector2 origin, float radius, Vector2 direction, float distance, float duration = 0)
 			=> DrawCircleCast2D(origin, radius, direction, distance, StartColor, EndColor, duration);
@@ -191,6 +192,7 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawCapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] hits, float distance, int hitCount, float duration = 0)
 			=> DrawCapsuleCast2D(origin, size, capsuleDirection, angle, direction, hits, distance, hitCount, StartColor, EndColor, HitColor, duration);
+#endif
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphere(Vector3 position, float radius, float duration = 0)
@@ -272,6 +274,7 @@ namespace Vertx.Debugging
 		public static void DrawBounds(BoundsInt bounds, bool hit, float duration = 0)
 			=> DrawBounds(bounds, hit ? HitColor : RayColor, duration);
 
+#if VERTX_PHYSICS_2D
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawArea2D(Vector2 point1, Vector2 point2, float duration = 0)
 			=> DrawArea2D(point1, point2, RayColor, duration);
@@ -329,20 +332,13 @@ namespace Vertx.Debugging
 			=> DrawArrow2D(point, direction, hit ? HitColor : RayColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawRect(Rect rect, float duration = 0)
-			=> DrawRect(rect, RayColor, duration);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawRect(Rect rect, bool hit, float duration = 0)
-			=> DrawRect(rect, hit ? HitColor : RayColor, duration);
-
-		[Conditional("UNITY_EDITOR")]
 		public static void DrawSpiral2D(Vector2 center, float radius, float angularOffset = 0, float revolutions = 4, float duration = 0, int segmentsPerRevolution = 50)
 			=> DrawSpiral2D(center, radius, RayColor, angularOffset, revolutions, duration, segmentsPerRevolution);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawSpiral2D(Vector2 center, float radius, bool hit, float angularOffset = 0, float revolutions = 4, float duration = 0, int segmentsPerRevolution = 50)
 			=> DrawSpiral2D(center, radius, hit ? HitColor : RayColor, angularOffset, revolutions, duration, segmentsPerRevolution);
+#endif
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawCircle(Vector3 center, Vector3 normal, float radius, float duration = 0, int segmentCount = 100)
@@ -359,5 +355,13 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawArc(Vector3 center, Vector3 normal, Vector3 startDirection, float radius, float totalAngle, bool hit, float duration = 0, int segmentCount = 50)
 			=> DrawArc(center, normal, startDirection, radius, totalAngle, hit ? HitColor : RayColor, duration, segmentCount);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRect(Rect rect, float duration = 0)
+			=> DrawRect(rect, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawRect(Rect rect, bool hit, float duration = 0)
+			=> DrawRect(rect, hit ? HitColor : RayColor, duration);
 	}
 }

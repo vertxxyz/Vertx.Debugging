@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿#if VERTX_PHYSICS_2D
+using System.Diagnostics;
 using UnityEngine;
 
 namespace Vertx.Debugging
@@ -467,3 +468,4 @@ namespace Vertx.Debugging
 		#endregion
 	}
 }
+#endif
