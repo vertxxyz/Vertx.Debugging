@@ -21,14 +21,14 @@ namespace Vertx.Debugging
 
 		internal delegate void ColouredLineDelegate(Vector3 a, Vector3 b, Color c, float duration = 0);
 
-		public static GizmosScope DrawGizmosScope() => new GizmosScope();
+		public static GizmosScope DrawGizmosScope() => new GizmosScope(true);
 
 		public readonly struct GizmosScope : IDisposable
 		{
 			private readonly Color gizmosColor;
 			private readonly ColouredLineDelegate colouredLineDelegate;
 
-			public GizmosScope(bool useGizmos = true)
+			public GizmosScope(bool useGizmos)
 			{
 				colouredLineDelegate = lineDelegate;
 				gizmosColor = Gizmos.color;
