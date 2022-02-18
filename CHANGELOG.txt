@@ -4,7 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [1.8.1] - 2022-02-12
+## [1.8.2] - 2022-02-12
+ - Fix for gizmos scope failing to initialise properly.
+
+## [1.8.1] - 2022-02-18
  - Physics2D module is now optional.
 
 ## [1.8.0] - 2022-02-05
