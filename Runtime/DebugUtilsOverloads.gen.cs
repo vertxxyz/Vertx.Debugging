@@ -5,6 +5,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -195,6 +196,70 @@ namespace Vertx.Debugging
 #endif
 
 		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine(Vector3 a, Vector3 b, float duration = 0)
+			=> DrawLine(a, b, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine(Vector3 a, Vector3 b, bool hit, float duration = 0)
+			=> DrawLine(a, b, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine(IEnumerable<Vector3> points, float duration = 0)
+			=> DrawLine(points, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine(IEnumerable<Vector3> points, bool hit, float duration = 0)
+			=> DrawLine(points, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine(IList<Vector3> points, float duration = 0)
+			=> DrawLine(points, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine(IList<Vector3> points, bool hit, float duration = 0)
+			=> DrawLine(points, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrow(Vector3 position, Vector3 direction, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrow(position, direction, RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrow(Vector3 position, Vector3 direction, bool hit, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrow(position, direction, hit ? HitColor : RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine(Vector3 origin, Vector3 destination, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine(origin, destination, RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine(Vector3 origin, Vector3 destination, bool hit, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine(origin, destination, hit ? HitColor : RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine(IEnumerable<Vector3> points, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine(points, RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine(IEnumerable<Vector3> points, bool hit, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine(points, hit ? HitColor : RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine(IList<Vector3> points, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine(points, RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine(IList<Vector3> points, bool hit, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine(points, hit ? HitColor : RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawMeshNormals(Mesh mesh, Transform transform, float rayLength)
+			=> DrawMeshNormals(mesh, transform, rayLength, RayColor);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawMeshNormals(Mesh mesh, Matrix4x4 localToWorld, float rayLength)
+			=> DrawMeshNormals(mesh, localToWorld, rayLength, RayColor);
+
+		[Conditional("UNITY_EDITOR")]
 		public static void DrawSphere(Vector3 position, float radius, float duration = 0)
 			=> DrawSphere(position, radius, RayColor, duration);
 
@@ -241,22 +306,6 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawPoint(Vector3 point, bool hit, float duration = 0, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint(point, hit ? HitColor : RayColor, duration, rayLength, highlightRadius);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow(Vector3 position, Vector3 direction, float duration = 0, float arrowheadScale = 1)
-			=> DrawArrow(position, direction, RayColor, duration, arrowheadScale);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow(Vector3 position, Vector3 direction, bool hit, float duration = 0, float arrowheadScale = 1)
-			=> DrawArrow(position, direction, hit ? HitColor : RayColor, duration, arrowheadScale);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrowLine(Vector3 origin, Vector3 destination, float duration = 0, float arrowheadScale = 1)
-			=> DrawArrowLine(origin, destination, RayColor, duration, arrowheadScale);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrowLine(Vector3 origin, Vector3 destination, bool hit, float duration = 0, float arrowheadScale = 1)
-			=> DrawArrowLine(origin, destination, hit ? HitColor : RayColor, duration, arrowheadScale);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawBounds(Bounds bounds, float duration = 0)
