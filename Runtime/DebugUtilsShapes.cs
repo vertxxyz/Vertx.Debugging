@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -83,43 +84,48 @@ namespace Vertx.Debugging
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow(Vector3 position, Vector3 direction, Color color, float duration = 0, float arrowheadScale = 1)
+		public static void DrawAxis(Vector3 point, bool arrowHeads = false, Axes axes = Axes.All, float scale = 1)
+			=> DrawAxis(point, Quaternion.identity, arrowHeads, axes, scale);
+
+		[Flags]
+		public enum Axes
 		{
-			rayDelegate(position, direction, color, duration);
-			DrawArrowHead(position, direction, color, duration, arrowheadScale);
+			None = 0,
+			X = 1,
+			Y = 1 << 1,
+			Z = 1 << 2,
+			TwoDimensional = X | Y,
+			All = X | Y | Z
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrowLine(Vector3 origin, Vector3 destination, Color color, float duration = 0, float arrowheadScale = 1)
-		{
-			lineDelegate(origin, destination, color, duration);
-			Vector3 direction = destination - origin;
-			DrawArrowHead(origin, direction, color, duration, arrowheadScale);
-		}
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawAxis(Vector3 point, bool arrowHeads = false, float scale = 1)
-			=> DrawAxis(point, Quaternion.identity, arrowHeads, scale);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawAxis(Vector3 point, Quaternion rotation, bool arrowHeads = false, float scale = 1)
+		public static void DrawAxis(Vector3 point, Quaternion rotation, bool arrowHeads = false, Axes axes = Axes.All, float scale = 1)
 		{
 			Vector3 right = rotation * new Vector3(scale, 0, 0);
 			Vector3 up = rotation * new Vector3(0, scale, 0);
 			Vector3 forward = rotation * new Vector3(0, 0, scale);
+			bool drawX = (axes & Axes.X) != 0;
+			bool drawY = (axes & Axes.Y) != 0;
+			bool drawZ = (axes & Axes.Z) != 0;
 			Color colorRight = ColorX;
-			rayDelegate(point, right, colorRight);
 			Color colorUp = ColorY;
-			rayDelegate(point, up, colorUp);
 			Color colorForward = ColorZ;
-			rayDelegate(point, forward, colorForward);
+			if (drawX)
+				rayDelegate(point, right, colorRight);
+			if (drawY)
+				rayDelegate(point, up, colorUp);
+			if (drawZ)
+				rayDelegate(point, forward, colorForward);
 
 			if (!arrowHeads)
 				return;
 
-			DrawArrowHead(point, right, colorRight, scale: scale);
-			DrawArrowHead(point, up, colorUp, scale: scale);
-			DrawArrowHead(point, forward, colorForward, scale: scale);
+			if (drawX)
+				DrawArrowHead(point, right, colorRight, scale: scale);
+			if (drawY)
+				DrawArrowHead(point, up, colorUp, scale: scale);
+			if (drawZ)
+				DrawArrowHead(point, forward, colorForward, scale: scale);
 		}
 
 		private static void DrawArrowHead(Vector3 point, Vector3 dir, Color color, float duration = 0, float scale = 1)

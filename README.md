@@ -22,7 +22,9 @@ Draws a point without specifying direction
 - **DrawAxis**  
 Draws an XYZ direction gizmo
 - **DrawArrow**  
-Draws an arrow gizmo for a vector
+Draws an arrow gizmo for a vector. +Support for IList/IEnumerable.
+- **DrawLine**  
++Support for IList/IEnumerable.
 ### Casts
 - **DrawRaycast**, (**DrawRaycastHits**)
 - **DrawSphereCast**, (**DrawSphereCastHits**)
@@ -53,6 +55,14 @@ Draws an arrow gizmo for a vector
 `bool`: whether Gizmos are enabled in the Game view.
 - **DrawGizmosScope**  
 `using (DebugUtils.DrawGizmosScope())`: allows the use of other `DebugUtils` methods inside of OnDrawGizmos methods.
+
+## Components
+- **Debug Mesh Normals**  
+Draws normals for a (read/write) mesh.
+- **Debug Renderer Bounds**  
+Draws the bounds of a renderer.
+- **Debug Transform**  
+Draws up/right/forward axes of a transform.
 
 ## Installation
 
