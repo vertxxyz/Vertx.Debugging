@@ -2,7 +2,7 @@
 
 namespace Vertx.Debugging
 {
-	[AddComponentMenu("Vertx/Debugging/Debug Transform")]
+	[AddComponentMenu("Debugging/Debug Transform")]
 	public class DebugTransform : DebugComponentBase
 	{
 		[SerializeField] private float _scale = 1;
