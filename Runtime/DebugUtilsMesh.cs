@@ -24,7 +24,7 @@ namespace Vertx.Debugging
 				return;
 			}
 
-			var unscaledMatrix = Matrix4x4.TRS(localToWorld.GetPosition(), localToWorld.rotation, Vector3.one);
+			var unscaledMatrix = Matrix4x4.TRS(localToWorld.MultiplyPoint(Vector3.zero), localToWorld.rotation, Vector3.one);
 
 			using (ListPool<Vector3>.Get(out List<Vector3> vertices))
 			using (ListPool<Vector3>.Get(out List<Vector3> normals))

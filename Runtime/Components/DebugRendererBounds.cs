@@ -2,7 +2,7 @@
 
 namespace Vertx.Debugging
 {
-	[AddComponentMenu("Vertx/Debugging/Debug Renderer Bounds")]
+	[AddComponentMenu("Debugging/Debug Renderer Bounds")]
 	public class DebugRendererBounds : DebugComponentBase
 	{
 		[SerializeField] private Renderer _renderer;

@@ -7,6 +7,25 @@ namespace Vertx.Debugging
 		[SerializeField] private bool _drawOnlyWhenSelected = true;
 		[SerializeField] protected Color _color = DebugUtils.RayColor;
 
+		[System.Serializable]
+		public struct ColorDurationPair
+		{
+			public Color Color;
+			public float Duration;
+
+			public ColorDurationPair(Color color, float duration)
+			{
+				Color = color;
+				Duration = duration;
+			}
+
+			public ColorDurationPair(Color color)
+			{
+				Color = color;
+				Duration = 0;
+			}
+		}
+
 		private void OnDrawGizmos()
 		{
 			if (_drawOnlyWhenSelected || !enabled || !ShouldDraw())

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Vertx.Debugging
 {
 	[RequireComponent(typeof(MeshFilter))]
-	[AddComponentMenu("Vertx/Debugging/Debug Mesh Normals")]
+	[AddComponentMenu("Debugging/Debug Mesh Normals")]
 	public class DebugMeshNormals : DebugComponentBase
 	{
 		[SerializeField] private MeshFilter _meshFilter;
