@@ -251,6 +251,72 @@ namespace Vertx.Debugging
 		public static void DrawArrowLine(IList<Vector3> points, bool hit, float duration = 0, float arrowheadScale = 1)
 			=> DrawArrowLine(points, hit ? HitColor : RayColor, duration, arrowheadScale);
 
+#if VERTX_PHYSICS_2D
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine2D(Vector2 a, Vector2 b, float duration = 0)
+			=> DrawLine2D(a, b, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine2D(Vector2 a, Vector2 b, bool hit, float duration = 0)
+			=> DrawLine2D(a, b, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine2D(IEnumerable<Vector2> points, float duration = 0)
+			=> DrawLine2D(points, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine2D(IEnumerable<Vector2> points, bool hit, float duration = 0)
+			=> DrawLine2D(points, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine2D(IList<Vector2> points, float duration = 0)
+			=> DrawLine2D(points, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawLine2D(IList<Vector2> points, bool hit, float duration = 0)
+			=> DrawLine2D(points, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrow2D(Vector2 point, float angle, float duration = 0)
+			=> DrawArrow2D(point, angle, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrow2D(Vector2 point, float angle, bool hit, float duration = 0)
+			=> DrawArrow2D(point, angle, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrow2D(Vector2 point, Vector2 direction, float duration = 0)
+			=> DrawArrow2D(point, direction, RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrow2D(Vector2 point, Vector2 direction, bool hit, float duration = 0)
+			=> DrawArrow2D(point, direction, hit ? HitColor : RayColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine2D(Vector2 origin, Vector2 destination, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine2D(origin, destination, RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine2D(Vector2 origin, Vector2 destination, bool hit, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine2D(origin, destination, hit ? HitColor : RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine2D(IEnumerable<Vector2> points, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine2D(points, RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine2D(IEnumerable<Vector2> points, bool hit, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine2D(points, hit ? HitColor : RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine2D(IList<Vector2> points, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine2D(points, RayColor, duration, arrowheadScale);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void DrawArrowLine2D(IList<Vector2> points, bool hit, float duration = 0, float arrowheadScale = 1)
+			=> DrawArrowLine2D(points, hit ? HitColor : RayColor, duration, arrowheadScale);
+#endif
+
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawMeshNormals(Mesh mesh, Transform transform, float rayLength)
 			=> DrawMeshNormals(mesh, transform, rayLength, RayColor);
@@ -363,22 +429,6 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawPoint2D(Vector2 point, bool hit, float duration = 0, float rayLength = 0.3f, float highlightRadius = 0.05f)
 			=> DrawPoint2D(point, hit ? HitColor : RayColor, duration, rayLength, highlightRadius);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, float angle, float duration = 0)
-			=> DrawArrow2D(point, angle, RayColor, duration);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, float angle, bool hit, float duration = 0)
-			=> DrawArrow2D(point, angle, hit ? HitColor : RayColor, duration);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, Vector2 direction, float duration = 0)
-			=> DrawArrow2D(point, direction, RayColor, duration);
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, Vector2 direction, bool hit, float duration = 0)
-			=> DrawArrow2D(point, direction, hit ? HitColor : RayColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawSpiral2D(Vector2 center, float radius, float angularOffset = 0, float revolutions = 4, float duration = 0, int segmentsPerRevolution = 50)

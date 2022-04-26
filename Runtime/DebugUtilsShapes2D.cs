@@ -63,23 +63,6 @@ namespace Vertx.Debugging
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, float angle, Color color, float duration = 0)
-		{
-			//Draw rays
-			GetRotationCoefficients(angle, out float s, out float c);
-			Vector2 dir = RotateFast(Vector2.right, s, c);
-			DrawArrow2D(point, dir, color, duration);
-		}
-
-		[Conditional("UNITY_EDITOR")]
-		public static void DrawArrow2D(Vector2 point, Vector2 direction, Color color, float duration = 0)
-		{
-			rayDelegate(point, direction, color, duration);
-			Vector2 cross = PerpendicularClockwise(direction);
-			DrawArrowHead(point, direction, cross, color, duration);
-		}
-
-		[Conditional("UNITY_EDITOR")]
 		public static void DrawAxis2D(Vector2 point, float angle = 0, bool arrowHeads = false, float scale = 1, float duration = 0)
 		{
 			//Draw rays
@@ -94,22 +77,6 @@ namespace Vertx.Debugging
 
 			DrawArrowHead(point, r, u, ColorX, duration, scale);
 			DrawArrowHead(point, u, r, ColorY, duration, scale);
-		}
-
-		private static void DrawArrowHead(Vector2 point, Vector2 dir, Vector2 cross, Color color, float duration = 0, float scale = 1)
-		{
-			const float arrowLength = 0.075f;
-			const float arrowWidth = 0.05f;
-			Vector2 arrowPoint = point + dir;
-			cross.EnsureNormalized();
-			Vector2 arrowCross = cross * (arrowWidth * scale);
-			Vector2 a = arrowPoint + arrowCross;
-			Vector2 b = arrowPoint - arrowCross;
-			dir.EnsureNormalized();
-			Vector2 arrowEnd = arrowPoint + dir * (arrowLength * scale);
-			lineDelegate(a, b, color, duration);
-			lineDelegate(a, arrowEnd, color, duration);
-			lineDelegate(b, arrowEnd, color, duration);
 		}
 
 		/// <summary>

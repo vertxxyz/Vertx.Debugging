@@ -17,6 +17,8 @@ namespace Vertx.Debugging
 		public static Color ColorY => new Color(0.3f, 1, 0.1f);
 		public static Color ColorZ => new Color(0.1f, 0.4f, 1);
 
+		private static CircleCache _circleCache = new CircleCache();
+
 		#region Gizmos
 
 		internal delegate void ColouredLineDelegate(Vector3 a, Vector3 b, Color c, float duration = 0);
@@ -143,16 +145,17 @@ namespace Vertx.Debugging
 			int segmentCount = 100
 		)
 		{
-			Vector3 cross = GetAxisAlignedPerpendicular(normal);
-			Vector3 direction = cross * radius;
-			Vector3 lastPos = center + direction;
-			Quaternion rotation = Quaternion.AngleAxis(1 / (float)segmentCount * 360, normal);
-			Quaternion currentRotation = rotation;
+			Vector2[] circle = _circleCache.GetCircle(segmentCount);
+			Vector3 tangent = GetAxisAlignedPerpendicular(normal);
+			Vector3 bitangent = Vector3.Cross(normal, tangent);
+			tangent *= radius;
+			bitangent *= radius;
+			Vector3 lastPos = center + tangent;
 			for (int i = 1; i <= segmentCount; i++)
 			{
-				Vector3 nextPos = center + currentRotation * direction;
+				Vector2 c = circle[i];
+				Vector3 nextPos = center + tangent * c.x + bitangent * c.y;
 				lineDelegate(lastPos, nextPos, color, duration);
-				currentRotation = rotation * currentRotation;
 				lastPos = nextPos;
 			}
 		}
@@ -167,7 +170,7 @@ namespace Vertx.Debugging
 		(
 			Vector3 center,
 			Vector3 normal,
-			Vector3 cross,
+			Vector3 tangent,
 			float radius,
 			Color color,
 			float duration,
@@ -175,13 +178,15 @@ namespace Vertx.Debugging
 			int segmentCount = 100
 		)
 		{
-			Vector3 direction = cross * radius;
-			Vector3 lastPos = center + direction;
-			Quaternion rotation = Quaternion.AngleAxis(1 / (float)segmentCount * 360, normal);
-			Quaternion currentRotation = rotation;
+			Vector2[] circle = _circleCache.GetCircle(segmentCount);
+			Vector3 bitangent = Vector3.Cross(normal, tangent);
+			tangent *= radius;
+			bitangent *= radius;
+			Vector3 lastPos = center + tangent;
 			for (int i = 1; i <= segmentCount; i++)
 			{
-				Vector3 nextPos = center + currentRotation * direction;
+				Vector2 c = circle[i];
+				Vector3 nextPos = center + tangent * c.x + bitangent * c.y;
 				switch (alphaMode)
 				{
 					case AlphaMode.AlphaEdges:
@@ -193,8 +198,6 @@ namespace Vertx.Debugging
 						lineDelegate(lastPos, nextPos, color, duration);
 						break;
 				}
-
-				currentRotation = rotation * currentRotation;
 				lastPos = nextPos;
 			}
 		}
