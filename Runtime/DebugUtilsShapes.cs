@@ -140,17 +140,18 @@ namespace Vertx.Debugging
 			// Logic from DrawCircle
 			void DoDrawArrowHead(Vector3 center, Vector3 normal, float radius)
 			{
-				Vector3 cross = GetAxisAlignedPerpendicular(normal);
-				Vector3 direction = cross * radius;
-				Vector3 lastPos = center + direction;
-				Quaternion rotation = Quaternion.AngleAxis(1 / (float)segments * 360, normal);
-				Quaternion currentRotation = rotation;
+				Vector2[] circle = _circleCache.GetCircle(segments);
+				Vector3 tangent = GetAxisAlignedPerpendicular(normal);
+				Vector3 bitangent = Vector3.Cross(normal, tangent);
+				tangent *= radius;
+				bitangent *= radius;
+				Vector3 lastPos = center + tangent;
 				for (int i = 1; i <= segments; i++)
 				{
-					Vector3 nextPos = center + currentRotation * direction;
+					Vector2 c = circle[i];
+					Vector3 nextPos = center + tangent * c.x + bitangent * c.y;
 					lineDelegate(lastPos, nextPos, color, duration);
 					lineDelegate(lastPos, arrowPoint, color, duration);
-					currentRotation = rotation * currentRotation;
 					lastPos = nextPos;
 				}
 			}

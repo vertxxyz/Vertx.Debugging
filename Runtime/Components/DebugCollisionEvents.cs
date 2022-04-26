@@ -35,7 +35,7 @@ namespace Vertx.Debugging
             if ((_type & Type.Enter) == 0) return;
             for (int i = 0; i < collision.contactCount; i++)
             {
-                ContactPoint contact = collision.GetContact(0);
+                ContactPoint contact = collision.GetContact(i);
                 DebugUtils.DrawSurfacePoint(contact.point, contact.normal, _enter.Color, _enter.Duration);
             }
         }
@@ -45,7 +45,7 @@ namespace Vertx.Debugging
             if ((_type & Type.Stay) == 0) return;
             for (int i = 0; i < collision.contactCount; i++)
             {
-                ContactPoint contact = collision.GetContact(0);
+                ContactPoint contact = collision.GetContact(i);
                 DebugUtils.DrawSurfacePoint(contact.point, contact.normal, _stay.Color, _stay.Duration);
             }
         }
@@ -55,7 +55,7 @@ namespace Vertx.Debugging
             if ((_type & Type.Exit) == 0) return;
             for (int i = 0; i < collision.contactCount; i++)
             {
-                ContactPoint contact = collision.GetContact(0);
+                ContactPoint contact = collision.GetContact(i);
                 DebugUtils.DrawSurfacePoint(contact.point, contact.normal, _exit.Color, _exit.Duration);
             }
         }
@@ -66,7 +66,7 @@ namespace Vertx.Debugging
             if ((_type & Type.Enter) == 0) return;
             for (int i = 0; i < collision.contactCount; i++)
             {
-                ContactPoint2D contact = collision.GetContact(0);
+                ContactPoint2D contact = collision.GetContact(i);
                 DebugUtils.DrawArrow2D(contact.point, contact.normal, _enter.Color, _enter.Duration);
             }
         }
@@ -76,7 +76,7 @@ namespace Vertx.Debugging
             if ((_type & Type.Stay) == 0) return;
             for (int i = 0; i < collision.contactCount; i++)
             {
-                ContactPoint2D contact = collision.GetContact(0);
+                ContactPoint2D contact = collision.GetContact(i);
                 DebugUtils.DrawArrow2D(contact.point, contact.normal, _stay.Color, _stay.Duration);
             }
         }
@@ -86,7 +86,7 @@ namespace Vertx.Debugging
             if ((_type & Type.Exit) == 0) return;
             for (int i = 0; i < collision.contactCount; i++)
             {
-                ContactPoint2D contact = collision.GetContact(0);
+                ContactPoint2D contact = collision.GetContact(i);
                 DebugUtils.DrawArrow2D(contact.point, contact.normal, _exit.Color, _exit.Duration);
             }
         }
