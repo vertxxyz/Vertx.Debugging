@@ -40,7 +40,14 @@ namespace Vertx.Debugging
 		public static void DrawSurfacePoint(Vector3 point, Vector3 normal, Color color, float duration = 0)
 		{
 			rayDelegate(point, normal, color, duration);
-			DrawCircle(point, normal, 0.05f, color, duration, 50);
+			normal.EnsureNormalized(out float length);
+			DrawCircle(point, normal, 0.05f * length, color, duration, 50);
+		}
+		
+		private static void DrawSurfacePoint(Vector3 point, Vector3 normal, Color color, float rayLength, float duration)
+		{
+			rayDelegate(point, normal * rayLength, color, duration);
+			DrawCircle(point, normal, 0.05f * rayLength, color, duration, 50);
 		}
 
 		[Conditional("UNITY_EDITOR")]

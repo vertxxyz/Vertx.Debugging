@@ -128,8 +128,12 @@ namespace Vertx.Debugging
 
 			var runtimeObject = DebugUtilsRuntimeObject.Instance;
 			var debugText = new DebugText(position, text, color, camera);
-
+			
+#if UNITY_2020_3_OR_NEWER
+			if (Time.inFixedTimeStep)
+#else
 			if (Time.deltaTime == Time.fixedDeltaTime)
+#endif
 			{
 				if (!subscribedFixed)
 				{

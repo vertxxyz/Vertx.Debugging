@@ -17,7 +17,7 @@ namespace Vertx.Debugging
 		public static Color ColorY => new Color(0.3f, 1, 0.1f);
 		public static Color ColorZ => new Color(0.1f, 0.4f, 1);
 
-		private static CircleCache _circleCache = new CircleCache();
+		private static readonly CircleCache _circleCache = new CircleCache();
 
 		#region Gizmos
 
@@ -94,6 +94,19 @@ namespace Vertx.Debugging
 			if (Mathf.Approximately(sqrMag, 1))
 				return;
 			vector3 /= Mathf.Sqrt(sqrMag);
+		}
+		
+		private static void EnsureNormalized(this ref Vector3 vector3, out float length)
+		{
+			float sqrMag = vector3.sqrMagnitude;
+			if (Mathf.Approximately(sqrMag, 1))
+			{
+				length = 1;
+				return;
+			}
+
+			length = Mathf.Sqrt(sqrMag);
+			vector3 /= length;
 		}
 
 		private static void EnsureNormalized(this ref Vector2 vector2)

@@ -10,5 +10,8 @@
   },
   "keywords": [],
   "category": "Tools",
-  "dependencies": {}
+  "dependencies": {
+    "com.unity.collections": "1.4.0",
+    "com.unity.mathematics": "1.2.6"
+  }
 }

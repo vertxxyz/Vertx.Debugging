@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	[DefaultExecutionOrder(-999999999)]
+	[DefaultExecutionOrder(int.MinValue)]
 	public class DebugUtilsRuntimeObject : MonoBehaviour
 	{
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

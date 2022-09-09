@@ -345,7 +345,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycastHit(RaycastHit hit, Color color, float rayLength = 1, float duration = 0)
-			=> rayDelegate(hit.point, hit.normal * rayLength, color, duration);
+			=> DrawSurfacePoint(hit.point, hit.normal, color, rayLength, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void DrawRaycastHits(RaycastHit[] hits, Color color, int hitCount = -1, float rayLength = 1, float duration = 0)
@@ -353,7 +353,7 @@ namespace Vertx.Debugging
 			if (hitCount < 0)
 				hitCount = hits.Length;
 			for (int i = 0; i < hitCount; i++)
-				rayDelegate(hits[i].point, hits[i].normal * rayLength, color, duration);
+				DrawSurfacePoint(hits[i].point, hits[i].normal, color, rayLength, duration);
 		}
 
 		[Conditional("UNITY_EDITOR")]
