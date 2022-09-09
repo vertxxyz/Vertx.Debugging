@@ -53,7 +53,7 @@ namespace Vertx.Debugging
 				Matrix = matrix;
 				Turns = angle;
 			}
-			
+
 			public Arc(Matrix4x4 matrix) : this(matrix, Angle.FromTurns(1)) { }
 
 			public Arc(Vector3 origin, Quaternion rotation, float radius, Angle angle)
@@ -90,7 +90,7 @@ namespace Vertx.Debugging
 			{
 				Matrix = Matrix4x4.Translate(origin) * Matrix4x4.Scale(new Vector3(radius, radius, radius));
 			}
-			
+
 			public Sphere(Vector3 origin, Quaternion rotation, float radius)
 			{
 				Matrix = Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius));
@@ -105,7 +105,7 @@ namespace Vertx.Debugging
 				// Vector3 right = Matrix.MultiplyPoint3x4(Vector3.right);
 				commandBuilder.AppendArc(new Arc(Matrix * Matrix4x4.Rotate(Quaternion.AngleAxis(90, Vector3.up))), color, duration, DrawModifications.NormalFade);
 				commandBuilder.AppendArc(new Arc(Matrix * Matrix4x4.Rotate(Quaternion.AngleAxis(90, Vector3.right))), color, duration, DrawModifications.NormalFade);
-				commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.FaceCamera);
+				commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.Custom);
 			}
 #endif
 		}
@@ -142,6 +142,16 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) { }
 #endif
+		}
+
+		public struct Box : IDrawable
+		{
+			public Matrix4x4 Matrix;
+
+			public Box(Vector3 position, Quaternion rotation, Vector3 scale) => Matrix = Matrix4x4.TRS(position, rotation, scale);
+			public Box(Transform transform) => Matrix = transform.localToWorldMatrix;
+
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(this, color, duration);
 		}
 
 		public struct Capsule : IDrawable

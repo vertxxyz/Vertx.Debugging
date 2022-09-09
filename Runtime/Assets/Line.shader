@@ -8,6 +8,8 @@ Shader "Hidden/Vertx/Line"
 			"RenderType"="Opaque"
 		}
 
+		Offset -1, -1
+		
 		Pass
 		{
 			CGPROGRAM

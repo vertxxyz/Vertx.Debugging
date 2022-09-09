@@ -26,11 +26,12 @@ namespace Vertx.Debugging
 
 		private CommandBuffer _commandBuffer;
 		private NativeList<Duration> _durations;
-		private static readonly int _colorBufferStartId = Shader.PropertyToID("shared_buffer_start");
+		private static readonly int _sharedBufferStartId = Shader.PropertyToID("shared_buffer_start");
 		private readonly ListAndBuffer<Color> _colors = new ListAndBuffer<Color>("color_buffer");
 		private readonly ListAndBuffer<Shapes.DrawModifications> _modifications = new ListAndBuffer<Shapes.DrawModifications>("modifications_buffer");
 		private readonly ListBufferAndMpb<Shapes.Line> _lines = new ListBufferAndMpb<Shapes.Line>("line_buffer");
 		private readonly ListBufferAndMpb<Shapes.Arc> _arcs = new ListBufferAndMpb<Shapes.Arc>("arc_buffer");
+		private readonly ListBufferAndMpb<Shapes.Box> _boxes = new ListBufferAndMpb<Shapes.Box>("box_buffer");
 		private bool _queuedDispose;
 		private double _lastTime;
 		private DrawRenderPassFeature _pass;
@@ -44,14 +45,14 @@ namespace Vertx.Debugging
 			RenderPipelineManager.endContextRendering += OnEndContextRendering;
 			EditorApplication.update += OnUpdate;
 		}
-		
+
 		private struct VertxDebuggingTick { }
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void InitialiseRuntime()
 		{
 			// Queue RuntimeEarlyUpdate into the EarlyUpdate portion of the player loop.
-			
+
 			PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
 			PlayerLoopSystem[] subsystems = playerLoop.subSystemList.ToArray();
 			Type earlyUpdate = typeof(EarlyUpdate);
@@ -59,7 +60,7 @@ namespace Vertx.Debugging
 			{
 				if (subsystems[i].type != earlyUpdate)
 					continue;
-				
+
 				var tick = new PlayerLoopSystem
 				{
 					type = typeof(VertxDebuggingTick),
@@ -73,7 +74,7 @@ namespace Vertx.Debugging
 				dest[0] = tick;
 				subsystems[i].subSystemList = dest;
 			}
-			
+
 			playerLoop.subSystemList = subsystems;
 			PlayerLoop.SetPlayerLoop(playerLoop);
 		}
@@ -90,6 +91,7 @@ namespace Vertx.Debugging
 			{
 				_lines.Clear();
 				_arcs.Clear();
+				_boxes.Clear();
 				_colors.Clear();
 				// TODO remove data that has a met duration
 			}
@@ -118,10 +120,7 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		private void OnEndContextRendering(ScriptableRenderContext context, List<Camera> cameras)
-		{
-			
-		}
+		private void OnEndContextRendering(ScriptableRenderContext context, List<Camera> cameras) { }
 
 		private void OnUpdate() { }
 
@@ -154,6 +153,8 @@ namespace Vertx.Debugging
 			else
 				_commandBuffer.Clear();
 
+			// Seemingly required to render after post processing successfully.
+			_commandBuffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
 			FillCommandBuffer(_commandBuffer, camera);
 			return true;
 		}
@@ -174,60 +175,36 @@ namespace Vertx.Debugging
 
 		private void FillCommandBuffer(CommandBuffer commandBuffer, Camera camera)
 		{
-			// TODO this is handled per-camera, so there could probably be some culling done.
+			int sharedBufferStart = 0;
+			RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, _lines);
+			RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, _arcs);
+			RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, _boxes);
 
-			RenderLines();
-			RenderArcs();
-
-			void RenderLines()
+			void RenderShape<T>(
+				AssetsUtility.Asset<Mesh> mesh,
+				AssetsUtility.Asset<Material> material,
+				ListBufferAndMpb<T> shape) where T : unmanaged
 			{
-				int lineCount = _lines.Count;
-				if (lineCount <= 0)
+				int boxCount = shape.Count;
+				if (boxCount <= 0)
 					return;
-				
-				// Gather required assets.
-				var lineMesh = AssetsUtility.Line.Value;
-				var lineMaterial = AssetsUtility.LineMaterial.Value;
-					
+
 				// Synchronise the GraphicsBuffer with the data in the line buffer.
-				_lines.SetGraphicsBufferDataIfDirty(commandBuffer);
+				shape.SetGraphicsBufferDataIfDirty(commandBuffer);
 				_colors.SetGraphicsBufferDataIfDirty(commandBuffer);
 				_modifications.SetGraphicsBufferDataIfDirty(commandBuffer);
-					
-				// Set the buffers to be used by the property block
-				MaterialPropertyBlock propertyBlock = _lines.PropertyBlock;
-				propertyBlock.SetBuffer(_lines.BufferId, _lines.Buffer);
-				propertyBlock.SetBuffer(_colors.BufferId, _colors.Buffer);
-				propertyBlock.SetBuffer(_modifications.BufferId, _modifications.Buffer);
-				
-				// Render lines
-				commandBuffer.DrawMeshInstancedProcedural(lineMesh, 0, lineMaterial, 0, lineCount, propertyBlock);
-			}
 
-			void RenderArcs()
-			{
-				int arcCount = _arcs.Count;
-				if (arcCount <= 0)
-					return;
-				
-				// Gather required assets.
-				var circleMesh = AssetsUtility.Circle.Value;
-				var arcMaterial = AssetsUtility.ArcMaterial.Value;
-					
-				// Synchronise the GraphicsBuffer with the data in the line buffer.
-				_arcs.SetGraphicsBufferDataIfDirty(commandBuffer);
-				_colors.SetGraphicsBufferDataIfDirty(commandBuffer);
-				_modifications.SetGraphicsBufferDataIfDirty(commandBuffer);
-					
 				// Set the buffers to be used by the property block
-				MaterialPropertyBlock propertyBlock = _arcs.PropertyBlock;
-				propertyBlock.SetBuffer(_arcs.BufferId, _arcs.Buffer);
+				MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
+				propertyBlock.SetBuffer(shape.BufferId, shape.Buffer);
 				propertyBlock.SetBuffer(_colors.BufferId, _colors.Buffer);
 				propertyBlock.SetBuffer(_modifications.BufferId, _modifications.Buffer);
-				propertyBlock.SetInt(_colorBufferStartId, _lines.Count);
-				
-				// Render lines
-				commandBuffer.DrawMeshInstancedProcedural(circleMesh, 0, arcMaterial, 0, arcCount, propertyBlock);
+				propertyBlock.SetInt(_sharedBufferStartId, sharedBufferStart);
+
+				// Render boxes
+				commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, 0, boxCount, propertyBlock);
+
+				sharedBufferStart += boxCount;
 			}
 		}
 
@@ -255,6 +232,17 @@ namespace Vertx.Debugging
 			_modifications.Add(modifications);
 		}
 
+		public void AppendBox(Shapes.Box box, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
+		{
+			InitialiseIfRequired();
+			_boxes.EnsureCreated();
+			_boxes.Add(box);
+			_colors.EnsureCreated();
+			_colors.Add(color);
+			_modifications.EnsureCreated();
+			_modifications.Add(modifications);
+		}
+
 		private void InitialiseIfRequired()
 		{
 			if (_queuedDispose) return;
@@ -273,6 +261,7 @@ namespace Vertx.Debugging
 			_colors.Dispose();
 			_lines.Dispose();
 			_arcs.Dispose();
+			_boxes.Dispose();
 
 			if (_pass != null)
 				Object.DestroyImmediate(_pass, true);

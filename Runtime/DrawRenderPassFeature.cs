@@ -22,7 +22,7 @@ namespace Vertx.Debugging
 		public override void Create() =>
 			_pass = new DrawRenderPass
 			{
-				renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing + 1
+				renderPassEvent = RenderPassEvent.AfterRendering + 10
 			};
 
 		public void AddRenderPasses(ScriptableRenderer renderer) => renderer.EnqueuePass(_pass);

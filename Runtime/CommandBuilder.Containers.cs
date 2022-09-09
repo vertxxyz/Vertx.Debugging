@@ -24,6 +24,18 @@ namespace Vertx.Debugging
 				_list.Add(line);
 				_dirty = true;
 			}
+			
+			public T this[int i]
+			{
+				get => _list[i];
+				set
+				{
+					_list[i] = value;
+					_dirty = true;
+				}
+			}
+			
+			public void SetValueWithoutNotify(int i, T value) => _list[i] = value;
 
 			public ListAndBuffer(string bufferName) => BufferId = Shader.PropertyToID(bufferName);
 

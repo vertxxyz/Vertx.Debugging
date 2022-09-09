@@ -28,7 +28,9 @@ namespace Vertx.Debugging
 
 		public static readonly Asset<Mesh> Line = new Asset<Mesh>("Line");
 		public static readonly Asset<Mesh> Circle = new Asset<Mesh>("Circle");
+		public static readonly Asset<Mesh> Box = new Asset<Mesh>("Box");
 		public static readonly Asset<Material> LineMaterial = new Asset<Material>("Line", "mat");
 		public static readonly Asset<Material> ArcMaterial = new Asset<Material>("Arc", "mat");
+		public static readonly Asset<Material> BoxMaterial = new Asset<Material>("Box", "mat");
 	}
 }

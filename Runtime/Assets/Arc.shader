@@ -7,9 +7,11 @@ Shader "Hidden/Vertx/Arc"
 		{
 			"RenderType"="Transparent"
 		}
-		
-		ZWrite On
+
+		ZWrite Off
 		Blend SrcAlpha OneMinusSrcAlpha
+		Offset -1, -1
+		Cull Off
 
 		Pass
 		{
@@ -60,34 +62,41 @@ Shader "Hidden/Vertx/Arc"
 				o.uvAndTurns = float4(input.uv, a.Turns, 0);
 				int modifications = modifications_buffer[i];
 
-				if (HasFaceCamera(modifications))
+				if (has_custom(modifications))
 				{
 					// Orthographic
 					if (unity_OrthoParams.w == 1)
 					{
-						// Get the origin (it's not affected by rotation or scale)
-						float4 origin = mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0));
-
-						float scale = length(float3(unity_ObjectToWorld[0].x, unity_ObjectToWorld[1].x, unity_ObjectToWorld[2].x));
-						o.position = mul(UNITY_MATRIX_P,
-						                 origin
-						                 + float4(input.vertex.xyz, 0.0) // Position the unscaled verts
-						                 * float4(scale.xxx, 0.0) // Scale the verts
-						);
+						o.position = billboard(input.vertex.xyz);
 					}
 					// Perspective
 					else
 					{
-						// Get the origin (it's not affected by rotation or scale)
-						float4 origin = mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0));
+						float3 originWorld = mul(unity_ObjectToWorld, float4(0.0, 0.0, 0.0, 1.0)).xyz;
+						float r1 = get_scale(); // Original radius
+						float3 n = _WorldSpaceCameraPos.xyz - originWorld; // Normal
+						float d1 = length(n); // Distance to camera
+						n = n / d1; // Normalise n
+						float r1Sqrd = r1 * r1;
+						float d = r1Sqrd / d1; // Distance from sphere to place circle
+						float r = sqrt(r1Sqrd - d * d); // Radius of circle
 
-						float scale = length(float3(unity_ObjectToWorld[0].x, unity_ObjectToWorld[1].x, unity_ObjectToWorld[2].x));
-						o.position = mul(UNITY_MATRIX_P,
-						                 origin
-						                 + float4(input.vertex.xyz, 0.0) // Position the unscaled verts
-						                 * float4(scale.xxx, 0.0) // Scale the verts
-						);
+						float3 up = UNITY_MATRIX_IT_MV[1].xyz;
+						float3 right = normalize(cross(n, up));
+						up = normalize(cross(right, n));
+						float3 v = input.vertex.xyz * r.xxx;
+						float3 worldPos = originWorld + n * d
+							+ right * v.x
+							+ up * v.y
+							- n * v.z;
+
+						// Get the origin (it's not affected by rotation or scale)
+						o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
 					}
+				}
+				else if (has_face_camera(modifications))
+				{
+					o.position = billboard(input.vertex.xyz);
 				}
 				else
 				{
@@ -96,7 +105,7 @@ Shader "Hidden/Vertx/Arc"
 
 					o.position = mul(UNITY_MATRIX_VP, worldPos);
 
-					if (HasNormalFade(modifications))
+					if (has_normal_fade(modifications))
 					{
 						float3 worldViewDir = _WorldSpaceCameraPos.xyz - worldPos;
 						float d = dot(worldViewDir, UnityObjectToWorldNormal(input.normal));
@@ -104,7 +113,7 @@ Shader "Hidden/Vertx/Arc"
 							smoothstep(0, 0.1, d) // front face
 						);
 
-						o.color.a *= max(0.4, d);
+						o.color.a *= max(0.3, d);
 					}
 				}
 				return o;
