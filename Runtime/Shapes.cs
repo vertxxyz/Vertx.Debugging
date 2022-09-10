@@ -81,20 +81,17 @@ namespace Vertx.Debugging
 		{
 			public Matrix4x4 Matrix;
 
-			public Sphere(Vector3 origin)
-			{
-				Matrix = Matrix4x4.Translate(origin);
-			}
+			public Sphere(Vector3 origin) => Matrix = Matrix4x4.Translate(origin);
 
-			public Sphere(Vector3 origin, float radius)
-			{
-				Matrix = Matrix4x4.Translate(origin) * Matrix4x4.Scale(new Vector3(radius, radius, radius));
-			}
+			public Sphere(Vector3 origin, float radius) 
+				=> Matrix = Matrix4x4.Translate(origin) * Matrix4x4.Scale(new Vector3(radius, radius, radius));
 
-			public Sphere(Vector3 origin, Quaternion rotation, float radius)
-			{
-				Matrix = Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius));
-			}
+			public Sphere(Vector3 origin, Quaternion rotation, float radius) 
+				=> Matrix = Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius));
+
+			public Sphere(Transform transform, float radius) : this(transform.position, transform.rotation, radius) { }
+
+			public Sphere(Transform transform) => Matrix = transform.localToWorldMatrix;
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)

@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
+using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.LowLevel;
@@ -19,22 +21,14 @@ namespace Vertx.Debugging
 	{
 		public static CommandBuilder Instance { get; }
 
-		private struct Duration
-		{
-			public float Value;
-		}
-
 		private CommandBuffer _commandBuffer;
-		private NativeList<Duration> _durations;
-		private static readonly int _sharedBufferStartId = Shader.PropertyToID("shared_buffer_start");
-		private readonly ListAndBuffer<Color> _colors = new ListAndBuffer<Color>("color_buffer");
-		private readonly ListAndBuffer<Shapes.DrawModifications> _modifications = new ListAndBuffer<Shapes.DrawModifications>("modifications_buffer");
-		private readonly ListBufferAndMpb<Shapes.Line> _lines = new ListBufferAndMpb<Shapes.Line>("line_buffer");
-		private readonly ListBufferAndMpb<Shapes.Arc> _arcs = new ListBufferAndMpb<Shapes.Arc>("arc_buffer");
-		private readonly ListBufferAndMpb<Shapes.Box> _boxes = new ListBufferAndMpb<Shapes.Box>("box_buffer");
+		private readonly ShapeBuffersWithData<Shapes.Line> _lines = new ShapeBuffersWithData<Shapes.Line>("line_buffer");
+		private readonly ShapeBuffersWithData<Shapes.Arc> _arcs = new ShapeBuffersWithData<Shapes.Arc>("arc_buffer");
+		private readonly ShapeBuffersWithData<Shapes.Box> _boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer");
 		private bool _queuedDispose;
-		private double _lastTime;
 		private DrawRenderPassFeature _pass;
+		private float _timeThisFrame;
+		private float _lastFixedTime;
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
@@ -46,7 +40,7 @@ namespace Vertx.Debugging
 			EditorApplication.update += OnUpdate;
 		}
 
-		private struct VertxDebuggingTick { }
+		private struct VertxDebugging { }
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void InitialiseRuntime()
@@ -56,47 +50,170 @@ namespace Vertx.Debugging
 			PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
 			PlayerLoopSystem[] subsystems = playerLoop.subSystemList.ToArray();
 			Type earlyUpdate = typeof(EarlyUpdate);
-			for (int i = 0; i < subsystems.Length; i++)
-			{
-				if (subsystems[i].type != earlyUpdate)
-					continue;
-
-				var tick = new PlayerLoopSystem
-				{
-					type = typeof(VertxDebuggingTick),
-					updateDelegate = Instance.RuntimeEarlyUpdate
-				};
-
-				var earlyUpdateSystem = subsystems[i];
-				PlayerLoopSystem[] source = earlyUpdateSystem.subSystemList;
-				PlayerLoopSystem[] dest = new PlayerLoopSystem[source.Length + 1];
-				Array.Copy(source, 0, dest, 1, source.Length);
-				dest[0] = tick;
-				subsystems[i].subSystemList = dest;
-			}
+			InjectFirstIn(earlyUpdate, typeof(VertxDebugging), Instance.RuntimeEarlyUpdate);
 
 			playerLoop.subSystemList = subsystems;
 			PlayerLoop.SetPlayerLoop(playerLoop);
+
+			void InjectFirstIn(Type type, Type actionType, PlayerLoopSystem.UpdateFunction action)
+			{
+				for (int i = 0; i < subsystems.Length; i++)
+				{
+					if (subsystems[i].type != type)
+						continue;
+					
+					var earlyUpdateSystem = subsystems[i];
+					PlayerLoopSystem[] source = earlyUpdateSystem.subSystemList;
+					for (int j = 0; j < source.Length; j++)
+					{
+						// Already appended time callback.
+						if (source[j].type == actionType)
+							return;
+					}
+					
+					PlayerLoopSystem[] dest = new PlayerLoopSystem[source.Length + 1];
+					Array.Copy(source, 0, dest, 1, source.Length);
+					dest[0] = new PlayerLoopSystem
+					{
+						type = actionType,
+						updateDelegate = action
+					};;
+					subsystems[i].subSystemList = dest;
+				}
+			}
 		}
 
 		private void RuntimeEarlyUpdate()
 		{
-			double time = Time.timeSinceLevelLoadAsDouble;
 			// ReSharper disable once CompareOfFloatsByEqualityOperator
-			if (_lastTime == time)
+			if (Time.deltaTime == 0)
 			{
 				// The game is paused, we don't need to clean up or transfer any data.
 			}
 			else
 			{
-				_lines.Clear();
-				_arcs.Clear();
-				_boxes.Clear();
-				_colors.Clear();
-				// TODO remove data that has a met duration
+				RemoveShapesByDuration(Time.deltaTime, null);
+				_lastFixedTime = Time.fixedTime;
+				_timeThisFrame = Time.time;
+			}
+		}
+
+		private void ClearAllShapes()
+		{
+			_lines.Clear();
+			_arcs.Clear();
+			_boxes.Clear();
+		}
+
+		private static bool CombineDependencies(ref JobHandle? handle, JobHandle? other)
+		{
+			if (!other.HasValue)
+				return false;
+			handle = handle.HasValue
+				? JobHandle.CombineDependencies(handle.Value, other.Value)
+				: other.Value;
+			return true;
+		}
+
+		/// <summary>
+		/// Remove data where the duration has been met.
+		/// </summary>
+		private void RemoveShapesByDuration(float deltaTime, JobHandle? dependency)
+		{
+			int oldLineCount = QueueRemovalJob(_lines, dependency, out JobHandle? lineHandle);
+			int oldArcCount = QueueRemovalJob(_arcs, dependency, out JobHandle? arcHandle);
+			int oldBoxCount = QueueRemovalJob(_boxes, dependency, out JobHandle? boxHandle);
+
+			JobHandle? coreHandle = null;
+			if (!CombineDependencies(ref coreHandle, lineHandle) & // Purposely an &, so each branch gets executed.
+			    !CombineDependencies(ref coreHandle, arcHandle) &
+			    !CombineDependencies(ref coreHandle, boxHandle))
+				coreHandle = dependency;
+
+			if (coreHandle.HasValue)
+			{
+				coreHandle.Value.Complete();
+
+				if (_lines.Count != oldLineCount)
+					_lines.SetDirty();
+
+				if (_arcs.Count != oldArcCount)
+					_arcs.SetDirty();
+
+				if (_boxes.Count != oldBoxCount)
+					_boxes.SetDirty();
 			}
 
-			_lastTime = time;
+			int QueueRemovalJob<T>(ShapeBuffersWithData<T> data, JobHandle? handleIn, out JobHandle? handleOut) where T : unmanaged
+			{
+				int length = data.Count;
+				if (length == 0)
+				{
+					handleOut = null;
+					return length;
+				}
+
+				var removalJob = new RemovalJob<T>
+				{
+					Elements = data.InternalList,
+					Durations = data.DurationsInternalList,
+					Modifications = data.ModificationsInternalList,
+					Colors = data.ColorsInternalList,
+					DeltaTime = deltaTime
+				};
+				handleOut = removalJob.Schedule(handleIn ?? default);
+				return length;
+			}
+		}
+
+		[BurstCompatible]
+		private struct RemovalJob<T> : IJob where T : unmanaged
+		{
+			public NativeList<T> Elements;
+			public NativeList<float> Durations;
+			public NativeList<Shapes.DrawModifications> Modifications;
+			public NativeList<Color> Colors;
+			public float DeltaTime;
+
+			/// <summary>
+			/// Removes indices in an unordered fashion,
+			/// But the removals happen identically across the buffers, so this is not a concern.
+			/// </summary>
+			public void Execute()
+			{
+				for (int index = Elements.Length - 1; index >= 0; index--)
+				{
+					float oldDuration = Durations[index];
+					if (math.isnan(oldDuration))
+					{
+						// ! Remember to change this when swapping between IJob and IJobFor
+						continue;
+					}
+
+					float newDuration = oldDuration - DeltaTime;
+					if (newDuration > 0)
+					{
+						Durations[index] = newDuration;
+						// ! Remember to change this when swapping between IJob and IJobFor
+						continue;
+					}
+
+					// RemoveUnorderedAt, shared logic:
+					int endIndex = Durations.Length - 1;
+
+					Durations[index] = Durations[endIndex];
+					Durations.RemoveAt(endIndex);
+
+					Elements[index] = Elements[endIndex];
+					Elements.RemoveAt(endIndex);
+
+					Modifications[index] = Modifications[endIndex];
+					Modifications.RemoveAt(endIndex);
+
+					Colors[index] = Colors[endIndex];
+					Colors.RemoveAt(endIndex);
+				}
+			}
 		}
 
 		private void OnBeginContextRendering(ScriptableRenderContext context, List<Camera> cameras)
@@ -175,7 +292,6 @@ namespace Vertx.Debugging
 
 		private void FillCommandBuffer(CommandBuffer commandBuffer, Camera camera)
 		{
-			int sharedBufferStart = 0;
 			RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, _lines);
 			RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, _arcs);
 			RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, _boxes);
@@ -183,64 +299,65 @@ namespace Vertx.Debugging
 			void RenderShape<T>(
 				AssetsUtility.Asset<Mesh> mesh,
 				AssetsUtility.Asset<Material> material,
-				ListBufferAndMpb<T> shape) where T : unmanaged
+				ShapeBuffersWithData<T> shape) where T : unmanaged
 			{
-				int boxCount = shape.Count;
-				if (boxCount <= 0)
+				int shapeCount = shape.Count;
+				if (shapeCount <= 0)
 					return;
 
-				// Synchronise the GraphicsBuffer with the data in the line buffer.
-				shape.SetGraphicsBufferDataIfDirty(commandBuffer);
-				_colors.SetGraphicsBufferDataIfDirty(commandBuffer);
-				_modifications.SetGraphicsBufferDataIfDirty(commandBuffer);
-
-				// Set the buffers to be used by the property block
 				MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
-				propertyBlock.SetBuffer(shape.BufferId, shape.Buffer);
-				propertyBlock.SetBuffer(_colors.BufferId, _colors.Buffer);
-				propertyBlock.SetBuffer(_modifications.BufferId, _modifications.Buffer);
-				propertyBlock.SetInt(_sharedBufferStartId, sharedBufferStart);
+				// Set the buffers to be used by the property block
+				// Synchronise the GraphicsBuffer with the data in the line buffer.
+				shape.Set(commandBuffer, propertyBlock);
 
 				// Render boxes
-				commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, 0, boxCount, propertyBlock);
-
-				sharedBufferStart += boxCount;
+				commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, -1, shapeCount, propertyBlock);
 			}
 		}
 
-		public void AppendRay(in Shapes.Ray ray, in Color color, float duration) => AppendLine(new Shapes.Line(ray), color, duration);
+		public void AppendRay(Shapes.Ray ray, Color color, float duration) => AppendLine(new Shapes.Line(ray), color, duration);
 
-		public void AppendLine(in Shapes.Line line, in Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
+		public void AppendLine(Shapes.Line line, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
+			duration = GetDuration(duration);
+			if (duration < 0)
+				return;
 			InitialiseIfRequired();
-			_lines.EnsureCreated();
-			_lines.Add(line);
-			_colors.EnsureCreated();
-			_colors.Add(color);
-			_modifications.EnsureCreated();
-			_modifications.Add(modifications);
+			_lines.Add(line, color, modifications, duration);
 		}
 
-		public void AppendArc(in Shapes.Arc arc, in Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
+		public void AppendArc(Shapes.Arc arc, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
+			duration = GetDuration(duration);
+			if (duration < 0)
+				return;
 			InitialiseIfRequired();
-			_arcs.EnsureCreated();
-			_arcs.Add(arc);
-			_colors.EnsureCreated();
-			_colors.Add(color);
-			_modifications.EnsureCreated();
-			_modifications.Add(modifications);
+			_arcs.Add(arc, color, modifications, duration);
 		}
 
 		public void AppendBox(Shapes.Box box, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
+			duration = GetDuration(duration);
+			if (duration < 0)
+				return;
 			InitialiseIfRequired();
-			_boxes.EnsureCreated();
-			_boxes.Add(box);
-			_colors.EnsureCreated();
-			_colors.Add(color);
-			_modifications.EnsureCreated();
-			_modifications.Add(modifications);
+			_boxes.Add(box, color, modifications, duration);
+		}
+
+		private static bool IsInFixedUpdate()
+#if UNITY_2020_3_OR_NEWER
+			=> Time.inFixedTimeStep;
+#else
+			=> Time.deltaTime == Time.fixedDeltaTime;
+#endif
+		
+		private float GetDuration(float duration)
+		{
+			// Calls from FixedUpdate should hang around until the next FixedUpdate, at minimum.
+			if (IsInFixedUpdate() && duration == 0)
+				duration += Time.fixedDeltaTime - (_timeThisFrame - Time.fixedTime);
+
+			return duration;
 		}
 
 		private void InitialiseIfRequired()
@@ -254,11 +371,7 @@ namespace Vertx.Debugging
 		{
 			AssemblyReloadEvents.beforeAssemblyReload -= Dispose;
 
-			_commandBuffer.Dispose();
-			if (_durations.IsCreated)
-				_durations.Dispose();
-			_modifications.Dispose();
-			_colors.Dispose();
+			_commandBuffer?.Dispose();
 			_lines.Dispose();
 			_arcs.Dispose();
 			_boxes.Dispose();

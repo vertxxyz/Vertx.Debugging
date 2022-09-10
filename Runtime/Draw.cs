@@ -48,6 +48,9 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 		private static readonly CommandBuilder _builder = CommandBuilder.Instance;
 #endif
+		
+		private static readonly Color _hitColor = new Color(1, 0.1f, 0.2f);
+		private static readonly Color _noHitColor = new Color(0.4f, 1f, 0.3f);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw<T>(T shape) where T : struct, IDrawable
@@ -62,6 +65,14 @@ namespace Vertx.Debugging
 		{
 #if UNITY_EDITOR
 			shape.Draw(_builder, color, duration);
+#endif
+		}
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw<T>(T shape, bool hit, float duration = 0) where T : struct, IDrawable
+		{
+#if UNITY_EDITOR
+			shape.Draw(_builder, hit ? _hitColor : _noHitColor, duration);
 #endif
 		}
 

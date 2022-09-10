@@ -8,94 +8,61 @@ namespace Vertx.Debugging
 {
 	public sealed partial class CommandBuilder
 	{
-		private class ListAndBuffer<T> : IDisposable where T : unmanaged
+		private class ListWrapper<T> : IDisposable where T : unmanaged
 		{
 			private const int InitialListCapacity = 32;
 
-			public int BufferId { get; }
-			private NativeList<T> _list;
-			private GraphicsBuffer _buffer;
-			private bool _dirty = true;
+			public NativeList<T> List;
+			public int Count => List.IsCreated ? List.Length : 0;
 
-			public int Count => _list.IsCreated ? _list.Length : 0;
-			
-			public void Add(in T line)
+			public void Create() => List = new NativeList<T>(InitialListCapacity, Allocator.Persistent);
+
+			public virtual void Dispose()
 			{
-				_list.Add(line);
-				_dirty = true;
-			}
-			
-			public T this[int i]
-			{
-				get => _list[i];
-				set
-				{
-					_list[i] = value;
-					_dirty = true;
-				}
-			}
-			
-			public void SetValueWithoutNotify(int i, T value) => _list[i] = value;
-
-			public ListAndBuffer(string bufferName) => BufferId = Shader.PropertyToID(bufferName);
-
-			public GraphicsBuffer Buffer
-			{
-				get
-				{
-					if (_buffer == null)
-					{
-						_buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _list.Capacity, UnsafeUtility.SizeOf<T>());
-						_dirty = true;
-					}
-					else if (_buffer.count < _list.Capacity)
-					{
-						_buffer.Dispose();
-						_buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _list.Capacity, UnsafeUtility.SizeOf<T>());
-						_dirty = true;
-					}
-
-					return _buffer;
-				}
-			}
-
-			public GraphicsBuffer BufferUnchecked => _buffer;
-
-			public void EnsureCreated()
-			{
-				if (!_list.IsCreated)
-				{
-					_list = new NativeList<T>(InitialListCapacity, Allocator.Persistent);
-					_dirty = true;
-				}
-			}
-
-			public void Dispose()
-			{
-				if (_list.IsCreated)
-					_list.Dispose();
-				_buffer?.Dispose();
-				_dirty = true;
-			}
-
-			public void SetGraphicsBufferDataIfDirty(CommandBuffer commandBuffer)
-			{
-				if (!_dirty)
-					return;
-				commandBuffer.SetBufferData(Buffer, _list.AsArray(), 0, 0, _list.Length);
-				_dirty = false;
-			}
-
-			public void Clear()
-			{
-				if (_list.IsCreated)
-					_list.Clear();
-				_dirty = true;
+				if (List.IsCreated)
+					List.Dispose();
 			}
 		}
 
-		private class ListBufferAndMpb<T> : ListAndBuffer<T> where T : unmanaged
+		private class ListAndBuffer<T> : ListWrapper<T> where T : unmanaged
 		{
+			private readonly int _bufferId;
+			private GraphicsBuffer _buffer;
+
+			private ListAndBuffer() { }
+
+			public ListAndBuffer(string bufferName) => _bufferId = Shader.PropertyToID(bufferName);
+
+			public void SetBufferData(CommandBuffer commandBuffer)
+			{
+				if (_buffer == null || _buffer.count < List.Capacity)
+				{
+					// Expand graphics buffer to encompass the capacity of the list.
+					_buffer?.Dispose();
+					_buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, List.Capacity, UnsafeUtility.SizeOf<T>());
+				}
+
+				commandBuffer.SetBufferData(_buffer, List.AsArray(), 0, 0, List.Length);
+			}
+
+			public void SetBufferToPropertyBlock(MaterialPropertyBlock propertyBlock) => propertyBlock.SetBuffer(_bufferId, _buffer);
+
+			public override void Dispose()
+			{
+				base.Dispose();
+				_buffer?.Dispose();
+				_buffer = null;
+			}
+		}
+
+		private class ShapeBuffersWithData<T> : IDisposable where T : unmanaged
+		{
+			private bool _dirty = true;
+			private readonly ListWrapper<float> _durations = new ListWrapper<float>();
+			private readonly ListAndBuffer<T> _elements;
+			private readonly ListAndBuffer<Color> _colors = new ListAndBuffer<Color>("color_buffer");
+			private readonly ListAndBuffer<Shapes.DrawModifications> _modifications = new ListAndBuffer<Shapes.DrawModifications>("modifications_buffer");
+
 			private MaterialPropertyBlock _propertyBlock;
 
 			public MaterialPropertyBlock PropertyBlock
@@ -108,7 +75,75 @@ namespace Vertx.Debugging
 				}
 			}
 
-			public ListBufferAndMpb(string bufferName) : base(bufferName) { }
+			public int Count => _elements.Count;
+
+			public NativeList<T> InternalList => _elements.List;
+			public NativeList<float> DurationsInternalList => _durations.List;
+			public NativeList<Shapes.DrawModifications> ModificationsInternalList => _modifications.List;
+			public NativeList<Color> ColorsInternalList => _colors.List;
+
+			private ShapeBuffersWithData() { }
+
+			public ShapeBuffersWithData(string bufferName) => _elements = new ListAndBuffer<T>(bufferName);
+
+			public void Set(CommandBuffer commandBuffer, MaterialPropertyBlock propertyBlock)
+			{
+				if (_dirty)
+				{
+					_elements.SetBufferData(commandBuffer);
+					_colors.SetBufferData(commandBuffer);
+					_modifications.SetBufferData(commandBuffer);
+					_dirty = false;
+				}
+
+				_elements.SetBufferToPropertyBlock(propertyBlock);
+				_colors.SetBufferToPropertyBlock(propertyBlock);
+				_modifications.SetBufferToPropertyBlock(propertyBlock);
+			}
+
+			public void SetDirty() => _dirty = true;
+
+			private void EnsureCreated()
+			{
+				if (_elements.List.IsCreated)
+					return;
+				_elements.Create();
+				_colors.Create();
+				_modifications.Create();
+				_durations.Create();
+				_dirty = true;
+			}
+
+			public void Add(T shape, Color color, Shapes.DrawModifications modifications, float duration)
+			{
+				EnsureCreated();
+				_elements.List.Add(shape);
+				_colors.List.Add(color);
+				_modifications.List.Add(modifications);
+				_durations.List.Add(duration);
+				_dirty = true;
+			}
+
+			public void Clear()
+			{
+				if (_elements.Count == 0)
+					return;
+				_elements.List.Clear();
+				_colors.List.Clear();
+				_modifications.List.Clear();
+				_durations.List.Clear();
+				_dirty = true;
+			}
+
+			public void Dispose()
+			{
+				if (!_elements.List.IsCreated)
+					return;
+				_elements.Dispose();
+				_colors.Dispose();
+				_modifications.Dispose();
+				_durations.Dispose();
+			}
 		}
 	}
 }

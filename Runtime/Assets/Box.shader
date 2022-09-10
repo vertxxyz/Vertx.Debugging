@@ -30,7 +30,6 @@ Shader "Hidden/Vertx/Box"
 			};
 
 			StructuredBuffer<Box> box_buffer;
-			int shared_buffer_start;
 
 			struct vertInput
 			{
@@ -54,9 +53,8 @@ Shader "Hidden/Vertx/Box"
 				Box a = box_buffer[input.instanceID];
 				unity_ObjectToWorld = a.Matrix;
 
-				int i = shared_buffer_start + input.instanceID;
-				o.color = color_buffer[i];
-				int modifications = modifications_buffer[i];
+				o.color = color_buffer[input.instanceID];
+				int modifications = modifications_buffer[input.instanceID];
 
 				float4 worldPos = mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0));
 
