@@ -148,7 +148,9 @@ namespace Vertx.Debugging
 			public Box(Vector3 position, Quaternion rotation, Vector3 scale) => Matrix = Matrix4x4.TRS(position, rotation, scale);
 			public Box(Transform transform) => Matrix = transform.localToWorldMatrix;
 
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(this, color, duration);
+			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation) : this(position, orientation, halfExtents) { }
+
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(this, color, duration, DrawModifications.NormalFade);
 		}
 
 		public struct Capsule : IDrawable

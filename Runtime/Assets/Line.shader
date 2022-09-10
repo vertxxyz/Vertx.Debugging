@@ -10,46 +10,38 @@ Shader "Hidden/Vertx/Line"
 
 		Offset -1, -1
 		
-		Pass
+		Pass // 0
 		{
+			ZTest Greater
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_instancing
-			#include "UnityCG.cginc"
+			#include "LineShared.cginc"
 			#pragma instancing_options assumeuniformscaling nolightmap nolightprobe nolodfade
 			#pragma target 4.5
 
-			struct Line
+			
+			fixed4 frag(v2f i) : SV_Target
 			{
-				float3 A, B;
-			};
-
-			StructuredBuffer<Line> line_buffer;
-			StructuredBuffer<float4> color_buffer;
-
-			struct vertInput
-			{
-				float2 uv : TEXCOORD0;
-				uint vertexID : SV_VertexID;
-				uint instanceID : SV_InstanceID;
-			};
-
-			struct v2f
-			{
-				float4 position : SV_POSITION;
-				float4 color : TEXCOORD1;
-			};
-
-			v2f vert(vertInput input)
-			{
-				v2f o;
-				Line l = line_buffer[input.instanceID];
-				o.position = UnityObjectToClipPos(input.vertexID == 0 ? l.A : l.B);
-				o.color = color_buffer[input.instanceID];
-				return o;
+				i.color.a *= 0.25;
+				return i.color;
 			}
+			ENDCG
+		}
+		
+		Pass // 1
+		{
+			ZTest LEqual
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+			#pragma multi_compile_instancing
+			#include "LineShared.cginc"
+			#pragma instancing_options assumeuniformscaling nolightmap nolightprobe nolodfade
+			#pragma target 4.5
 
+			
 			fixed4 frag(v2f i) : SV_Target
 			{
 				return i.color;
