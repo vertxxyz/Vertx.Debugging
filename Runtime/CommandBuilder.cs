@@ -32,7 +32,7 @@ namespace Vertx.Debugging
 		private readonly ShapeBuffersWithData<Shapes.Arc> _arcs = new ShapeBuffersWithData<Shapes.Arc>("arc_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Box> _boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer");
 		private bool _queuedDispose;
-		private DrawRenderPassFeature _pass;
+		private VertxDebuggingRendererFeature _pass;
 		private float _timeThisFrame;
 
 		static CommandBuilder() => Instance = new CommandBuilder();
@@ -230,7 +230,7 @@ namespace Vertx.Debugging
 
 				ScriptableRenderer renderer = cameraData.scriptableRenderer;
 				if (_pass == null)
-					_pass = ScriptableObject.CreateInstance<DrawRenderPassFeature>();
+					_pass = ScriptableObject.CreateInstance<VertxDebuggingRendererFeature>();
 
 				_pass.AddRenderPasses(renderer);
 			}

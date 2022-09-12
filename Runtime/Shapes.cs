@@ -367,6 +367,8 @@ namespace Vertx.Debugging
 		{
 			public Matrix4x4 Matrix;
 
+			public Sphere(Matrix4x4 matrix) => Matrix = matrix;
+			
 			public Sphere(Vector3 origin) => Matrix = Matrix4x4.Translate(origin);
 
 			public Sphere(Vector3 origin, float radius)
@@ -378,6 +380,8 @@ namespace Vertx.Debugging
 			public Sphere(Transform transform, float radius) : this(transform.position, transform.rotation, radius) { }
 
 			public Sphere(Transform transform) => Matrix = transform.localToWorldMatrix;
+			
+			public Sphere GetTranslated(Vector3 translation) => new Sphere(Matrix4x4.Translate(translation) * Matrix);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -406,14 +410,16 @@ namespace Vertx.Debugging
 		public struct Box : IDrawable
 		{
 			public Matrix4x4 Matrix;
+			
+			private Box(Matrix4x4 matrix) => Matrix = matrix;
 
-			public Box(Vector3 position, Quaternion rotation, Vector3 scale) => Matrix = Matrix4x4.TRS(position, rotation, scale);
+			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation) : this(Matrix4x4.TRS(position, orientation, halfExtents)) { }
 
 			public Box(Transform transform) => Matrix = transform.localToWorldMatrix;
 
-			public Box(Bounds bounds) : this(bounds.center, Quaternion.identity, bounds.extents) { }
-
-			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation) : this(position, orientation, halfExtents) { }
+			public Box(Bounds bounds) : this(bounds.center, bounds.extents, Quaternion.identity) { }
+			
+			public Box GetTranslated(Vector3 translation) => new Box(Matrix4x4.Translate(translation) * Matrix);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -448,6 +454,8 @@ namespace Vertx.Debugging
 				SpherePosition2 = SpherePosition1 + direction * (height - radius * 2);
 				Radius = radius;
 			}
+
+			public Capsule GetTranslated(Vector3 translation) => new Capsule(SpherePosition1 + translation, SpherePosition2 + translation, Radius);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)

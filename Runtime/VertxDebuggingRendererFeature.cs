@@ -5,9 +5,9 @@ using UnityEngine.Rendering.Universal;
 
 namespace Vertx.Debugging
 {
-	public class DrawRenderPassFeature : ScriptableRendererFeature
+	internal class VertxDebuggingRendererFeature : ScriptableRendererFeature
 	{
-		private class DrawRenderPass : ScriptableRenderPass
+		private class VertxDebuggingRenderPass : ScriptableRenderPass
 		{
 			public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor) { }
 
@@ -17,10 +17,10 @@ namespace Vertx.Debugging
 			public override void FrameCleanup(CommandBuffer cmd) { }
 		}
 
-		private DrawRenderPass _pass;
+		private VertxDebuggingRenderPass _pass;
 
 		public override void Create() =>
-			_pass = new DrawRenderPass
+			_pass = new VertxDebuggingRenderPass
 			{
 				renderPassEvent = RenderPassEvent.AfterRendering + 10
 			};
