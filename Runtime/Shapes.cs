@@ -68,6 +68,13 @@ namespace Vertx.Debugging
 			vector3 /= Mathf.Sqrt(sqrMag);
 		}
 
+		private static float GetClampedMaxDistance(float distance)
+		{
+			if (float.IsInfinity(distance))
+				return MaxDrawDistance;
+			return Mathf.Min(distance, MaxDrawDistance);
+		}
+
 		public struct Line : IDrawable
 		{
 			public Vector3 A, B;
@@ -377,10 +384,20 @@ namespace Vertx.Debugging
 			{
 				var coreArc = new Arc(Matrix);
 				commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.NormalFade);
-				// Vector3 forward = Matrix.MultiplyPoint3x4(Vector3.forward);
-				// Vector3 right = Matrix.MultiplyPoint3x4(Vector3.right);
 				commandBuilder.AppendArc(new Arc(Matrix * Matrix4x4.Rotate(Quaternion.AngleAxis(90, Vector3.up))), color, duration, DrawModifications.NormalFade);
 				commandBuilder.AppendArc(new Arc(Matrix * Matrix4x4.Rotate(Quaternion.AngleAxis(90, Vector3.right))), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.Custom);
+			}
+
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration, Axes visibleAxes)
+			{
+				var coreArc = new Arc(Matrix);
+				if ((visibleAxes & Axes.Y) != 0)
+					commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.NormalFade);
+				if ((visibleAxes & Axes.X) != 0)
+					commandBuilder.AppendArc(new Arc(Matrix * Matrix4x4.Rotate(Quaternion.AngleAxis(90, Vector3.up))), color, duration, DrawModifications.NormalFade);
+				if ((visibleAxes & Axes.Z) != 0)
+					commandBuilder.AppendArc(new Arc(Matrix * Matrix4x4.Rotate(Quaternion.AngleAxis(90, Vector3.right))), color, duration, DrawModifications.NormalFade);
 				commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.Custom);
 			}
 #endif
