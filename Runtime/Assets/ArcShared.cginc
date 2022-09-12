@@ -34,7 +34,6 @@ v2f vert(vertInput input)
     UNITY_MATRIX_MV = mul(unity_MatrixV, unity_ObjectToWorld);
 
     o.color = color_buffer[input.instanceID];
-    o.uvAndTurns = float4(input.uv, a.Turns, 0);
     int modifications = modifications_buffer[input.instanceID];
 
     if (has_custom(modifications))
@@ -56,17 +55,41 @@ v2f vert(vertInput input)
             float d = r1Sqrd / d1; // Distance from sphere to place circle
             float r = sqrt(r1Sqrd - d * d); // Radius of circle
 
-            float3 up = UNITY_MATRIX_IT_MV[1].xyz;
-            float3 right = normalize(cross(n, up));
-            up = normalize(cross(right, n));
-            float3 v = input.vertex.xyz * r.xxx;
-            float3 worldPos = originWorld + n * d
-                + right * v.x
-                + up * v.y
-                - n * v.z;
+            float3 up, right;
+            if(a.Turns == 0.5)
+            {
+                float3 worldFacing = normalize(mul(unity_ObjectToWorld, float4(1.0, 0.0, 0.0, 1.0)).xyz - originWorld);
+                up = normalize(cross(n, worldFacing));
+                right = normalize(cross(up, n));
 
-            // Get the origin (it's not affected by rotation or scale)
-            o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
+                float3 v = input.vertex.xyz * r.xxx;
+                float3 localPos = n * d
+                    + right * v.x
+                    + up * v.y
+                    - n * v.z;
+                float3 worldPos = originWorld + localPos;
+
+                // If this is not a smoothstep, it doesn't seem to properly interpolate.
+                a.Turns = smoothstep(-0.05, 0.05, dot(localPos, worldFacing));
+
+                // Get the origin (it's not affected by rotation or scale)
+                o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
+            }
+            else
+            {
+                up = UNITY_MATRIX_IT_MV[1].xyz;
+                right = normalize(cross(n, up));
+                up = normalize(cross(right, n));
+
+                float3 v = input.vertex.xyz * r.xxx;
+                float3 worldPos = originWorld + n * d
+                    + right * v.x
+                    + up * v.y
+                    - n * v.z;
+
+                // Get the origin (it's not affected by rotation or scale)
+                o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
+            }
         }
     }
     else if (has_face_camera(modifications))
@@ -91,5 +114,6 @@ v2f vert(vertInput input)
             o.color.a *= max(0.3, d);
         }
     }
+    o.uvAndTurns = float4(input.uv, a.Turns, 0);
     return o;
 }

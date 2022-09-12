@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Object = UnityEngine.Object;
@@ -19,6 +20,11 @@ namespace Vertx.Debugging
 {
 	public sealed partial class CommandBuilder
 	{
+		private const string ProfilerName = "Vertx.Debugging";
+		private const string RuntimeEarlyUpdateProfilerName = ProfilerName + " " + nameof(RuntimeEarlyUpdate);
+		private const string FillCommandBufferProfilerName = ProfilerName + " " + nameof(FillCommandBuffer);
+		private const string ExecuteProfilerName = ProfilerName + " Execute";
+		
 		public static CommandBuilder Instance { get; }
 
 		private CommandBuffer _commandBuffer;
@@ -28,7 +34,6 @@ namespace Vertx.Debugging
 		private bool _queuedDispose;
 		private DrawRenderPassFeature _pass;
 		private float _timeThisFrame;
-		private float _lastFixedTime;
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
@@ -92,9 +97,10 @@ namespace Vertx.Debugging
 			}
 			else
 			{
+				Profiler.BeginSample(RuntimeEarlyUpdateProfilerName);
 				RemoveShapesByDuration(Time.deltaTime, null);
-				_lastFixedTime = Time.fixedTime;
 				_timeThisFrame = Time.time;
+				Profiler.EndSample();
 			}
 		}
 
@@ -184,12 +190,6 @@ namespace Vertx.Debugging
 				for (int index = Elements.Length - 1; index >= 0; index--)
 				{
 					float oldDuration = Durations[index];
-					if (math.isnan(oldDuration))
-					{
-						// ! Remember to change this when swapping between IJob and IJobFor
-						continue;
-					}
-
 					float newDuration = oldDuration - DeltaTime;
 					if (newDuration > 0)
 					{
@@ -243,14 +243,20 @@ namespace Vertx.Debugging
 
 		private void OnPostRender(Camera camera)
 		{
-			if (SharedRenderingDetails(camera))
-				Graphics.ExecuteCommandBuffer(_commandBuffer);
+			if (!SharedRenderingDetails(camera))
+				return;
+			Profiler.BeginSample(ExecuteProfilerName);
+			Graphics.ExecuteCommandBuffer(_commandBuffer);
+			Profiler.EndSample();
 		}
 
 		public void ExecuteDrawRenderPass(ScriptableRenderContext context, Camera camera)
 		{
-			if (SharedRenderingDetails(camera))
-				context.ExecuteCommandBuffer(_commandBuffer);
+			if (!SharedRenderingDetails(camera))
+				return;
+			Profiler.BeginSample(ExecuteProfilerName);
+			context.ExecuteCommandBuffer(_commandBuffer);
+			Profiler.EndSample();
 		}
 
 		private bool SharedRenderingDetails(Camera camera)
@@ -292,6 +298,7 @@ namespace Vertx.Debugging
 
 		private void FillCommandBuffer(CommandBuffer commandBuffer, Camera camera)
 		{
+			Profiler.BeginSample(RuntimeEarlyUpdateProfilerName);
 			RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, _lines);
 			RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, _arcs);
 			RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, _boxes);
@@ -313,6 +320,7 @@ namespace Vertx.Debugging
 				// Render boxes
 				commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, -1, shapeCount, propertyBlock);
 			}
+			Profiler.EndSample();
 		}
 
 		public void AppendRay(Shapes.Ray ray, Color color, float duration) => AppendLine(new Shapes.Line(ray), color, duration);

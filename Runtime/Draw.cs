@@ -1,62 +1,25 @@
-using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	public sealed class SettingsScope : IDisposable
-	{
-		public Color Color { get; internal set; }
-		public Matrix4x4 Matrix { get; internal set; }
-		public float Duration { get; internal set; }
-
-		// ReSharper disable once MemberHidesStaticFromOuterClass
-		public SettingsScope WithColor(Color color)
-		{
-			Color = color;
-			return this;
-		}
-
-		// ReSharper disable once MemberHidesStaticFromOuterClass
-		public SettingsScope WithMatrix(Matrix4x4 matrix)
-		{
-			Matrix = matrix;
-			return this;
-		}
-
-		// ReSharper disable once MemberHidesStaticFromOuterClass
-		public SettingsScope WithLocalSpace(Transform transform)
-		{
-			Matrix = transform.localToWorldMatrix;
-			return this;
-		}
-
-		// ReSharper disable once MemberHidesStaticFromOuterClass
-		public SettingsScope WithDuration(float duration)
-		{
-			Duration = duration;
-			return this;
-		}
-
-		public void Dispose() { }
-	}
-
 	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	public static class D
 	{
 #if UNITY_EDITOR
-		private static readonly CommandBuilder _builder = CommandBuilder.Instance;
+		private static readonly CommandBuilder s_Builder = CommandBuilder.Instance;
 #endif
-		
-		private static readonly Color _hitColor = new Color(1, 0.1f, 0.2f);
-		private static readonly Color _noHitColor = new Color(0.4f, 1f, 0.3f);
+
+		private static readonly Color s_HitColor = new Color(1, 0.1f, 0.2f);
+		private static readonly Color s_NoHitColor = new Color(0.4f, 1f, 0.3f);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw<T>(T shape) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
-			shape.Draw(_builder, Color.white, 0);
+			shape.Draw(s_Builder, Color.white, 0);
 #endif
 		}
 
@@ -64,20 +27,54 @@ namespace Vertx.Debugging
 		public static void raw<T>(T shape, Color color, float duration = 0) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
-			shape.Draw(_builder, color, duration);
-#endif
-		}
-		
-		[Conditional("UNITY_EDITOR")]
-		public static void raw<T>(T shape, bool hit, float duration = 0) where T : struct, IDrawable
-		{
-#if UNITY_EDITOR
-			shape.Draw(_builder, hit ? _hitColor : _noHitColor, duration);
+			shape.Draw(s_Builder, color, duration);
 #endif
 		}
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Ray ray) => raw(new Shapes.Ray(ray.origin, ray.direction), Color.white);
+		public static void raw<T>(T shape, bool hit, float duration = 0) where T : struct, IDrawable
+		{
+#if UNITY_EDITOR
+			shape.Draw(s_Builder, hit ? s_HitColor : s_NoHitColor, duration);
+#endif
+		}
+
+		// ------ Conversion for Unity types ------
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Ray ray, Color color, float duration = 0) => raw(new Shapes.Ray(ray.origin, ray.direction), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Ray ray, bool hit, float duration = 0) => raw(ray, hit ? s_HitColor : s_NoHitColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Ray ray, float duration = 0) => raw(ray, Color.white, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Vector3 position, Color color, float duration = 0) => raw(new Shapes.Point(position), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Vector3 position, float duration = 0) => raw(position, Color.white, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Bounds bounds, Color color, float duration = 0) => raw(new Shapes.Box(bounds), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Bounds bounds, float duration = 0) => raw(bounds, Color.white, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(RaycastHit hit, Color color, float duration = 0) => raw(new Shapes.Ray(hit.point, hit.normal), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(RaycastHit hit, float duration = 0) => raw(hit, s_HitColor, duration);
+		
+#if VERTX_PHYSICS_2D
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(RaycastHit2D hit, Color color, float duration = 0) => raw(new Shapes.Ray(hit.point, hit.normal), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(RaycastHit2D hit, float duration = 0) => raw(hit, s_HitColor, duration);
+#endif
 	}
 
 	public interface IDrawable
