@@ -8,7 +8,7 @@ All of these methods are accessed through `DebugUtils.`.
 https://user-images.githubusercontent.com/21963717/153703387-cc55e3c6-26b6-4474-815a-0e65e27a73f0.mov
 
 > **Note**  
-> Calls to these methods are stripped when building. You do not have to remove or use defines.
+> Calls to these methods are stripped when building. You do not have to remove code or use defines.
 > Debugging from jobs and builds is not supported, I would recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
 
 ## General

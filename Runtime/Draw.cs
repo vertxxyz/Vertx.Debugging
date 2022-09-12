@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
@@ -11,9 +10,6 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 		private static readonly CommandBuilder s_Builder = CommandBuilder.Instance;
 #endif
-
-		private static readonly Color s_HitColor = new Color(1, 0.1f, 0.2f);
-		private static readonly Color s_NoHitColor = new Color(0.4f, 1f, 0.3f);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw<T>(T shape) where T : struct, IDrawable
@@ -35,7 +31,15 @@ namespace Vertx.Debugging
 		public static void raw<T>(T shape, bool hit, float duration = 0) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
-			shape.Draw(s_Builder, hit ? s_HitColor : s_NoHitColor, duration);
+			shape.Draw(s_Builder, hit ? Shapes.HitColor : Shapes.CastColor, duration);
+#endif
+		}
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw<T>(T shape, Color castColor, Color hitColor, float duration = 0) where T : struct, IDrawableCast
+		{
+#if UNITY_EDITOR
+			shape.Draw(s_Builder, castColor, hitColor, duration);
 #endif
 		}
 
@@ -45,7 +49,7 @@ namespace Vertx.Debugging
 		public static void raw(Ray ray, Color color, float duration = 0) => raw(new Shapes.Ray(ray.origin, ray.direction), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Ray ray, bool hit, float duration = 0) => raw(ray, hit ? s_HitColor : s_NoHitColor, duration);
+		public static void raw(Ray ray, bool hit, float duration = 0) => raw(ray, hit ? Shapes.HitColor : Shapes.CastColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray ray, float duration = 0) => raw(ray, Color.white, duration);
@@ -66,14 +70,14 @@ namespace Vertx.Debugging
 		public static void raw(RaycastHit hit, Color color, float duration = 0) => raw(new Shapes.Ray(hit.point, hit.normal), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit hit, float duration = 0) => raw(hit, s_HitColor, duration);
+		public static void raw(RaycastHit hit, float duration = 0) => raw(hit, Shapes.HitColor, duration);
 		
 #if VERTX_PHYSICS_2D
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RaycastHit2D hit, Color color, float duration = 0) => raw(new Shapes.Ray(hit.point, hit.normal), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit2D hit, float duration = 0) => raw(hit, s_HitColor, duration);
+		public static void raw(RaycastHit2D hit, float duration = 0) => raw(hit, Shapes.HitColor, duration);
 #endif
 	}
 
@@ -81,6 +85,13 @@ namespace Vertx.Debugging
 	{
 #if UNITY_EDITOR
 		void Draw(CommandBuilder commandBuilder, Color color, float duration);
+#endif
+	}
+	
+	public interface IDrawableCast : IDrawable
+	{
+#if UNITY_EDITOR
+		void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration);
 #endif
 	}
 }

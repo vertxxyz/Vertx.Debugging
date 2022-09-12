@@ -5,10 +5,13 @@ Shader "Hidden/Vertx/Line"
 	{
 		Tags
 		{
-			"RenderType"="Opaque"
+			"RenderType"="Transparent"
 		}
 
+		ZWrite Off
+		Blend SrcAlpha OneMinusSrcAlpha
 		Offset -1, -1
+		Cull Off
 		
 		Pass // 0
 		{
@@ -20,7 +23,6 @@ Shader "Hidden/Vertx/Line"
 			#include "LineShared.cginc"
 			#pragma instancing_options assumeuniformscaling nolightmap nolightprobe nolodfade
 			#pragma target 4.5
-
 			
 			fixed4 frag(v2f i) : SV_Target
 			{
@@ -40,7 +42,6 @@ Shader "Hidden/Vertx/Line"
 			#include "LineShared.cginc"
 			#pragma instancing_options assumeuniformscaling nolightmap nolightprobe nolodfade
 			#pragma target 4.5
-
 			
 			fixed4 frag(v2f i) : SV_Target
 			{

@@ -14,6 +14,9 @@ namespace Vertx.Debugging
 		public static Color ColorX => new Color(1, 0.1f, 0.2f);
 		public static Color ColorY => new Color(0.3f, 1, 0.1f);
 		public static Color ColorZ => new Color(0.1f, 0.4f, 1);
+		
+		public static readonly Color HitColor = new Color(1, 0.1f, 0.2f);
+		public static readonly Color CastColor = new Color(0.4f, 1f, 0.3f);
 
 		[Flags]
 		public enum Axes
@@ -25,6 +28,8 @@ namespace Vertx.Debugging
 			TwoDimensional = X | Y,
 			All = X | Y | Z
 		}
+		
+		private const int MaxDrawDistance = 1_000_000;
 
 		private static Vector3 GetValidPerpendicular(Vector3 input)
 		{
@@ -113,6 +118,8 @@ namespace Vertx.Debugging
 				Origin = origin;
 				Direction = direction;
 			}
+
+			public static implicit operator Ray(UnityEngine.Ray ray) => new Ray(ray.origin, ray.direction);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendRay(this, color, duration);
@@ -376,40 +383,6 @@ namespace Vertx.Debugging
 				commandBuilder.AppendArc(new Arc(Matrix * Matrix4x4.Rotate(Quaternion.AngleAxis(90, Vector3.right))), color, duration, DrawModifications.NormalFade);
 				commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.Custom);
 			}
-#endif
-		}
-
-		public struct SphereCast : IDrawable
-		{
-			public Vector3 Origin, Direction;
-			public float Radius, MaxDistance;
-
-			public SphereCast(Vector3 origin, Vector3 direction, float radius, float maxDistance = Mathf.Infinity)
-			{
-				Origin = origin;
-				Direction = direction;
-				Radius = radius;
-				MaxDistance = maxDistance;
-			}
-
-			public SphereCast(in UnityEngine.Ray ray)
-			{
-				Origin = ray.origin;
-				Direction = ray.direction;
-				Radius = 0;
-				MaxDistance = 0;
-			}
-
-			public SphereCast(in Ray ray)
-			{
-				Origin = ray.Origin;
-				Direction = ray.Direction;
-				Radius = 0;
-				MaxDistance = 0;
-			}
-
-#if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) { }
 #endif
 		}
 
