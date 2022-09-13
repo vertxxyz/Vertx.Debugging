@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Vertx.Debugging.Editor
 {
     [CustomPropertyDrawer(typeof(PairAttribute))]
-    internal class PairDrawer : PropertyDrawer
+    internal sealed class PairDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-    public class PairAttribute : PropertyAttribute
+    public sealed class PairAttribute : PropertyAttribute
     {
         public readonly GUIContent FirstLabel, SecondLabel;
 

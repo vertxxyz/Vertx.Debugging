@@ -1,10 +1,13 @@
 #if UNITY_EDITOR
+#if UNITY_2021_1_OR_NEWER
+#define HAS_CONTEXT_RENDERING
+#endif
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.LowLevel;
@@ -24,13 +27,14 @@ namespace Vertx.Debugging
 		private const string RuntimeEarlyUpdateProfilerName = ProfilerName + " " + nameof(RuntimeEarlyUpdate);
 		private const string FillCommandBufferProfilerName = ProfilerName + " " + nameof(FillCommandBuffer);
 		private const string ExecuteProfilerName = ProfilerName + " Execute";
-		
+
 		public static CommandBuilder Instance { get; }
 
 		private CommandBuffer _commandBuffer;
 		private readonly ShapeBuffersWithData<Shapes.Line> _lines = new ShapeBuffersWithData<Shapes.Line>("line_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Arc> _arcs = new ShapeBuffersWithData<Shapes.Arc>("arc_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Box> _boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer");
+		private readonly ShapeBuffersWithData<Shapes.Box2D> _box2Ds = new ShapeBuffersWithData<Shapes.Box2D>("box_buffer");
 		private bool _queuedDispose;
 		private VertxDebuggingRendererFeature _pass;
 		private float _timeThisFrame;
@@ -40,8 +44,20 @@ namespace Vertx.Debugging
 		private CommandBuilder()
 		{
 			Camera.onPostRender += OnPostRender;
+#if HAS_CONTEXT_RENDERING
 			RenderPipelineManager.beginContextRendering += OnBeginContextRendering;
 			RenderPipelineManager.endContextRendering += OnEndContextRendering;
+#else
+			RenderPipelineManager.beginFrameRendering += (context, cameras) =>
+			{
+				using (UnityEngine.Pool.ListPool<Camera>.Get(out var list))
+				{
+					list.AddRange(cameras);
+					OnBeginContextRendering(context, list);
+				}
+			};
+			RenderPipelineManager.endFrameRendering += (context, cameras) => OnEndContextRendering(context, null);
+#endif
 			EditorApplication.update += OnUpdate;
 		}
 
@@ -66,7 +82,7 @@ namespace Vertx.Debugging
 				{
 					if (subsystems[i].type != type)
 						continue;
-					
+
 					var earlyUpdateSystem = subsystems[i];
 					PlayerLoopSystem[] source = earlyUpdateSystem.subSystemList;
 					for (int j = 0; j < source.Length; j++)
@@ -75,14 +91,15 @@ namespace Vertx.Debugging
 						if (source[j].type == actionType)
 							return;
 					}
-					
+
 					PlayerLoopSystem[] dest = new PlayerLoopSystem[source.Length + 1];
 					Array.Copy(source, 0, dest, 1, source.Length);
 					dest[0] = new PlayerLoopSystem
 					{
 						type = actionType,
 						updateDelegate = action
-					};;
+					};
+					;
 					subsystems[i].subSystemList = dest;
 				}
 			}
@@ -109,6 +126,7 @@ namespace Vertx.Debugging
 			_lines.Clear();
 			_arcs.Clear();
 			_boxes.Clear();
+			_box2Ds.Clear();
 		}
 
 		private static bool CombineDependencies(ref JobHandle? handle, JobHandle? other)
@@ -129,11 +147,13 @@ namespace Vertx.Debugging
 			int oldLineCount = QueueRemovalJob(_lines, dependency, out JobHandle? lineHandle);
 			int oldArcCount = QueueRemovalJob(_arcs, dependency, out JobHandle? arcHandle);
 			int oldBoxCount = QueueRemovalJob(_boxes, dependency, out JobHandle? boxHandle);
+			int oldBox2DCount = QueueRemovalJob(_box2Ds, dependency, out JobHandle? box2DHandle);
 
 			JobHandle? coreHandle = null;
 			if (!CombineDependencies(ref coreHandle, lineHandle) & // Purposely an &, so each branch gets executed.
 			    !CombineDependencies(ref coreHandle, arcHandle) &
-			    !CombineDependencies(ref coreHandle, boxHandle))
+			    !CombineDependencies(ref coreHandle, boxHandle) &
+			    !CombineDependencies(ref coreHandle, box2DHandle))
 				coreHandle = dependency;
 
 			if (coreHandle.HasValue)
@@ -148,6 +168,9 @@ namespace Vertx.Debugging
 
 				if (_boxes.Count != oldBoxCount)
 					_boxes.SetDirty();
+				
+				if (_box2Ds.Count != oldBox2DCount)
+					_box2Ds.SetDirty();
 			}
 
 			int QueueRemovalJob<T>(ShapeBuffersWithData<T> data, JobHandle? handleIn, out JobHandle? handleOut) where T : unmanaged
@@ -172,7 +195,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		[BurstCompatible]
+		[BurstCompile]
 		private struct RemovalJob<T> : IJob where T : unmanaged
 		{
 			public NativeList<T> Elements;
@@ -237,7 +260,10 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		private void OnEndContextRendering(ScriptableRenderContext context, List<Camera> cameras) { }
+		private void OnEndContextRendering(ScriptableRenderContext context, List<Camera> cameras)
+		{
+			// If `cameras` becomes used, change subscription to this method.
+		}
 
 		private void OnUpdate() { }
 
@@ -276,8 +302,6 @@ namespace Vertx.Debugging
 			else
 				_commandBuffer.Clear();
 
-			// Seemingly required to render after post processing successfully.
-			_commandBuffer.SetRenderTarget(BuiltinRenderTextureType.CameraTarget);
 			FillCommandBuffer(_commandBuffer, camera);
 			return true;
 		}
@@ -302,6 +326,7 @@ namespace Vertx.Debugging
 			RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, _lines);
 			RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, _arcs);
 			RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, _boxes);
+			RenderShape(AssetsUtility.Box2D, AssetsUtility.BoxMaterial, _box2Ds);
 
 			void RenderShape<T>(
 				AssetsUtility.Asset<Mesh> mesh,
@@ -320,6 +345,7 @@ namespace Vertx.Debugging
 				// Render boxes
 				commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, -1, shapeCount, propertyBlock);
 			}
+
 			Profiler.EndSample();
 		}
 
@@ -351,6 +377,15 @@ namespace Vertx.Debugging
 			InitialiseIfRequired();
 			_boxes.Add(box, color, modifications, duration);
 		}
+		
+		public void AppendBox2D(Shapes.Box2D box, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
+		{
+			duration = GetDuration(duration);
+			if (duration < 0)
+				return;
+			InitialiseIfRequired();
+			_box2Ds.Add(box, color, modifications, duration);
+		}
 
 		private static bool IsInFixedUpdate()
 #if UNITY_2020_3_OR_NEWER
@@ -358,7 +393,7 @@ namespace Vertx.Debugging
 #else
 			=> Time.deltaTime == Time.fixedDeltaTime;
 #endif
-		
+
 		private float GetDuration(float duration)
 		{
 			// Calls from FixedUpdate should hang around until the next FixedUpdate, at minimum.
@@ -383,6 +418,7 @@ namespace Vertx.Debugging
 			_lines.Dispose();
 			_arcs.Dispose();
 			_boxes.Dispose();
+			_box2Ds.Dispose();
 
 			if (_pass != null)
 				Object.DestroyImmediate(_pass, true);

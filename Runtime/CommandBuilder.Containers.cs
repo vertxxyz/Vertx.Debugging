@@ -1,3 +1,9 @@
+#if UNITY_2020_1_OR_NEWER
+#define HAS_GRAPHICS_BUFFER
+#endif
+#if UNITY_2021_1_OR_NEWER
+#define HAS_SET_BUFFER_DATA
+#endif
 using System;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -27,7 +33,12 @@ namespace Vertx.Debugging
 		private class ListAndBuffer<T> : ListWrapper<T> where T : unmanaged
 		{
 			private readonly int _bufferId;
+#if HAS_GRAPHICS_BUFFER
 			private GraphicsBuffer _buffer;
+
+#else
+			private ComputeBuffer _buffer;
+#endif
 
 			private ListAndBuffer() { }
 
@@ -39,10 +50,18 @@ namespace Vertx.Debugging
 				{
 					// Expand graphics buffer to encompass the capacity of the list.
 					_buffer?.Dispose();
+#if HAS_GRAPHICS_BUFFER
 					_buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, List.Capacity, UnsafeUtility.SizeOf<T>());
+#else
+					_buffer = new ComputeBuffer(List.Capacity, UnsafeUtility.SizeOf<T>(), ComputeBufferType.Structured);
+#endif
 				}
 
+#if HAS_SET_BUFFER_DATA
 				commandBuffer.SetBufferData(_buffer, List.AsArray(), 0, 0, List.Length);
+#else
+				_buffer.SetData(List.AsArray(), 0, 0, List.Length);
+#endif
 			}
 
 			public void SetBufferToPropertyBlock(MaterialPropertyBlock propertyBlock) => propertyBlock.SetBuffer(_bufferId, _buffer);

@@ -69,21 +69,21 @@ namespace Vertx.Debugging
 
 		public struct SphereCast : IDrawableCast
 		{
-			public Sphere Sphere;
+			// Not using a Sphere because it has unnecessary overhead baked into the orientation.
+			public Vector3 Origin;
+			public float Radius;
 			public Vector3 Direction;
 			public float MaxDistance;
 			public RaycastHit? Hit;
 
-			public SphereCast(Sphere sphere, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
+			public SphereCast(Vector3 origin, Vector3 direction, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 			{
-				Sphere = sphere;
+				Origin = origin;
 				Direction = direction;
+				Radius = radius;
 				Hit = hit;
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
-
-			public SphereCast(Vector3 origin, Vector3 direction, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity)
-				: this(new Sphere(origin, Quaternion.LookRotation(direction), radius), direction, hit, maxDistance) { }
 
 			public SphereCast(UnityEngine.Ray ray, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity) : this(ray.origin, ray.direction, radius, hit, maxDistance) { }
 
@@ -92,37 +92,35 @@ namespace Vertx.Debugging
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				Sphere.Draw(commandBuilder, castColor, duration);
-				Sphere.GetTranslated(Direction * MaxDistance).Draw(commandBuilder, castColor, duration);
+				Quaternion orientation = Quaternion.LookRotation(Direction);
+				new Sphere(Origin, orientation, Radius).Draw(commandBuilder, castColor, duration);
+				new Sphere(Origin + Direction * MaxDistance, orientation, Radius).Draw(commandBuilder, castColor, duration);
 				// TODO draw connecting lines
-
-				Vector3 origin = Sphere.Matrix.MultiplyPoint3x4(Vector3.zero);
-				float radius = Sphere.Matrix.lossyScale.x;
 				if (Hit.HasValue)
-					new Sphere(origin + Direction * Hit.Value.distance, Quaternion.LookRotation(Hit.Value.normal), radius).Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);
+					new Sphere(Origin + Direction * Hit.Value.distance, Quaternion.LookRotation(Hit.Value.normal), Radius).Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);
 			}
 #endif
 		}
 
 		public struct SphereCastAll : IDrawableCast
 		{
-			public Sphere Sphere;
+			// Not using a Sphere because it has unnecessary overhead baked into the orientation.
+			public Vector3 Origin;
+			public float Radius;
 			public Vector3 Direction;
 			public float MaxDistance;
 			public RaycastHit[] Results;
 			public int ResultCount;
-			
-			public SphereCastAll(Sphere sphere, Vector3 direction, RaycastHit[] results, int resultCount, float maxDistance = Mathf.Infinity)
+
+			public SphereCastAll(Vector3 origin, Vector3 direction, float radius, RaycastHit[] results, int resultCount, float maxDistance = Mathf.Infinity)
 			{
-				Sphere = sphere;
+				Origin = origin;
 				Direction = direction;
+				Radius = radius;
 				Results = results;
 				ResultCount = resultCount;
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
-
-			public SphereCastAll(Vector3 origin, Vector3 direction, float radius, RaycastHit[] results, int resultCount, float maxDistance = Mathf.Infinity)
-				: this(new Sphere(origin, radius), direction, results, resultCount, maxDistance) { }
 
 			public SphereCastAll(Vector3 origin, Vector3 direction, float radius, RaycastHit[] results, float maxDistance = Mathf.Infinity) : this(origin, direction, radius, results, results.Length, maxDistance) { }
 
@@ -135,13 +133,12 @@ namespace Vertx.Debugging
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				new SphereCast(Sphere, Direction, null, MaxDistance).Draw(commandBuilder, castColor, hitColor, duration);
-				Vector3 origin = Sphere.Matrix.MultiplyPoint3x4(Vector3.zero);
-				float radius = Sphere.Matrix.lossyScale.x;
+				new SphereCast(Origin, Direction, Radius, null, MaxDistance).Draw(commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
-					new Sphere(origin + Direction * result.distance, Quaternion.LookRotation(result.normal), radius).Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);
+					new Sphere(Origin + Direction * result.distance, Quaternion.LookRotation(result.normal), Radius)
+						.Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);
 				}
 			}
 #endif
@@ -167,8 +164,7 @@ namespace Vertx.Debugging
 
 			public BoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 				: this(center, halfExtents, direction, hit, Quaternion.identity, maxDistance) { }
-
-
+			
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
 
@@ -211,6 +207,7 @@ namespace Vertx.Debugging
 
 			public BoxCastAll(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] results, float maxDistance = Mathf.Infinity)
 				: this(center, halfExtents, direction, results, results.Length, Quaternion.identity, maxDistance) { }
+			
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
 

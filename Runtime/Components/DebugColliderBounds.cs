@@ -3,7 +3,7 @@
 namespace Vertx.Debugging
 {
 	[AddComponentMenu("Debugging/Debug Collider Bounds")]
-	public class DebugColliderBounds : DebugComponentBase
+	public sealed class DebugColliderBounds : DebugComponentBase
 	{
 		[SerializeField] private Collider _collider;
 #if VERTX_PHYSICS_2D
@@ -31,11 +31,11 @@ namespace Vertx.Debugging
 		{
 #if VERTX_PHYSICS_2D
 			if (_collider != null)
-				DebugUtils.DrawBounds(_collider.bounds, _color);
+				D.raw(_collider.bounds, _color);
 			if (_collider2D != null)
-				DebugUtils.DrawBounds(_collider2D.bounds, _color);
+				D.raw(_collider2D.bounds, _color);
 #else
-			DebugUtils.DrawBounds(_collider.bounds, _color);
+			D.raw(_collider.bounds, _color);
 #endif
 		}
 	}

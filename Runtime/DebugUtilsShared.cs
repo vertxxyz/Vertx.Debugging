@@ -78,7 +78,7 @@ namespace Vertx.Debugging
 		private static ColouredLineDelegate lineDelegate = DebugLine;
 		private static readonly ColouredLineDelegate rayDelegate = (a, b, c, d) => lineDelegate(a, a + b, c, d);
 
-		private static void DebugLine(Vector3 a, Vector3 b, Color c, float duration = 0) => Debug.DrawLine(a, b, c, duration);
+		private static void DebugLine(Vector3 a, Vector3 b, Color c, float duration = 0) => Debug.DrawLine(a, b, c, duration, true);
 
 		private static void GizmosLine(Vector3 a, Vector3 b, Color c, float duration = 0)
 		{

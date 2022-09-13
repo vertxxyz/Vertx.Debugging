@@ -8,73 +8,6 @@ namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
-		private static CircleCache CircleCache => s_circleCache ?? (s_circleCache = new CircleCache());
-		private static CircleCache s_circleCache;
-
-		public static Color ColorX => new Color(1, 0.1f, 0.2f);
-		public static Color ColorY => new Color(0.3f, 1, 0.1f);
-		public static Color ColorZ => new Color(0.1f, 0.4f, 1);
-		
-		public static readonly Color HitColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color CastColor = new Color(0.4f, 1f, 0.3f);
-
-		[Flags]
-		public enum Axes
-		{
-			None = 0,
-			X = 1,
-			Y = 1 << 1,
-			Z = 1 << 2,
-			TwoDimensional = X | Y,
-			All = X | Y | Z
-		}
-		
-		private const int MaxDrawDistance = 1_000_000;
-
-		private static Vector3 GetValidPerpendicular(Vector3 input)
-		{
-			Vector3 alt = Vector3.right;
-			if (Mathf.Abs(Vector3.Dot(input, alt)) > 0.95)
-				alt = Vector3.up;
-			return Vector3.Cross(input, alt).normalized;
-		}
-
-		private static Vector3 GetValidAxisAligned(Vector3 normal)
-		{
-			Vector3 alternate = new Vector3(0, 0, 1);
-			if (Mathf.Abs(Vector3.Dot(normal, alternate)) > 0.707f)
-				alternate = new Vector3(0, 1, 0);
-			return alternate;
-		}
-
-		private static void EnsureNormalized(this ref Vector3 vector3, out float length)
-		{
-			float sqrMag = vector3.sqrMagnitude;
-			if (Mathf.Approximately(sqrMag, 1))
-			{
-				length = 1;
-				return;
-			}
-
-			length = Mathf.Sqrt(sqrMag);
-			vector3 /= length;
-		}
-
-		private static void EnsureNormalized(this ref Vector3 vector3)
-		{
-			float sqrMag = vector3.sqrMagnitude;
-			if (Mathf.Approximately(sqrMag, 1))
-				return;
-			vector3 /= Mathf.Sqrt(sqrMag);
-		}
-
-		private static float GetClampedMaxDistance(float distance)
-		{
-			if (float.IsInfinity(distance))
-				return MaxDrawDistance;
-			return Mathf.Min(distance, MaxDrawDistance);
-		}
-
 		public struct Line : IDrawable
 		{
 			public Vector3 A, B;
@@ -307,6 +240,38 @@ namespace Vertx.Debugging
 #endif
 		}
 
+		public struct Circle : IDrawable
+		{
+			private Arc _arc;
+
+			public Matrix4x4 Matrix
+			{
+				get => _arc.Matrix;
+				set => _arc = new Arc(value);
+			}
+			
+			public Circle(Matrix4x4 matrix) => _arc = new Arc(matrix);
+
+			public Circle(Vector3 origin, Quaternion rotation, float radius)
+				=> _arc = new Arc(Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius)));
+			
+			public Circle(Vector3 origin, Vector3 normal, Vector3 direction, float radius)
+				: this(
+					origin,
+					Quaternion.LookRotation(direction, normal) * Arc.s_Base3DRotation,
+					radius
+				) { }
+			
+			/// <summary>
+			/// It's cheaper to use the <see cref="Circle(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
+			/// </summary>
+			public Circle(Vector3 origin, Vector3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius) { }
+			
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => _arc.Draw(commandBuilder, color, duration);
+#endif
+		}
+
 		/// <summary>
 		/// This is 2D, the rotation or matrix used will align the arc facing right, aligned with XY.<br/>
 		/// Use the helper constructors to create an Arc aligned how you require.
@@ -316,7 +281,7 @@ namespace Vertx.Debugging
 			public Matrix4x4 Matrix;
 			public float Turns;
 
-			private static readonly Quaternion s_Base3DRotation = Quaternion.Euler(90, -90, 0);
+			internal static readonly Quaternion s_Base3DRotation = Quaternion.Euler(90, -90, 0);
 
 			public Angle Angle
 			{

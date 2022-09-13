@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	internal class CircleCache
+	internal sealed class CircleCache
 	{
 		private readonly Dictionary<int, Vector2[]> _circles = new Dictionary<int, Vector2[]>();
 

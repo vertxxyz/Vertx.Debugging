@@ -4,7 +4,7 @@ using System;
 
 namespace UnityEngine.Pool
 {
-	internal struct PoolableList<T> : IDisposable
+	internal readonly struct PoolableList<T> : IDisposable
 	{
 		private readonly List<T> _toReturn;
 		private readonly Action<List<T>> _release;
@@ -20,12 +20,13 @@ namespace UnityEngine.Pool
 	/// <summary>
 	/// A simplified fallback for the default list pool.
 	/// </summary>
-	internal class ListPool<T>
+	internal static class ListPool<T>
 	{
 		private static readonly Stack<List<T>> _stack = new Stack<List<T>>();
 		private static readonly Action<List<T>> _release = Release; 
 		public static void Release(List<T> list) => _stack.Push(list);
-		public static List<T> Get() => _stack.Pop();
+		public static List<T> Get() => _stack.Count == 0 ? new List<T>() : _stack.Pop();
+
 		public static PoolableList<T> Get(out List<T> value) => new PoolableList<T>(value = Get(), _release);
 	}
 }
