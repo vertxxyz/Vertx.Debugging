@@ -55,6 +55,14 @@ namespace Vertx.Debugging
 			vector3 /= length;
 		}
 
+		private static void EnsureNormalized(this ref Vector2 vector2)
+		{
+			float sqrMag = vector2.sqrMagnitude;
+			if (Mathf.Approximately(sqrMag, 1))
+				return;
+			vector2 /= Mathf.Sqrt(sqrMag);
+		}
+
 		private static void EnsureNormalized(this ref Vector3 vector3)
 		{
 			float sqrMag = vector3.sqrMagnitude;
@@ -76,12 +84,29 @@ namespace Vertx.Debugging
 			s = Mathf.Sin(a);
 			c = Mathf.Cos(a);
 		}
-		
+
 		private static Vector2 RotateUsingCoefficients(Vector2 vector, float s, float c)
 		{
 			float u = vector.x * c - vector.y * s;
 			float v = vector.x * s + vector.y * c;
 			return new Vector2(u, v);
 		}
+
+		private static Vector2 Rotate(Vector2 vector, float angle)
+		{
+			GetRotationCoefficients(angle, out float s, out float c);
+			return RotateUsingCoefficients(vector, s, c);
+		}
+
+		private static Vector2 GetDirectionFromAngle(float angle)
+		{
+			if (angle == 0)
+				return Vector2.right;
+			return Rotate(Vector2.right, angle);
+		}
+
+		private static Vector2 PerpendicularClockwise(Vector2 vector2) => new Vector2(vector2.y, -vector2.x);
+
+		private static Vector2 PerpendicularCounterClockwise(Vector2 vector2) => new Vector2(-vector2.y, vector2.x);
 	}
 }

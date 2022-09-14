@@ -6,6 +6,131 @@ namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
+		public struct Point2D : IDrawable
+		{
+			public Vector3 Position;
+			public float Scale;
+
+			public Point2D(Vector2 point, float z, float scale = 0.3f)
+			{
+				Scale = scale;
+				Position = new Vector3(point.x, point.y, z);
+			}
+
+			public Point2D(Vector2 point, float scale = 0.3f)
+				: this(point, 0, scale) { }
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				float distance = Scale * 0.5f;
+				commandBuilder.AppendLine(new Line(new Vector3(Position.x - distance, Position.y, Position.z), new Vector3(Position.x + distance, Position.y, Position.z)), color, duration);
+				commandBuilder.AppendLine(new Line(new Vector3(Position.x, Position.y - distance, Position.z), new Vector3(Position.x, Position.y + distance, Position.z)), color, duration);
+			}
+#endif
+		}
+
+		public struct Ray2D : IDrawable
+		{
+			public Vector3 Origin;
+			public Vector2 Direction;
+
+			public Ray2D(Vector3 origin, Vector2 direction)
+			{
+				Origin = origin;
+				Direction = direction;
+			}
+
+			public Ray2D(Vector2 origin, Vector2 direction, float z = 0)
+				: this(new Vector3(origin.x, origin.y, z), direction) { }
+			
+			public Ray2D(Vector3 origin, float angle)
+				: this(origin, GetDirectionFromAngle(angle)) { }
+
+			public Ray2D(Vector2 origin, float angle, float z = 0)
+				: this(origin, GetDirectionFromAngle(angle), z) { }
+			
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+				=> commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
+#endif
+		}
+
+		public struct Arrow2D : IDrawable
+		{
+			public Vector3 Origin;
+			public Vector2 Direction;
+
+			public Arrow2D(Vector3 origin, Vector2 direction)
+			{
+				Origin = origin;
+				Direction = direction;
+			}
+
+			public Arrow2D(Vector2 origin, Vector2 direction, float z = 0)
+				: this(new Vector3(origin.x, origin.y, z), direction) { }
+			
+			public Arrow2D(Vector3 origin, float angle)
+				: this(origin, GetDirectionFromAngle(angle)) { }
+
+			public Arrow2D(Vector2 origin, float angle, float z = 0)
+				: this(origin, GetDirectionFromAngle(angle), z) { }
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Vector3 lineEnd = Origin + (Vector3)Direction;
+				commandBuilder.AppendLine(new Line(Origin, lineEnd), color, duration);
+				DrawArrowHead(commandBuilder, lineEnd, Direction, color, duration);
+			}
+
+			public static void DrawArrowHead(CommandBuilder commandBuilder, Vector3 arrowPoint, Vector2 dir, Color color, float duration, float scale = 1)
+			{
+				const float headLength = 0.075f;
+				const float headWidth = 0.05f;
+				dir.EnsureNormalized();
+				Vector3 direction = dir;
+				Vector3 cross = PerpendicularClockwise(dir) * (headWidth * scale);
+				Vector3 a = arrowPoint + cross;
+				Vector3 b = arrowPoint - cross;
+				Vector3 arrowEnd = arrowPoint + direction * (headLength * scale);
+				commandBuilder.AppendLine(new Line(a, b), color, duration);
+				commandBuilder.AppendLine(new Line(a, arrowEnd), color, duration);
+				commandBuilder.AppendLine(new Line(b, arrowEnd), color, duration);
+			}
+#endif
+		}
+		
+		public struct Axis2D : IDrawable
+		{
+			public Vector3 Position;
+			public float Angle;
+			public bool ShowArrowHeads;
+
+			public Axis2D(Vector2 origin, float angle, float z = 0, bool showArrowHeads = true)
+			{
+				Position = new Vector3(origin.x, origin.y, z);
+				Angle = angle;
+				ShowArrowHeads = showArrowHeads;
+			}
+			
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (ShowArrowHeads)
+				{
+					new Arrow2D(Position, Angle).Draw(commandBuilder, ColorX, duration);
+					new Arrow2D(Position, Angle + 90).Draw(commandBuilder, ColorY, duration);
+				}
+				else
+				{
+					new Ray2D(Position, Angle).Draw(commandBuilder, ColorX, duration);
+					new Ray2D(Position, Angle + 90).Draw(commandBuilder, ColorY, duration);
+				}
+			}
+			#endif
+		}
+
 		public struct Circle2D : IDrawable
 		{
 			private Circle _circle;
@@ -84,7 +209,7 @@ namespace Vertx.Debugging
 			public Vector3 PointA => _pointA;
 			public Vector3 PointB => _pointB;
 			public float Radius => _radius;
-			
+
 			private readonly Vector3 _pointA, _pointB;
 			private readonly float _radius;
 			private readonly Vector3 _verticalDirection;
@@ -105,7 +230,7 @@ namespace Vertx.Debugging
 #if VERTX_PHYSICS_2D
 			public Capsule2D(Vector2 point, Vector2 size, CapsuleDirection2D capsuleDirection, float angle = 0)
 				: this(point, size, capsuleDirection, angle, 0) { }
-			
+
 			public Capsule2D(Vector2 point, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, float z)
 				: this(point, size, (Direction)capsuleDirection, angle, z) { }
 #endif
@@ -136,6 +261,7 @@ namespace Vertx.Debugging
 				Vector3 GetVector3(Vector2 v2, float z) => new Vector3(v2.x, v2.y, z);
 			}
 
+#if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
 				Angle halfCircle = Angle.FromTurns(0.5f);
@@ -144,6 +270,7 @@ namespace Vertx.Debugging
 				commandBuilder.AppendLine(new Line(_pointA + _scaledLeft, _pointB + _scaledLeft), color, duration);
 				commandBuilder.AppendLine(new Line(_pointA - _scaledLeft, _pointB - _scaledLeft), color, duration);
 			}
+#endif
 		}
 	}
 }
