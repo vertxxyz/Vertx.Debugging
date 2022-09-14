@@ -52,7 +52,12 @@ namespace Vertx.Debugging
 			/// A custom modification that can be implemented by a shape.<br/>
 			/// - Arc: Will align the circle as if it's the outline of a sphere.
 			/// </summary>
-			Custom = 1 << 3
+			Custom = 1 << 3,
+			/// <summary>
+			/// A custom modification that can be implemented by a shape.<br/>
+			/// - Arc: Will create a full circle, but it spirals inwards using the turns parameter as an inner radius multiplier.
+			/// </summary>
+			Custom2 = 1 << 4
 		}
 	}
 }

@@ -97,6 +97,19 @@ namespace Vertx.Debugging
 			GetRotationCoefficients(angle, out float s, out float c);
 			return RotateUsingCoefficients(vector, s, c);
 		}
+		
+		private static Vector3 RotateUsingCoefficients(Vector3 vector, float s, float c)
+		{
+			float u = vector.x * c - vector.y * s;
+			float v = vector.x * s + vector.y * c;
+			return new Vector3(u, v, vector.z);
+		}
+
+		private static Vector3 Rotate(Vector3 vector, float angle)
+		{
+			GetRotationCoefficients(angle, out float s, out float c);
+			return RotateUsingCoefficients(vector, s, c);
+		}
 
 		private static Vector2 GetDirectionFromAngle(float angle)
 		{

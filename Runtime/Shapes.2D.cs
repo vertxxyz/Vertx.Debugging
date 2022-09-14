@@ -43,13 +43,13 @@ namespace Vertx.Debugging
 
 			public Ray2D(Vector2 origin, Vector2 direction, float z = 0)
 				: this(new Vector3(origin.x, origin.y, z), direction) { }
-			
+
 			public Ray2D(Vector3 origin, float angle)
 				: this(origin, GetDirectionFromAngle(angle)) { }
 
 			public Ray2D(Vector2 origin, float angle, float z = 0)
 				: this(origin, GetDirectionFromAngle(angle), z) { }
-			
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 				=> commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
@@ -69,7 +69,7 @@ namespace Vertx.Debugging
 
 			public Arrow2D(Vector2 origin, Vector2 direction, float z = 0)
 				: this(new Vector3(origin.x, origin.y, z), direction) { }
-			
+
 			public Arrow2D(Vector3 origin, float angle)
 				: this(origin, GetDirectionFromAngle(angle)) { }
 
@@ -100,7 +100,7 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
-		
+
 		public struct Axis2D : IDrawable
 		{
 			public Vector3 Position;
@@ -113,7 +113,7 @@ namespace Vertx.Debugging
 				Angle = angle;
 				ShowArrowHeads = showArrowHeads;
 			}
-			
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
@@ -128,7 +128,7 @@ namespace Vertx.Debugging
 					new Ray2D(Position, Angle + 90).Draw(commandBuilder, ColorY, duration);
 				}
 			}
-			#endif
+#endif
 		}
 
 		public struct Circle2D : IDrawable
@@ -252,7 +252,7 @@ namespace Vertx.Debugging
 				_radius = size.x * 0.5f;
 				float vertical = Mathf.Max(0, size.y - size.x) * 0.5f;
 				GetRotationCoefficients(angle, out float s, out float c);
-				_verticalDirection = RotateUsingCoefficients(Vector2.up, s, c);
+				_verticalDirection = RotateUsingCoefficients(Vector3.up, s, c);
 				Vector2 verticalOffset = RotateUsingCoefficients(new Vector2(0, vertical), s, c);
 				_pointA = GetVector3(point + verticalOffset, z);
 				_pointB = GetVector3(point - verticalOffset, z);
@@ -269,6 +269,53 @@ namespace Vertx.Debugging
 				commandBuilder.AppendArc(new Arc(_pointB, Vector3.forward, -_verticalDirection, _radius, halfCircle), color, duration);
 				commandBuilder.AppendLine(new Line(_pointA + _scaledLeft, _pointB + _scaledLeft), color, duration);
 				commandBuilder.AppendLine(new Line(_pointA - _scaledLeft, _pointB - _scaledLeft), color, duration);
+			}
+#endif
+		}
+
+		public struct Spiral2D : IDrawable
+		{
+			public Vector3 Origin;
+			public float Radius;
+			public float Angle;
+			public float Revolutions;
+
+			public Spiral2D(Vector2 origin, float radius, float angle = 0, float revolutions = 3, float z = 0)
+			{
+				Origin = new Vector3(origin.x, origin.y, z);
+				Radius = radius;
+				Angle = angle;
+				Revolutions = revolutions;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Angle fullCircle = Shapes.Angle.FromTurns(1);
+				commandBuilder.AppendArc(new Arc(Origin, Vector3.forward, Vector3.up, Radius, fullCircle), color, duration);
+				if (Revolutions == 0)
+				{
+					commandBuilder.AppendRay(new Ray(Origin, Rotate(new Vector3(Radius, 0, 0), Angle)), color, duration);
+					return;
+				}
+
+				float absRevolutions = Mathf.Abs(Revolutions);
+				float currentRevolutions = absRevolutions;
+				float sign = Mathf.Sign(Revolutions);
+				Vector3 direction = Rotate(new Vector3(-sign, 0, 0), Angle);
+				Vector3 normal = new Vector3(0, 0, sign);
+				float radiusSigned = sign * Radius;
+				while (currentRevolutions > 0)
+				{
+					float innerR = (currentRevolutions - 1) / currentRevolutions;
+					commandBuilder.AppendArc(
+						new Arc(Origin, normal, direction, radiusSigned * (currentRevolutions / absRevolutions), Shapes.Angle.FromTurns(innerR)),
+						color,
+						duration,
+						DrawModifications.Custom2
+					);
+					currentRevolutions--;
+				}
 			}
 #endif
 		}

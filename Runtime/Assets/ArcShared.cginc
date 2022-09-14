@@ -38,6 +38,7 @@ v2f vert(vertInput input)
 
     if (has_custom(modifications))
     {
+        // Aligned with camera (special spherical billboard)
         // Orthographic
         if (unity_OrthoParams.w == 1)
         {
@@ -92,6 +93,17 @@ v2f vert(vertInput input)
             }
         }
     }
+    else if(has_custom2(modifications))
+    {
+        // Spiral
+        // return mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, float4(pos, 1.0)));
+        input.vertex.xyz *= max(0, lerp(a.Turns, 1, (input.uv.y + 1) * 0.5));
+        float4 worldPos = mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0));
+
+        o.position = mul(UNITY_MATRIX_VP, worldPos);
+        o.uvAndTurns = float4(input.uv, 1, 0);
+        return o;
+    }
     else if (has_face_camera(modifications))
     {
         o.position = billboard(input.vertex.xyz);
@@ -114,6 +126,6 @@ v2f vert(vertInput input)
             o.color.a *= max(0.3, d);
         }
     }
-    o.uvAndTurns = float4(input.uv, a.Turns, 0);
+    o.uvAndTurns = float4(abs(input.uv), a.Turns, 0);
     return o;
 }
