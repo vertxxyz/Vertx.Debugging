@@ -1,5 +1,6 @@
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
+using System;
 using UnityEngine;
 
 namespace Vertx.Debugging
@@ -155,11 +156,36 @@ namespace Vertx.Debugging
 		{
 			public Matrix4x4 Matrix;
 
-			public Box2D(Vector2 origin, Vector2 size, float angle = 0) => Matrix = Matrix4x4.TRS(origin, Quaternion.AngleAxis(angle, Vector3.forward), size);
+			private Box2D(Matrix4x4 matrix) => Matrix = matrix;
 
-			public Box2D(Vector2 origin, Vector2 size, float z, float angle) => Matrix = Matrix4x4.TRS(new Vector3(origin.x, origin.y, z), Quaternion.AngleAxis(angle, Vector3.forward), size);
+			public Box2D(Vector2 origin, Vector2 size, float angle = 0, float z = 0) => Matrix = Matrix4x4.TRS(new Vector3(origin.x, origin.y, z), Quaternion.AngleAxis(angle, Vector3.forward), size);
 
 			public Box2D(Vector3 origin, Vector2 size, float angle = 0) => Matrix = Matrix4x4.TRS(origin, Quaternion.AngleAxis(angle, Vector3.forward), size);
+
+			public Box2D GetTranslated(Vector3 translation) => new Box2D(Matrix4x4.Translate(translation) * Matrix);
+
+			[Flags]
+			internal enum Point
+			{
+				Origin = 0,
+				Top = 1,
+				Right = 1 << 1,
+				Bottom = 1 << 2,
+				Left = 1 << 3,
+				TopLeft = Top | Left,
+				TopRight = Top | Right,
+				BottomRight = Bottom | Right,
+				BottomLeft = Bottom | Left
+			}
+
+			internal Vector3 GetPoint(Point point)
+			{
+				Vector3 position = new Vector3(
+					(point & Point.Left) != 0 ? -0.5f : 0 + (point & Point.Right) != 0 ? 0.5f : 0,
+					(point & Point.Bottom) != 0 ? -0.5f : 0 + (point & Point.Top) != 0 ? 0.5f : 0
+				);
+				return Matrix.MultiplyPoint3x4(position);
+			}
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox2D(this, color, duration);
@@ -259,6 +285,16 @@ namespace Vertx.Debugging
 				_scaledLeft = new Vector2(c, s) * _radius;
 
 				Vector3 GetVector3(Vector2 v2, float z) => new Vector3(v2.x, v2.y, z);
+			}
+
+			internal Capsule2D(Vector3 pointA, Vector3 pointB, float radius)
+			{
+				_verticalDirection = pointA - pointB;
+				_verticalDirection.EnsureNormalized();
+				_pointA = pointA;
+				_pointB = pointB;
+				_radius = radius;
+				_scaledLeft = PerpendicularCounterClockwise(_verticalDirection) * _radius;
 			}
 
 #if UNITY_EDITOR

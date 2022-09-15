@@ -6,6 +6,32 @@ namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
+		public struct Raycast : IDrawableCast
+		{
+			public Ray Ray;
+			public RaycastHit Hit;
+
+			public Raycast(Vector3 origin, Vector3 direction, RaycastHit hit, float distance = Mathf.Infinity)
+			{
+				direction.EnsureNormalized();
+				Ray = new Ray(origin, direction * GetClampedMaxDistance(distance));
+				Hit = hit;
+			}
+
+			public Raycast(UnityEngine.Ray ray, RaycastHit hit, float distance = Mathf.Infinity) : this(ray.origin, ray.direction, hit, distance) { }
+
+#if UNITY_EDITOR
+
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+
+			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			{
+				Ray.Draw(commandBuilder, castColor, duration);
+				new SurfacePoint(Hit.point, Hit.normal).Draw(commandBuilder, hitColor, duration);
+			}
+#endif
+		}
+		
 		public struct RaycastAll : IDrawableCast
 		{
 			public Ray Ray;
@@ -41,32 +67,6 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Raycast : IDrawableCast
-		{
-			public Ray Ray;
-			public RaycastHit Hit;
-
-			public Raycast(Vector3 origin, Vector3 direction, RaycastHit hit, float distance = Mathf.Infinity)
-			{
-				direction.EnsureNormalized();
-				Ray = new Ray(origin, direction * GetClampedMaxDistance(distance));
-				Hit = hit;
-			}
-
-			public Raycast(UnityEngine.Ray ray, RaycastHit hit, float distance = Mathf.Infinity) : this(ray.origin, ray.direction, hit, distance) { }
-
-#if UNITY_EDITOR
-
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
-
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-			{
-				Ray.Draw(commandBuilder, castColor, duration);
-				new SurfacePoint(Hit.point, Hit.normal).Draw(commandBuilder, hitColor, duration);
-			}
-#endif
-		}
-
 		public struct SphereCast : IDrawableCast
 		{
 			// Not using a Sphere because it has unnecessary overhead baked into the orientation.
@@ -79,6 +79,7 @@ namespace Vertx.Debugging
 			public SphereCast(Vector3 origin, Vector3 direction, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 			{
 				Origin = origin;
+				direction.EnsureNormalized();
 				Direction = direction;
 				Radius = radius;
 				Hit = hit;
@@ -115,6 +116,7 @@ namespace Vertx.Debugging
 			public SphereCastAll(Vector3 origin, Vector3 direction, float radius, RaycastHit[] results, int resultCount, float maxDistance = Mathf.Infinity)
 			{
 				Origin = origin;
+				direction.EnsureNormalized();
 				Direction = direction;
 				Radius = radius;
 				Results = results;

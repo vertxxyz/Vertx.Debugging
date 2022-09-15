@@ -121,5 +121,9 @@ namespace Vertx.Debugging
 		private static Vector2 PerpendicularClockwise(Vector2 vector2) => new Vector2(vector2.y, -vector2.x);
 
 		private static Vector2 PerpendicularCounterClockwise(Vector2 vector2) => new Vector2(-vector2.y, vector2.x);
+
+		private static Vector3 PerpendicularClockwise(Vector3 vector3) => new Vector3(vector3.y, -vector3.x, vector3.z);
+		
+		private static Vector3 PerpendicularCounterClockwise(Vector3 vector3) => new Vector3(-vector3.y, vector3.x, vector3.z);
 	}
 }
