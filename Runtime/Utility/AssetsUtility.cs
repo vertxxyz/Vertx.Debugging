@@ -33,5 +33,6 @@ namespace Vertx.Debugging
 		public static readonly Asset<Material> LineMaterial = new Asset<Material>("Line", "mat");
 		public static readonly Asset<Material> ArcMaterial = new Asset<Material>("Arc", "mat");
 		public static readonly Asset<Material> BoxMaterial = new Asset<Material>("Box", "mat");
+		public static readonly Asset<Material> OutlineMaterial = new Asset<Material>("Outline", "mat");
 	}
 }

@@ -248,24 +248,24 @@ namespace Vertx.Debugging
 				get => _arc.Matrix;
 				set => _arc = new Arc(value);
 			}
-			
+
 			public Circle(Matrix4x4 matrix) => _arc = new Arc(matrix);
 
 			public Circle(Vector3 origin, Quaternion rotation, float radius)
 				=> _arc = new Arc(Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius)));
-			
+
 			public Circle(Vector3 origin, Vector3 normal, Vector3 direction, float radius)
 				: this(
 					origin,
 					Quaternion.LookRotation(direction, normal) * Arc.s_Base3DRotation,
 					radius
 				) { }
-			
+
 			/// <summary>
 			/// It's cheaper to use the <see cref="Circle(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
 			/// </summary>
 			public Circle(Vector3 origin, Vector3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius) { }
-			
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => _arc.Draw(commandBuilder, color, duration);
 #endif
@@ -332,7 +332,7 @@ namespace Vertx.Debugging
 			public Matrix4x4 Matrix;
 
 			public Sphere(Matrix4x4 matrix) => Matrix = matrix;
-			
+
 			public Sphere(Vector3 origin) => Matrix = Matrix4x4.Translate(origin);
 
 			public Sphere(Vector3 origin, float radius)
@@ -344,7 +344,7 @@ namespace Vertx.Debugging
 			public Sphere(Transform transform, float radius) : this(transform.position, transform.rotation, radius) { }
 
 			public Sphere(Transform transform) => Matrix = transform.localToWorldMatrix;
-			
+
 			public Sphere GetTranslated(Vector3 translation) => new Sphere(Matrix4x4.Translate(translation) * Matrix);
 
 #if UNITY_EDITOR
@@ -374,7 +374,7 @@ namespace Vertx.Debugging
 		public struct Box : IDrawable
 		{
 			public Matrix4x4 Matrix;
-			
+
 			private Box(Matrix4x4 matrix) => Matrix = matrix;
 
 			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation) : this(Matrix4x4.TRS(position, orientation, halfExtents)) { }
@@ -382,7 +382,7 @@ namespace Vertx.Debugging
 			public Box(Transform transform) => Matrix = transform.localToWorldMatrix;
 
 			public Box(Bounds bounds) : this(bounds.center, bounds.extents, Quaternion.identity) { }
-			
+
 			public Box GetTranslated(Vector3 translation) => new Box(Matrix4x4.Translate(translation) * Matrix);
 
 #if UNITY_EDITOR
@@ -450,7 +450,30 @@ namespace Vertx.Debugging
 				commandBuilder.AppendLine(new Line(SpherePosition1 - perpendicular, SpherePosition2 - perpendicular), color, duration);
 				commandBuilder.AppendLine(new Line(SpherePosition1 + perpendicular2, SpherePosition2 + perpendicular2), color, duration);
 				commandBuilder.AppendLine(new Line(SpherePosition1 - perpendicular2, SpherePosition2 - perpendicular2), color, duration);
+				
+				commandBuilder.AppendOutline(new Outline(SpherePosition1, SpherePosition2, Radius), color, duration);
+				commandBuilder.AppendOutline(new Outline(SpherePosition2, SpherePosition1, Radius), color, duration);
 			}
+#endif
+		}
+
+		/// <summary>
+		/// An outline is a special structure that creates a line that is correctly bounded against a capsule, outlining it.
+		/// </summary>
+		internal readonly struct Outline : IDrawable
+		{
+			public readonly Vector3 A, B;
+			public readonly float Radius;
+
+			public Outline(Vector3 a, Vector3 b, float radius)
+			{
+				A = a;
+				B = b;
+				Radius = radius;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) { }
 #endif
 		}
 	}

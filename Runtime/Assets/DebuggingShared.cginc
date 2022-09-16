@@ -10,14 +10,21 @@ bool has_face_camera(int value) { return (value & FACE_CAMERA) != 0; }
 bool has_custom(int value) { return (value & CUSTOM) != 0; }
 bool has_custom2(int value) { return (value & CUSTOM2) != 0; }
 
+bool is_orthographic() { return unity_OrthoParams.w == 1; }
+
 StructuredBuffer<int> modifications_buffer;
 StructuredBuffer<float4> color_buffer;
 
 float get_scale()
 {
-    return length(float3(unity_ObjectToWorld[0].x, unity_ObjectToWorld[1].x,
-                                unity_ObjectToWorld[2].x));
+    return length(float3(
+        unity_ObjectToWorld[0].x,
+        unity_ObjectToWorld[1].x,
+        unity_ObjectToWorld[2].x
+    ));
 }
+
+float3 camera_direction() { return UNITY_MATRIX_IT_MV[2].xyz; }
 
 float4 billboard(float3 vertex)
 {

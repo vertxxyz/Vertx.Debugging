@@ -40,9 +40,31 @@ v2f vert(vertInput input)
     {
         // Aligned with camera (special spherical billboard)
         // Orthographic
-        if (unity_OrthoParams.w == 1)
+        if (is_orthographic())
         {
-            o.position = billboard(input.vertex.xyz);
+            if (a.Turns != 1)
+            {
+                float radius = get_scale();
+                float3 n = -camera_direction(); // Normal
+
+                float3 originWorld = mul(unity_ObjectToWorld, float4(0.0, 0.0, 0.0, 1.0)).xyz;
+                float3 worldFacing = normalize(mul(unity_ObjectToWorld, float4(1.0, 0.0, 0.0, 1.0)).xyz - originWorld);
+                float3 up = normalize(cross(n, worldFacing));
+                float3 right = normalize(cross(up, n));
+
+                float3 v = input.vertex.xyz * radius.xxx;
+                float3 localPos = right * v.x + up * v.y;
+                float3 worldPos = originWorld + localPos;
+
+                // If this is not a smoothstep, it doesn't seem to properly interpolate.
+                a.Turns = smoothstep(-0.05, 0.05, dot(localPos, worldFacing));
+
+                o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
+            }
+            else
+            {
+                o.position = billboard(input.vertex.xyz);
+            }
         }
         // Perspective
         else
@@ -57,7 +79,7 @@ v2f vert(vertInput input)
             float r = sqrt(r1Sqrd - d * d); // Radius of circle
 
             float3 up, right;
-            if(a.Turns == 0.5)
+            if (a.Turns != 1)
             {
                 float3 worldFacing = normalize(mul(unity_ObjectToWorld, float4(1.0, 0.0, 0.0, 1.0)).xyz - originWorld);
                 up = normalize(cross(n, worldFacing));
@@ -73,7 +95,6 @@ v2f vert(vertInput input)
                 // If this is not a smoothstep, it doesn't seem to properly interpolate.
                 a.Turns = smoothstep(-0.05, 0.05, dot(localPos, worldFacing));
 
-                // Get the origin (it's not affected by rotation or scale)
                 o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
             }
             else
@@ -88,12 +109,11 @@ v2f vert(vertInput input)
                     + up * v.y
                     - n * v.z;
 
-                // Get the origin (it's not affected by rotation or scale)
                 o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
             }
         }
     }
-    else if(has_custom2(modifications))
+    else if (has_custom2(modifications))
     {
         // Spiral
         // return mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, float4(pos, 1.0)));

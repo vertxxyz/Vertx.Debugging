@@ -35,6 +35,7 @@ namespace Vertx.Debugging
 		private readonly ShapeBuffersWithData<Shapes.Arc> _arcs = new ShapeBuffersWithData<Shapes.Arc>("arc_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Box> _boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Box2D> _box2Ds = new ShapeBuffersWithData<Shapes.Box2D>("box_buffer");
+		private readonly ShapeBuffersWithData<Shapes.Outline> _outlines = new ShapeBuffersWithData<Shapes.Outline>("outline_buffer");
 		private bool _queuedDispose;
 		private VertxDebuggingRendererFeature _pass;
 		private float _timeThisFrame;
@@ -127,6 +128,7 @@ namespace Vertx.Debugging
 			_arcs.Clear();
 			_boxes.Clear();
 			_box2Ds.Clear();
+			_outlines.Clear();
 		}
 
 		private static bool CombineDependencies(ref JobHandle? handle, JobHandle? other)
@@ -148,12 +150,14 @@ namespace Vertx.Debugging
 			int oldArcCount = QueueRemovalJob(_arcs, dependency, out JobHandle? arcHandle);
 			int oldBoxCount = QueueRemovalJob(_boxes, dependency, out JobHandle? boxHandle);
 			int oldBox2DCount = QueueRemovalJob(_box2Ds, dependency, out JobHandle? box2DHandle);
+			int oldOutlineCount = QueueRemovalJob(_outlines, dependency, out JobHandle? outlineHandle);
 
 			JobHandle? coreHandle = null;
 			if (!CombineDependencies(ref coreHandle, lineHandle) & // Purposely an &, so each branch gets executed.
 			    !CombineDependencies(ref coreHandle, arcHandle) &
 			    !CombineDependencies(ref coreHandle, boxHandle) &
-			    !CombineDependencies(ref coreHandle, box2DHandle))
+			    !CombineDependencies(ref coreHandle, box2DHandle) &
+			    !CombineDependencies(ref coreHandle, outlineHandle))
 				coreHandle = dependency;
 
 			if (coreHandle.HasValue)
@@ -171,6 +175,9 @@ namespace Vertx.Debugging
 				
 				if (_box2Ds.Count != oldBox2DCount)
 					_box2Ds.SetDirty();
+				
+				if(_outlines.Count != oldOutlineCount)
+					_outlines.SetDirty();
 			}
 
 			int QueueRemovalJob<T>(ShapeBuffersWithData<T> data, JobHandle? handleIn, out JobHandle? handleOut) where T : unmanaged
@@ -327,6 +334,7 @@ namespace Vertx.Debugging
 			RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, _arcs);
 			RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, _boxes);
 			RenderShape(AssetsUtility.Box2D, AssetsUtility.BoxMaterial, _box2Ds);
+			RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, _outlines);
 
 			void RenderShape<T>(
 				AssetsUtility.Asset<Mesh> mesh,
@@ -387,6 +395,15 @@ namespace Vertx.Debugging
 			_box2Ds.Add(box, color, modifications, duration);
 		}
 
+		internal void AppendOutline(Shapes.Outline outline, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
+		{
+			duration = GetDuration(duration);
+			if (duration < 0)
+				return;
+			InitialiseIfRequired();
+			_outlines.Add(outline, color, modifications, duration);
+		}
+
 		private static bool IsInFixedUpdate()
 #if UNITY_2020_3_OR_NEWER
 			=> Time.inFixedTimeStep;
@@ -419,6 +436,7 @@ namespace Vertx.Debugging
 			_arcs.Dispose();
 			_boxes.Dispose();
 			_box2Ds.Dispose();
+			_outlines.Dispose();
 
 			if (_pass != null)
 				Object.DestroyImmediate(_pass, true);

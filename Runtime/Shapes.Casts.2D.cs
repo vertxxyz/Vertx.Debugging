@@ -270,17 +270,17 @@ namespace Vertx.Debugging
 				else if (dot < 0)
 					commandBuilder.AppendLine(new Line(endCapsule.PointA - endCapsule._scaledLeft, endCapsule.PointB - endCapsule._scaledLeft), castColor, duration);
 
+				// Termination capsule ends
 				float angle = verticalDirection.ToAngleDegrees();
 
 				float dotA = Vector2.Dot(verticalDirection, Direction);
 				float dotB = -dotA;
 
-				float offsetA = Angle.FromRadians(Mathf.Acos(dotA)).Degrees;
-				float offsetB = Angle.FromRadians(Mathf.Acos(dotB)).Degrees;
-
-				// Termination capsule ends
-				commandBuilder.AppendArc(new Arc(endCapsule.PointA, angle - offsetA * 0.5f * sign, Capsule.Radius, Angle.FromDegrees(Mathf.Abs(offsetB))), castColor, duration);
-				commandBuilder.AppendArc(new Arc(endCapsule.PointB, angle + 180 + offsetB * 0.5f * sign, Capsule.Radius, Angle.FromDegrees(Mathf.Abs(offsetA))), castColor, duration);
+				Angle offsetA = Angle.FromRadians(Mathf.Acos(dotA));
+				Angle offsetB = Angle.FromRadians(Mathf.Acos(dotB));
+				
+				commandBuilder.AppendArc(new Arc(endCapsule.PointA, angle - offsetA.Degrees * 0.5f * sign, Capsule.Radius, offsetB.Abs()), castColor, duration);
+				commandBuilder.AppendArc(new Arc(endCapsule.PointB, angle + 180 + offsetB.Degrees * 0.5f * sign, Capsule.Radius, offsetA.Abs()), castColor, duration);
 
 				if (!Hit.HasValue)
 					return;

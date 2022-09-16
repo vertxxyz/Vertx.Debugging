@@ -1,4 +1,5 @@
 #include "UnityCG.cginc"
+#include "DebuggingShared.cginc"
 
 struct Line
 {
@@ -6,7 +7,6 @@ struct Line
 };
 
 StructuredBuffer<Line> line_buffer;
-StructuredBuffer<float4> color_buffer;
 
 struct vertInput
 {
