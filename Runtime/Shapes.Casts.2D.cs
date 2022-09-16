@@ -1,5 +1,6 @@
 #if VERTX_PHYSICS_2D
 using UnityEngine;
+
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
 namespace Vertx.Debugging
@@ -69,7 +70,7 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
-		
+
 		public struct CircleCast : IDrawableCast
 		{
 			public Vector3 Origin;
@@ -100,7 +101,7 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
-		
+
 		public struct CircleCastAll : IDrawableCast
 		{
 			public CircleCast CircleCast;
@@ -128,7 +129,7 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
-		
+
 		public struct BoxCast2D : IDrawableCast
 		{
 			public Box2D Box;
@@ -152,7 +153,7 @@ namespace Vertx.Debugging
 			{
 				Box.Draw(commandBuilder, castColor, duration);
 				Vector3 offset = Direction * MaxDistance;
-				
+
 				Vector3 origin = Box.GetPoint(Box2D.Point.Origin);
 				Vector3 tr = Box.GetPoint(Box2D.Point.TopRight);
 				Vector3 bl = Box.GetPoint(Box2D.Point.BottomLeft);
@@ -161,7 +162,7 @@ namespace Vertx.Debugging
 
 				float dotTR = Vector2.Dot(Direction, tr - origin);
 				float dotTL = Vector2.Dot(Direction, tl - origin);
-				
+
 				// Joining lines
 				if (Mathf.Abs(dotTR) < Mathf.Abs(dotTL))
 				{
@@ -193,14 +194,14 @@ namespace Vertx.Debugging
 					Vector3 p2 = endBox.GetPoint(point | (Box2D.Point)(1 << max));
 					commandBuilder.AppendLine(new Line(p1, p2), castColor, duration);
 				}
-				
+
 				if (!Hit.HasValue)
 					return;
 				Box.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
 			}
 #endif
 		}
-		
+
 		public struct BoxCast2DAll : IDrawableCast
 		{
 			public BoxCast2D BoxCast;
@@ -224,6 +225,93 @@ namespace Vertx.Debugging
 				{
 					RaycastHit2D result = Results[i];
 					BoxCast.Box.GetTranslated(BoxCast.Direction * result.distance).Draw(commandBuilder, hitColor, duration);
+				}
+			}
+#endif
+		}
+
+		public struct CapsuleCast2D : IDrawableCast
+		{
+			public Capsule2D Capsule;
+			public Vector2 Direction;
+			public float MaxDistance;
+			public RaycastHit2D? Hit;
+
+			public CapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float z = 0)
+			{
+				Capsule = new Capsule2D(origin, size, capsuleDirection, angle, z);
+				direction.EnsureNormalized();
+				Direction = direction;
+				Hit = hit;
+				MaxDistance = GetClampedMaxDistance(maxDistance);
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+
+			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			{
+				Capsule.Draw(commandBuilder, castColor, duration);
+
+				var verticalDirection = (Vector2)Capsule._verticalDirection;
+				float dot = Vector2.Dot(PerpendicularClockwise(verticalDirection), Direction);
+				float sign = Mathf.Sign(dot);
+				float scaledRadius = sign * Capsule.Radius;
+				Vector2 o1 = PerpendicularCounterClockwise(Direction) * scaledRadius;
+				Vector2 o2 = PerpendicularClockwise(Direction) * scaledRadius;
+
+				Capsule2D endCapsule = Capsule.GetTranslated(Direction * MaxDistance);
+				commandBuilder.AppendLine(new Line(Capsule.PointA.Add(o1), endCapsule.PointA.Add(o1)), castColor, duration);
+				commandBuilder.AppendLine(new Line(Capsule.PointB.Add(o2), endCapsule.PointB.Add(o2)), castColor, duration);
+
+				// Termination capsule lines
+				if (dot > 0)
+					commandBuilder.AppendLine(new Line(endCapsule.PointA + endCapsule._scaledLeft, endCapsule.PointB + endCapsule._scaledLeft), castColor, duration);
+				else if (dot < 0)
+					commandBuilder.AppendLine(new Line(endCapsule.PointA - endCapsule._scaledLeft, endCapsule.PointB - endCapsule._scaledLeft), castColor, duration);
+
+				float angle = verticalDirection.ToAngleDegrees();
+
+				float dotA = Vector2.Dot(verticalDirection, Direction);
+				float dotB = -dotA;
+
+				float offsetA = Angle.FromRadians(Mathf.Acos(dotA)).Degrees;
+				float offsetB = Angle.FromRadians(Mathf.Acos(dotB)).Degrees;
+
+				// Termination capsule ends
+				commandBuilder.AppendArc(new Arc(endCapsule.PointA, angle - offsetA * 0.5f * sign, Capsule.Radius, Angle.FromDegrees(Mathf.Abs(offsetB))), castColor, duration);
+				commandBuilder.AppendArc(new Arc(endCapsule.PointB, angle + 180 + offsetB * 0.5f * sign, Capsule.Radius, Angle.FromDegrees(Mathf.Abs(offsetA))), castColor, duration);
+
+				if (!Hit.HasValue)
+					return;
+				Capsule.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
+			}
+#endif
+		}
+
+		public struct CapsuleCast2DAll : IDrawableCast
+		{
+			public CapsuleCast2D CapsuleCast;
+			public RaycastHit2D[] Results;
+			public int ResultCount;
+
+			public CapsuleCast2DAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, int count, float maxDistance = Mathf.Infinity, float z = 0)
+			{
+				CapsuleCast = new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, null, maxDistance, z);
+				Results = results;
+				ResultCount = count;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+
+			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			{
+				CapsuleCast.Draw(commandBuilder, castColor, hitColor, duration);
+				for (int i = 0; i < ResultCount; i++)
+				{
+					RaycastHit2D result = Results[i];
+					CapsuleCast.Capsule.GetTranslated(CapsuleCast.Direction * result.distance).Draw(commandBuilder, hitColor, duration);
 				}
 			}
 #endif

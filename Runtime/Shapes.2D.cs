@@ -236,10 +236,10 @@ namespace Vertx.Debugging
 			public Vector3 PointB => _pointB;
 			public float Radius => _radius;
 
-			private readonly Vector3 _pointA, _pointB;
-			private readonly float _radius;
-			private readonly Vector3 _verticalDirection;
-			private readonly Vector3 _scaledLeft;
+			internal readonly Vector3 _pointA, _pointB;
+			internal readonly float _radius;
+			internal readonly Vector3 _verticalDirection;
+			internal readonly Vector3 _scaledLeft;
 
 			public enum Direction
 			{
@@ -263,6 +263,24 @@ namespace Vertx.Debugging
 
 			public Capsule2D(Vector2 point, Vector2 size, Direction capsuleDirection, float angle = 0)
 				: this(point, size, capsuleDirection, angle, 0) { }
+
+			private Capsule2D(Vector3 pointA, Vector3 pointB, float radius, Vector3 verticalDirection, Vector3 scaledLeft)
+			{
+				_pointA = pointA;
+				_pointB = pointB;
+				_radius = radius;
+				_verticalDirection = verticalDirection;
+				_scaledLeft = scaledLeft;
+			}
+
+			public Capsule2D GetTranslated(Vector2 translation)
+				=> new Capsule2D(
+					new Vector3(_pointA.x + translation.x, _pointA.y + translation.y, _pointA.z),
+					new Vector3(_pointB.x + translation.x, _pointB.y + translation.y, _pointB.z),
+					_radius,
+					_verticalDirection,
+					_scaledLeft
+				);
 
 			public Capsule2D(Vector2 point, Vector2 size, Direction capsuleDirection, float angle, float z)
 			{

@@ -117,6 +117,8 @@ namespace Vertx.Debugging
 				return Vector2.right;
 			return Rotate(Vector2.right, angle);
 		}
+		
+		private static float ToAngleDegrees(this Vector2 v) => Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
 
 		private static Vector2 PerpendicularClockwise(Vector2 vector2) => new Vector2(vector2.y, -vector2.x);
 
@@ -125,5 +127,7 @@ namespace Vertx.Debugging
 		private static Vector3 PerpendicularClockwise(Vector3 vector3) => new Vector3(vector3.y, -vector3.x, vector3.z);
 		
 		private static Vector3 PerpendicularCounterClockwise(Vector3 vector3) => new Vector3(-vector3.y, vector3.x, vector3.z);
+
+		private static Vector3 Add(this Vector3 a, Vector2 b) => new Vector3(a.x + b.x, a.y + b.y, a.z);
 	}
 }
