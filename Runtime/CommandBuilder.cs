@@ -333,7 +333,7 @@ namespace Vertx.Debugging
 			RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, _lines);
 			RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, _arcs);
 			RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, _boxes);
-			RenderShape(AssetsUtility.Box2D, AssetsUtility.BoxMaterial, _box2Ds);
+			RenderShape(AssetsUtility.Box2D, AssetsUtility.DefaultMaterial, _box2Ds);
 			RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, _outlines);
 
 			void RenderShape<T>(

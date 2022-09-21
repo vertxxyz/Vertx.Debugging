@@ -39,13 +39,13 @@ v2f vert(vertInput input)
 
     if (has_normal_fade(modifications))
     {
-        float3 worldViewDir = _WorldSpaceCameraPos.xyz - worldPos;
-        float d = dot(worldViewDir, UnityObjectToWorldNormal(input.normal));
-        d = saturate(
-            smoothstep(0, 0.1, d) // front face
-        );
+        float3 worldViewDir = is_orthographic() ? camera_direction() : _WorldSpaceCameraPos.xyz - worldPos;
 
-        o.color.a *= max(0.3, d);
+        float3 normalA = UnityObjectToWorldNormal(input.normal * float3(1, 0, 0));
+        float3 normalB = UnityObjectToWorldNormal(input.normal * float3(0, 1, 0));
+        float3 normalC = UnityObjectToWorldNormal(input.normal * float3(0, 0, 1));
+        
+        o.color.a *= max(0.3, step(0, max(max(dot(worldViewDir, normalA), dot(worldViewDir, normalB)), dot(worldViewDir, normalC))));
     }
     return o;
 }
