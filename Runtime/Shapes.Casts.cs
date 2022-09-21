@@ -31,7 +31,7 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
-		
+
 		public struct RaycastAll : IDrawableCast
 		{
 			public Ray Ray;
@@ -152,7 +152,7 @@ namespace Vertx.Debugging
 			public Vector3 Direction;
 			public float MaxDistance;
 			public RaycastHit? Hit;
-			
+
 			public BoxCast(Box box, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 			{
 				Box = box;
@@ -166,17 +166,41 @@ namespace Vertx.Debugging
 
 			public BoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 				: this(center, halfExtents, direction, hit, Quaternion.identity, maxDistance) { }
-			
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				Box.Draw(commandBuilder, castColor, duration);
-				Box.GetTranslated(Direction * MaxDistance).Draw(commandBuilder, castColor, duration);
+				Vector3 offset = Direction * MaxDistance;
+				Box.GetTranslated(offset).Draw(commandBuilder, castColor, duration);
 				if (Hit.HasValue)
 					Box.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
-				// TODO draw connecting lines
+
+				// Draw connectors
+				Vector3 position = Box.Matrix.MultiplyPoint3x4(Vector3.zero);
+				Vector3 up = Box.Matrix.MultiplyPoint3x4(new Vector3(0, 1, 0)) - position;
+				Vector3 right = Box.Matrix.MultiplyPoint3x4(new Vector3(1, 0, 0)) - position;
+				Vector3 forward = Box.Matrix.MultiplyPoint3x4(new Vector3(0, 0, 1)) - position;
+
+				BoxUtility.Direction direction = BoxUtility.ConstructDirection(
+					Vector3.Dot(right, Direction),
+					Vector3.Dot(up, Direction),
+					Vector3.Dot(forward, Direction)
+				);
+
+				foreach (var point in BoxUtility.Points)
+				{
+					var matchedDirections = point.Direction & direction;
+					if (matchedDirections == 0)
+						continue;
+					int count = BoxUtility.CountDirections(matchedDirections);
+					if (count != 1 && count != 2)
+						continue;
+					Vector3 coordinate = Box.Matrix.MultiplyPoint3x4(point.Coordinate);
+					commandBuilder.AppendLine(new Line(coordinate, coordinate + offset), castColor, duration);
+				}
 			}
 #endif
 		}
@@ -188,7 +212,7 @@ namespace Vertx.Debugging
 			public float MaxDistance;
 			public RaycastHit[] Results;
 			public int ResultCount;
-			
+
 			public BoxCastAll(Box box, Vector3 direction, RaycastHit[] results, int count, float maxDistance = Mathf.Infinity)
 			{
 				Box = box;
@@ -209,7 +233,7 @@ namespace Vertx.Debugging
 
 			public BoxCastAll(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] results, float maxDistance = Mathf.Infinity)
 				: this(center, halfExtents, direction, results, results.Length, Quaternion.identity, maxDistance) { }
-			
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
 
@@ -219,7 +243,7 @@ namespace Vertx.Debugging
 				for (int i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
-					Box.GetTranslated( Direction * result.distance).Draw(commandBuilder, hitColor, duration);
+					Box.GetTranslated(Direction * result.distance).Draw(commandBuilder, hitColor, duration);
 				}
 			}
 #endif
@@ -231,7 +255,7 @@ namespace Vertx.Debugging
 			public Vector3 Direction;
 			public float MaxDistance;
 			public RaycastHit? Hit;
-			
+
 			public CapsuleCast(Capsule capsule, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 			{
 				Capsule = capsule;
@@ -274,7 +298,7 @@ namespace Vertx.Debugging
 
 			public CapsuleCastAll(Capsule capsule, Vector3 direction, RaycastHit[] results, float maxDistance = Mathf.Infinity)
 				: this(capsule, direction, results, results.Length, maxDistance) { }
-			
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
 
