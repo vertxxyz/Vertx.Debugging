@@ -168,6 +168,39 @@ namespace Vertx.Debugging
 				}
 			}
 
+			public static readonly Edge[] Edges =
+			{
+				new Edge(new Vector3(-1, -1, -1), new Vector3(1, -1, -1), Direction.Bottom | Direction.Back),
+				new Edge(new Vector3(-1, -1, -1), new Vector3(-1, 1, -1), Direction.Left | Direction.Back),
+				new Edge(new Vector3(-1, -1, -1), new Vector3(-1, -1, 1), Direction.Left | Direction.Bottom),
+				//
+				new Edge(new Vector3(-1, -1, 1), new Vector3(-1, 1, 1), Direction.Left | Direction.Forward),
+				new Edge(new Vector3(-1, -1, 1), new Vector3(1, -1, 1), Direction.Bottom | Direction.Forward),
+				//
+				new Edge(new Vector3(-1, 1, -1), new Vector3(1, 1, -1), Direction.Top | Direction.Back),
+				new Edge(new Vector3(-1, 1, -1), new Vector3(-1, 1, 1), Direction.Left | Direction.Top),
+				//
+				new Edge(new Vector3(1, -1, -1), new Vector3(1, 1, -1), Direction.Right | Direction.Back),
+				new Edge(new Vector3(1, -1, -1), new Vector3(1, -1, 1), Direction.Right | Direction.Bottom),
+				//
+				new Edge(new Vector3(1, 1, 1), new Vector3(1, 1, -1), Direction.Right | Direction.Top),
+				new Edge(new Vector3(1, 1, 1), new Vector3(1, -1, 1), Direction.Right | Direction.Forward),
+				new Edge(new Vector3(1, 1, 1), new Vector3(-1, 1, 1), Direction.Top | Direction.Forward)
+			};
+
+			public readonly struct Edge
+			{
+				public readonly Vector3 A, B;
+				public readonly Direction Direction;
+
+				public Edge(Vector3 a, Vector3 b, Direction direction)
+				{
+					A = a;
+					B = b;
+					Direction = direction;
+				}
+			}
+
 			public static Direction ConstructDirection(float dotRight, float dotUp, float dotForward)
 			{
 				const float epsilon = 0.00001f;

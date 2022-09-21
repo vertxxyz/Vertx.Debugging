@@ -173,8 +173,6 @@ namespace Vertx.Debugging
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				Box.Draw(commandBuilder, castColor, duration);
-				Vector3 offset = Direction * MaxDistance;
-				Box.GetTranslated(offset).Draw(commandBuilder, castColor, duration);
 				if (Hit.HasValue)
 					Box.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
 
@@ -189,10 +187,12 @@ namespace Vertx.Debugging
 					Vector3.Dot(up, Direction),
 					Vector3.Dot(forward, Direction)
 				);
+				
+				Vector3 offset = Direction * MaxDistance;
 
 				foreach (var point in BoxUtility.Points)
 				{
-					var matchedDirections = point.Direction & direction;
+					BoxUtility.Direction matchedDirections = point.Direction & direction;
 					if (matchedDirections == 0)
 						continue;
 					int count = BoxUtility.CountDirections(matchedDirections);
@@ -200,6 +200,18 @@ namespace Vertx.Debugging
 						continue;
 					Vector3 coordinate = Box.Matrix.MultiplyPoint3x4(point.Coordinate);
 					commandBuilder.AppendLine(new Line(coordinate, coordinate + offset), castColor, duration);
+				}
+				
+				// Draw box end
+				var boxEnd = Box.GetTranslated(offset);
+				foreach (var edge in BoxUtility.Edges)
+				{
+					BoxUtility.Direction matchedDirections = edge.Direction & direction;
+					if (matchedDirections == 0)
+						continue;
+					Vector3 a = boxEnd.Matrix.MultiplyPoint3x4(edge.A);
+					Vector3 b = boxEnd.Matrix.MultiplyPoint3x4(edge.B);
+					commandBuilder.AppendLine(new Line(a, b), castColor, duration);
 				}
 			}
 #endif
