@@ -10,6 +10,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
+
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
 namespace Vertx.Debugging
@@ -76,10 +77,27 @@ namespace Vertx.Debugging
 			}
 		}
 
-		internal sealed class ManagedDataLists<T>
+		internal sealed class TextDataLists
 		{
+			private sealed class TextDataPool :
+#if !UNITY_2021_1_OR_NEWER
+				Vertx.Debugging.Internal.
+#else
+				UnityEngine.Pool.
+#endif
+				ObjectPool<Shapes.TextData>
+			{
+				public TextDataPool(int defaultCapacity = 10, int maxSize = 10000)
+					: base(() => new Shapes.TextData(), null, data =>
+					{
+						data.Camera = null;
+						data.Value = null;
+					}, null, false, defaultCapacity, maxSize) { }
+			}
+
 			private readonly List<float> _durations = new List<float>();
-			private readonly List<T> _elements = new List<T>();
+			private readonly TextDataPool _textDataPool = new TextDataPool();
+			private readonly List<Shapes.TextData> _elements = new List<Shapes.TextData>();
 			private readonly List<Color> _colors = new List<Color>();
 			private readonly List<Shapes.DrawModifications> _modifications = new List<Shapes.DrawModifications>();
 
@@ -89,13 +107,16 @@ namespace Vertx.Debugging
 
 			public int Count => _elements.Count;
 
-			public List<T> InternalList => _elements;
-			public List<float> DurationsInternalList => _durations;
+			public List<Shapes.TextData> InternalList => _elements;
 			public List<Shapes.DrawModifications> ModificationsInternalList => _modifications;
 			public List<Color> ColorsInternalList => _colors;
 
-			public void Add(T element, Color color, Shapes.DrawModifications modifications, float duration)
+			public void Add(in Shapes.Text text, Color color, Shapes.DrawModifications modifications, float duration)
 			{
+				Shapes.TextData element = _textDataPool.Get();
+				element.Position = text.Position;
+				element.Value = text.Value;
+				element.Camera = text.Camera;
 				_elements.Add(element);
 				_colors.Add(color);
 				_modifications.Add(modifications);
@@ -131,6 +152,7 @@ namespace Vertx.Debugging
 					_durations[index] = _durations[endIndex];
 					_durations.RemoveAt(endIndex);
 
+					_textDataPool.Release(_elements[index]);
 					_elements[index] = _elements[endIndex];
 					_elements.RemoveAt(endIndex);
 

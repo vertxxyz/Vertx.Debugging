@@ -11,17 +11,19 @@ namespace Vertx.Debugging
 	[InitializeOnLoad]
 	internal static class DrawText
 	{
-		private static Font font;
+		private static Font s_Font;
 
 		private static Font Font
 		{
 			get
 			{
-				if (font != null)
-					return font;
-				return font = AssetDatabase.LoadAssetAtPath<Font>("Packages/com.vertx.debugging/Editor/JetbrainsMono-Regular.ttf");
+				if (s_Font != null)
+					return s_Font;
+				return s_Font = AssetDatabase.LoadAssetAtPath<Font>("Packages/com.vertx.debugging/Editor/JetbrainsMono-Regular.ttf");
 			}
 		}
+		
+		private static readonly GUIContent s_SharedContent = new GUIContent();
 
 		private static GUIStyle textStyle;
 		private static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label)
@@ -57,6 +59,9 @@ namespace Vertx.Debugging
 		{
 			if (!obj.drawGizmos)
 				return;
+			
+			if (Event.current.type != EventType.Repaint)
+				return;
 
 			Handles.BeginGUI();
 			var commandBuilder = CommandBuilder.Instance;
@@ -71,6 +76,9 @@ namespace Vertx.Debugging
 		
 		public static void OnGUI()
 		{
+			if (Event.current.type != EventType.Repaint)
+				return;
+			
 			var commandBuilder = CommandBuilder.Instance;
 			var texts = commandBuilder.Texts;
 			for (int i = 0; i < texts.Count; i++)
@@ -80,13 +88,11 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private static readonly GUIContent sharedContent = new GUIContent();
-
+		/// <summary>
+		/// Only call in EventType.Repaint!
+		/// </summary>
 		private static void DoDrawText(Vector3 position, object text, Color color, Camera camera)
 		{
-			if (Event.current.type != EventType.Repaint)
-				return;
-
 			if (!WorldToGUIPoint(position, out Vector2 screenPos, camera)) return;
 			//------DRAW-------
 			string value;
@@ -103,10 +109,10 @@ namespace Vertx.Debugging
 					break;
 			}
 
-			sharedContent.text = value;
-			Rect rect = new Rect(screenPos, TextStyle.CalcSize(sharedContent));
+			s_SharedContent.text = value;
+			Rect rect = new Rect(screenPos, TextStyle.CalcSize(s_SharedContent));
 			DrawGUIRect();
-			GUI.Label(rect, sharedContent, TextStyle);
+			GUI.Label(rect, s_SharedContent, TextStyle);
 			//-----------------
 
 			void DrawGUIRect()

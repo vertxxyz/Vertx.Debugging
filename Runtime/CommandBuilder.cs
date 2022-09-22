@@ -18,10 +18,8 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 #endif
 using Vertx.Debugging.PlayerLoop;
-using Object = UnityEngine.Object;
-#if !UNITY_2021_1_OR_NEWER
 using Vertx.Debugging.Internal;
-#endif
+using Object = UnityEngine.Object;
 
 // ReSharper disable ConvertIfStatementToNullCoalescingAssignment
 
@@ -47,11 +45,12 @@ namespace Vertx.Debugging
 		private readonly ShapeBuffersWithData<Shapes.Box> _boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Box2D> _box2Ds = new ShapeBuffersWithData<Shapes.Box2D>("box_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Outline> _outlines = new ShapeBuffersWithData<Shapes.Outline>("outline_buffer");
-		private readonly ManagedDataLists<Shapes.TextData> _texts = new ManagedDataLists<Shapes.TextData>();
-		private readonly Shapes.TextDataPool _textDataPool = new Shapes.TextDataPool();
+		private readonly TextDataLists _texts = new TextDataLists();
 
-		internal ManagedDataLists<Shapes.TextData> Texts => _texts;
-		
+		internal const float EditorUpdateDuration = 0.01f;
+
+		internal TextDataLists Texts => _texts;
+
 #if VERTX_URP
 		private VertxDebuggingRendererFeature _pass;
 #endif
@@ -292,13 +291,6 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		[DrawGizmo(GizmoType.Active | GizmoType.Pickable | GizmoType.Selected | GizmoType.NonSelected | GizmoType.InSelectionHierarchy | GizmoType.NotInSelectionHierarchy)]
-		private static void HasDrawnGizmos(Transform _, GizmoType gizmoType)
-		{
-			// This is an awful hack.
-			_.TransformVector(Vector3.zero);
-		}
-
 		private void OnEndContextRendering(ScriptableRenderContext context, List<Camera> cameras)
 		{
 			// If `cameras` becomes used, change subscription to this method.
@@ -311,7 +303,7 @@ namespace Vertx.Debugging
 				return;
 
 			if (_editorFrame > _lastRemovedEditorFrame + 1)
-				RemoveShapesByDuration(0.01f, null);
+				RemoveShapesByDuration(EditorUpdateDuration, null);
 		}
 
 		private void OnPostRender(Camera camera)
@@ -443,20 +435,16 @@ namespace Vertx.Debugging
 			InitialiseIfRequired();
 			_outlines.Add(outline, color, modifications, duration);
 		}
-		
+
 		public void AppendText(Shapes.Text text, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
 			duration = GetDuration(duration);
 			if (duration < 0)
 				return;
 			InitialiseIfRequired();
-			var data = _textDataPool.Get();
-			data.Position = text.Position;
-			data.Value = text.Value;
-			data.Camera = text.Camera;
-			_texts.Add(data, color, modifications, duration);
+			_texts.Add(text, color, modifications, duration);
 			// Force the runtime object to exist
-			_ = DrawRuntimeObject.Instance;
+			_ = DrawRuntimeBehaviour.Instance;
 		}
 
 		private static bool IsInFixedUpdate()
