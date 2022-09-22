@@ -5,7 +5,6 @@ namespace Vertx.Debugging
 	public abstract class DebugComponentBase : MonoBehaviour
 	{
 		[SerializeField] private bool _drawOnlyWhenSelected = true;
-		[SerializeField] protected Color _color = DebugUtils.RayColor;
 
 		[System.Serializable]
 		public struct ColorDurationPair
@@ -31,8 +30,7 @@ namespace Vertx.Debugging
 			if (_drawOnlyWhenSelected || !enabled || !ShouldDraw())
 				return;
 
-			using (DebugUtils.DrawGizmosScope())
-				Draw();
+			Draw();
 		}
 
 		private void OnDrawGizmosSelected()
@@ -40,8 +38,7 @@ namespace Vertx.Debugging
 			if (!_drawOnlyWhenSelected || !enabled || !ShouldDraw())
 				return;
 
-			using (DebugUtils.DrawGizmosScope())
-				Draw();
+			Draw();
 		}
 
 		protected abstract bool ShouldDraw();

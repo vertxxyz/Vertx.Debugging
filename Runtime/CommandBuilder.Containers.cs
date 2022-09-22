@@ -5,10 +5,12 @@
 #define HAS_SET_BUFFER_DATA
 #endif
 using System;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Rendering;
+// ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
 namespace Vertx.Debugging
 {
@@ -30,7 +32,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private class ListAndBuffer<T> : ListWrapper<T> where T : unmanaged
+		private sealed class ListAndBuffer<T> : ListWrapper<T> where T : unmanaged
 		{
 			private readonly int _bufferId;
 #if HAS_GRAPHICS_BUFFER
@@ -74,7 +76,74 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private class ShapeBuffersWithData<T> : IDisposable where T : unmanaged
+		internal sealed class ManagedDataLists<T>
+		{
+			private readonly List<float> _durations = new List<float>();
+			private readonly List<T> _elements = new List<T>();
+			private readonly List<Color> _colors = new List<Color>();
+			private readonly List<Shapes.DrawModifications> _modifications = new List<Shapes.DrawModifications>();
+
+			private MaterialPropertyBlock _propertyBlock;
+
+			public MaterialPropertyBlock PropertyBlock => _propertyBlock ?? (_propertyBlock = new MaterialPropertyBlock());
+
+			public int Count => _elements.Count;
+
+			public List<T> InternalList => _elements;
+			public List<float> DurationsInternalList => _durations;
+			public List<Shapes.DrawModifications> ModificationsInternalList => _modifications;
+			public List<Color> ColorsInternalList => _colors;
+
+			public void Add(T element, Color color, Shapes.DrawModifications modifications, float duration)
+			{
+				_elements.Add(element);
+				_colors.Add(color);
+				_modifications.Add(modifications);
+				_durations.Add(duration);
+			}
+
+			public void Clear()
+			{
+				if (_elements.Count == 0)
+					return;
+				_elements.Clear();
+				_colors.Clear();
+				_modifications.Clear();
+				_durations.Clear();
+			}
+
+			public void RemoveByDeltaTime(float deltaTime)
+			{
+				for (int index = _elements.Count - 1; index >= 0; index--)
+				{
+					float oldDuration = _durations[index];
+					float newDuration = oldDuration - deltaTime;
+					if (newDuration > 0)
+					{
+						_durations[index] = newDuration;
+						// ! Remember to change this when swapping between IJob and IJobFor
+						continue;
+					}
+
+					// RemoveUnorderedAt, shared logic:
+					int endIndex = _durations.Count - 1;
+
+					_durations[index] = _durations[endIndex];
+					_durations.RemoveAt(endIndex);
+
+					_elements[index] = _elements[endIndex];
+					_elements.RemoveAt(endIndex);
+
+					_modifications[index] = _modifications[endIndex];
+					_modifications.RemoveAt(endIndex);
+
+					_colors[index] = _colors[endIndex];
+					_colors.RemoveAt(endIndex);
+				}
+			}
+		}
+
+		private sealed class ShapeBuffersWithData<T> : IDisposable where T : unmanaged
 		{
 			private bool _dirty = true;
 			private readonly ListWrapper<float> _durations = new ListWrapper<float>();
@@ -84,15 +153,7 @@ namespace Vertx.Debugging
 
 			private MaterialPropertyBlock _propertyBlock;
 
-			public MaterialPropertyBlock PropertyBlock
-			{
-				get
-				{
-					if (_propertyBlock == null)
-						_propertyBlock = new MaterialPropertyBlock();
-					return _propertyBlock;
-				}
-			}
+			public MaterialPropertyBlock PropertyBlock => _propertyBlock ?? (_propertyBlock = new MaterialPropertyBlock());
 
 			public int Count => _elements.Count;
 
@@ -133,10 +194,10 @@ namespace Vertx.Debugging
 				_dirty = true;
 			}
 
-			public void Add(T shape, Color color, Shapes.DrawModifications modifications, float duration)
+			public void Add(T element, Color color, Shapes.DrawModifications modifications, float duration)
 			{
 				EnsureCreated();
-				_elements.List.Add(shape);
+				_elements.List.Add(element);
 				_colors.List.Add(color);
 				_modifications.List.Add(modifications);
 				_durations.List.Add(duration);

@@ -6,6 +6,7 @@ namespace Vertx.Debugging
 	[AddComponentMenu("Debugging/Debug Mesh Normals")]
 	public sealed class DebugMeshNormals : DebugComponentBase
 	{
+		[SerializeField] private Color _color = Shapes.CastColor;
 		[SerializeField] private MeshFilter _meshFilter;
 		[SerializeField] private float _rayLength = 0.1f;
 

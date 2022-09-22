@@ -5,6 +5,7 @@ namespace Vertx.Debugging
 	[AddComponentMenu("Debugging/Debug Collider Bounds")]
 	public sealed class DebugColliderBounds : DebugComponentBase
 	{
+		[SerializeField] private Color _color = Shapes.CastColor;
 		[SerializeField] private Collider _collider;
 #if VERTX_PHYSICS_2D
 		[SerializeField] private Collider2D _collider2D;

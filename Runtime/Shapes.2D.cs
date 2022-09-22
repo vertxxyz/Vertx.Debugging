@@ -120,13 +120,13 @@ namespace Vertx.Debugging
 			{
 				if (ShowArrowHeads)
 				{
-					new Arrow2D(Position, Angle).Draw(commandBuilder, ColorX, duration);
-					new Arrow2D(Position, Angle + 90).Draw(commandBuilder, ColorY, duration);
+					new Arrow2D(Position, Angle).Draw(commandBuilder, XColor, duration);
+					new Arrow2D(Position, Angle + 90).Draw(commandBuilder, YColor, duration);
 				}
 				else
 				{
-					new Ray2D(Position, Angle).Draw(commandBuilder, ColorX, duration);
-					new Ray2D(Position, Angle + 90).Draw(commandBuilder, ColorY, duration);
+					new Ray2D(Position, Angle).Draw(commandBuilder, XColor, duration);
+					new Ray2D(Position, Angle + 90).Draw(commandBuilder, YColor, duration);
 				}
 			}
 #endif

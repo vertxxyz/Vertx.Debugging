@@ -14,17 +14,28 @@ using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
+#if VERTX_URP
 using UnityEngine.Rendering.Universal;
+#endif
+using Vertx.Debugging.PlayerLoop;
 using Object = UnityEngine.Object;
+#if !UNITY_2021_1_OR_NEWER
+using Vertx.Debugging.Internal;
+#endif
 
 // ReSharper disable ConvertIfStatementToNullCoalescingAssignment
+
+namespace Vertx.Debugging.PlayerLoop
+{
+	public struct VertxDebugging { }
+}
 
 namespace Vertx.Debugging
 {
 	public sealed partial class CommandBuilder
 	{
 		private const string ProfilerName = "Vertx.Debugging";
-		private const string RuntimeEarlyUpdateProfilerName = ProfilerName + " " + nameof(RuntimeEarlyUpdate);
+		private const string RemoveShapesByDurationProfilerName = ProfilerName + " " + nameof(RemoveShapesByDuration);
 		private const string FillCommandBufferProfilerName = ProfilerName + " " + nameof(FillCommandBuffer);
 		private const string ExecuteProfilerName = ProfilerName + " Execute";
 
@@ -36,9 +47,18 @@ namespace Vertx.Debugging
 		private readonly ShapeBuffersWithData<Shapes.Box> _boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Box2D> _box2Ds = new ShapeBuffersWithData<Shapes.Box2D>("box_buffer");
 		private readonly ShapeBuffersWithData<Shapes.Outline> _outlines = new ShapeBuffersWithData<Shapes.Outline>("outline_buffer");
-		private bool _queuedDispose;
+		private readonly ManagedDataLists<Shapes.TextData> _texts = new ManagedDataLists<Shapes.TextData>();
+		private readonly Shapes.TextDataPool _textDataPool = new Shapes.TextDataPool();
+
+		internal ManagedDataLists<Shapes.TextData> Texts => _texts;
+		
+#if VERTX_URP
 		private VertxDebuggingRendererFeature _pass;
+#endif
+		private bool _disposeIsQueued;
 		private float _timeThisFrame;
+		private long _editorFrame;
+		private long _lastRemovedEditorFrame;
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
@@ -62,20 +82,18 @@ namespace Vertx.Debugging
 			EditorApplication.update += OnUpdate;
 		}
 
-		private struct VertxDebugging { }
-
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void InitialiseRuntime()
 		{
 			// Queue RuntimeEarlyUpdate into the EarlyUpdate portion of the player loop.
 
-			PlayerLoopSystem playerLoop = PlayerLoop.GetCurrentPlayerLoop();
+			PlayerLoopSystem playerLoop = UnityEngine.LowLevel.PlayerLoop.GetCurrentPlayerLoop();
 			PlayerLoopSystem[] subsystems = playerLoop.subSystemList.ToArray();
 			Type earlyUpdate = typeof(EarlyUpdate);
 			InjectFirstIn(earlyUpdate, typeof(VertxDebugging), Instance.RuntimeEarlyUpdate);
 
 			playerLoop.subSystemList = subsystems;
-			PlayerLoop.SetPlayerLoop(playerLoop);
+			UnityEngine.LowLevel.PlayerLoop.SetPlayerLoop(playerLoop);
 
 			void InjectFirstIn(Type type, Type actionType, PlayerLoopSystem.UpdateFunction action)
 			{
@@ -100,7 +118,6 @@ namespace Vertx.Debugging
 						type = actionType,
 						updateDelegate = action
 					};
-					;
 					subsystems[i].subSystemList = dest;
 				}
 			}
@@ -115,10 +132,8 @@ namespace Vertx.Debugging
 			}
 			else
 			{
-				Profiler.BeginSample(RuntimeEarlyUpdateProfilerName);
 				RemoveShapesByDuration(Time.deltaTime, null);
 				_timeThisFrame = Time.time;
-				Profiler.EndSample();
 			}
 		}
 
@@ -129,6 +144,7 @@ namespace Vertx.Debugging
 			_boxes.Clear();
 			_box2Ds.Clear();
 			_outlines.Clear();
+			_texts.Clear();
 		}
 
 		private static bool CombineDependencies(ref JobHandle? handle, JobHandle? other)
@@ -146,11 +162,16 @@ namespace Vertx.Debugging
 		/// </summary>
 		private void RemoveShapesByDuration(float deltaTime, JobHandle? dependency)
 		{
+			_lastRemovedEditorFrame = _editorFrame;
+
+			Profiler.BeginSample(RemoveShapesByDurationProfilerName);
+
 			int oldLineCount = QueueRemovalJob(_lines, dependency, out JobHandle? lineHandle);
 			int oldArcCount = QueueRemovalJob(_arcs, dependency, out JobHandle? arcHandle);
 			int oldBoxCount = QueueRemovalJob(_boxes, dependency, out JobHandle? boxHandle);
 			int oldBox2DCount = QueueRemovalJob(_box2Ds, dependency, out JobHandle? box2DHandle);
 			int oldOutlineCount = QueueRemovalJob(_outlines, dependency, out JobHandle? outlineHandle);
+			_texts.RemoveByDeltaTime(deltaTime);
 
 			JobHandle? coreHandle = null;
 			if (!CombineDependencies(ref coreHandle, lineHandle) & // Purposely an &, so each branch gets executed.
@@ -172,11 +193,11 @@ namespace Vertx.Debugging
 
 				if (_boxes.Count != oldBoxCount)
 					_boxes.SetDirty();
-				
+
 				if (_box2Ds.Count != oldBox2DCount)
 					_box2Ds.SetDirty();
-				
-				if(_outlines.Count != oldOutlineCount)
+
+				if (_outlines.Count != oldOutlineCount)
 					_outlines.SetDirty();
 			}
 
@@ -186,7 +207,7 @@ namespace Vertx.Debugging
 				if (length == 0)
 				{
 					handleOut = null;
-					return length;
+					return 0;
 				}
 
 				var removalJob = new RemovalJob<T>
@@ -200,9 +221,13 @@ namespace Vertx.Debugging
 				handleOut = removalJob.Schedule(handleIn ?? default);
 				return length;
 			}
+
+			Profiler.EndSample();
 		}
 
+#if UNITY_2021_1_OR_NEWER
 		[BurstCompile]
+#endif
 		private struct RemovalJob<T> : IJob where T : unmanaged
 		{
 			public NativeList<T> Elements;
@@ -267,12 +292,27 @@ namespace Vertx.Debugging
 #endif
 		}
 
+		[DrawGizmo(GizmoType.Active | GizmoType.Pickable | GizmoType.Selected | GizmoType.NonSelected | GizmoType.InSelectionHierarchy | GizmoType.NotInSelectionHierarchy)]
+		private static void HasDrawnGizmos(Transform _, GizmoType gizmoType)
+		{
+			// This is an awful hack.
+			_.TransformVector(Vector3.zero);
+		}
+
 		private void OnEndContextRendering(ScriptableRenderContext context, List<Camera> cameras)
 		{
 			// If `cameras` becomes used, change subscription to this method.
 		}
 
-		private void OnUpdate() { }
+		private void OnUpdate()
+		{
+			_editorFrame++;
+			if (Application.isPlaying)
+				return;
+
+			if (_editorFrame > _lastRemovedEditorFrame + 1)
+				RemoveShapesByDuration(0.01f, null);
+		}
 
 		private void OnPostRender(Camera camera)
 		{
@@ -329,7 +369,7 @@ namespace Vertx.Debugging
 
 		private void FillCommandBuffer(CommandBuffer commandBuffer, Camera camera)
 		{
-			Profiler.BeginSample(RuntimeEarlyUpdateProfilerName);
+			Profiler.BeginSample(RemoveShapesByDurationProfilerName);
 			RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, _lines);
 			RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, _arcs);
 			RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, _boxes);
@@ -385,7 +425,7 @@ namespace Vertx.Debugging
 			InitialiseIfRequired();
 			_boxes.Add(box, color, modifications, duration);
 		}
-		
+
 		public void AppendBox2D(Shapes.Box2D box, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
 			duration = GetDuration(duration);
@@ -402,6 +442,21 @@ namespace Vertx.Debugging
 				return;
 			InitialiseIfRequired();
 			_outlines.Add(outline, color, modifications, duration);
+		}
+		
+		public void AppendText(Shapes.Text text, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
+		{
+			duration = GetDuration(duration);
+			if (duration < 0)
+				return;
+			InitialiseIfRequired();
+			var data = _textDataPool.Get();
+			data.Position = text.Position;
+			data.Value = text.Value;
+			data.Camera = text.Camera;
+			_texts.Add(data, color, modifications, duration);
+			// Force the runtime object to exist
+			_ = DrawRuntimeObject.Instance;
 		}
 
 		private static bool IsInFixedUpdate()
@@ -422,8 +477,8 @@ namespace Vertx.Debugging
 
 		private void InitialiseIfRequired()
 		{
-			if (_queuedDispose) return;
-			_queuedDispose = true;
+			if (_disposeIsQueued) return;
+			_disposeIsQueued = true;
 			AssemblyReloadEvents.beforeAssemblyReload += Dispose;
 		}
 
@@ -438,8 +493,10 @@ namespace Vertx.Debugging
 			_box2Ds.Dispose();
 			_outlines.Dispose();
 
+#if VERTX_URP
 			if (_pass != null)
 				Object.DestroyImmediate(_pass, true);
+#endif
 		}
 	}
 }

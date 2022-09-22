@@ -110,12 +110,18 @@ namespace Vertx.Debugging
 
 			public static void DrawArrowHead(CommandBuilder commandBuilder, Vector3 point, Vector3 dir, Color color, float duration = 0)
 			{
-				const float headLength = 0.075f;
-				const float headWidth = 0.05f;
+				float headLength = 0.075f;
+				float headWidth = 0.05f;
 				const int segments = 3;
 
 				Vector3 arrowPoint = point + dir;
-				dir.EnsureNormalized();
+				dir.EnsureNormalized(out float length);
+
+				if (headLength > length * 0.5f)
+				{
+					headLength *= length;
+					headWidth *= length;
+				}
 
 				void DoDrawArrowHead(Vector3 center, Vector3 normal, float radius)
 				{
@@ -190,20 +196,20 @@ namespace Vertx.Debugging
 				if (ShowArrowHeads)
 				{
 					if ((VisibleAxes & Axes.X) != 0)
-						new Arrow(Origin, Rotation * new Vector3(Scale, 0, 0)).Draw(commandBuilder, ColorX, duration);
+						new Arrow(Origin, Rotation * new Vector3(Scale, 0, 0)).Draw(commandBuilder, XColor, duration);
 					if ((VisibleAxes & Axes.Y) != 0)
-						new Arrow(Origin, Rotation * new Vector3(0, Scale, 0)).Draw(commandBuilder, ColorY, duration);
+						new Arrow(Origin, Rotation * new Vector3(0, Scale, 0)).Draw(commandBuilder, YColor, duration);
 					if ((VisibleAxes & Axes.Z) != 0)
-						new Arrow(Origin, Rotation * new Vector3(0, 0, Scale)).Draw(commandBuilder, ColorZ, duration);
+						new Arrow(Origin, Rotation * new Vector3(0, 0, Scale)).Draw(commandBuilder, ZColor, duration);
 				}
 				else
 				{
 					if ((VisibleAxes & Axes.X) != 0)
-						new Ray(Origin, Rotation * new Vector3(Scale, 0, 0)).Draw(commandBuilder, ColorX, duration);
+						new Ray(Origin, Rotation * new Vector3(Scale, 0, 0)).Draw(commandBuilder, XColor, duration);
 					if ((VisibleAxes & Axes.Y) != 0)
-						new Ray(Origin, Rotation * new Vector3(0, Scale, 0)).Draw(commandBuilder, ColorY, duration);
+						new Ray(Origin, Rotation * new Vector3(0, Scale, 0)).Draw(commandBuilder, YColor, duration);
 					if ((VisibleAxes & Axes.Z) != 0)
-						new Ray(Origin, Rotation * new Vector3(0, 0, Scale)).Draw(commandBuilder, ColorZ, duration);
+						new Ray(Origin, Rotation * new Vector3(0, 0, Scale)).Draw(commandBuilder, ZColor, duration);
 				}
 			}
 #endif

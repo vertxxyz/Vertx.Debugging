@@ -20,18 +20,18 @@ namespace Vertx.Debugging
 	public sealed class DebugTriggerEvents : MonoBehaviour
 	{
 		[SerializeField] private Type _type = Type.Enter;
-		[Pair(null, "Duration")]
+		[PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Enter)]
 		[SerializeField]
 		private DebugComponentBase.ColorDurationPair _enter =
-			new DebugComponentBase.ColorDurationPair(DebugUtils.HitColor, 0.1f);
-		[Pair(null, "Duration")]
+			new DebugComponentBase.ColorDurationPair(Shapes.EnterColor, 0.1f);
+		[PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Stay)]
 		[SerializeField]
 		private DebugComponentBase.ColorDurationPair _stay =
-			new DebugComponentBase.ColorDurationPair(DebugUtils.StartColor);
-		[Pair(null, "Duration")]
+			new DebugComponentBase.ColorDurationPair(Shapes.StayColor);
+		[PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Exit)]
 		[SerializeField]
 		private DebugComponentBase.ColorDurationPair _exit =
-			new DebugComponentBase.ColorDurationPair(DebugUtils.EndColor, 0.1f);
+			new DebugComponentBase.ColorDurationPair(Shapes.ExitColor, 0.1f);
 
 		[Flags]
 		private enum Type : byte
