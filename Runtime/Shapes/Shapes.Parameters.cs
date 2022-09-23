@@ -24,7 +24,7 @@ namespace Vertx.Debugging
 			
 			public static Angle FromTurns(float value) => new Angle(value);
 
-			public static Angle FromLength(float length, float radius)
+			public static Angle FromArcLength(float length, float radius)
 			{
 				if (radius == 0 || length == 0)
 					return new Angle();

@@ -1,4 +1,3 @@
-# Debugging
 Editor debugging utilities for Unity.  
 All of these methods are accessed through `DebugUtils.`.
 
@@ -8,16 +7,17 @@ All of these methods are accessed through `DebugUtils.`.
 
 https://user-images.githubusercontent.com/21963717/153703387-cc55e3c6-26b6-4474-815a-0e65e27a73f0.mov
 
-# Usage
+## Usage
 
 ```csharp
 // Draw a sphere with the specified color.
 D.raw(new Shapes.Sphere(position, radius), color, duration);
 
-// Draw green sphere if no hit was detected, and a red if it was.
+// Draw green sphere if nothing was hit,
+// or draw a red sphere if something was.
 D.raw(new Shapes.Sphere(position, radius), hit, duration);
 
-// Draw green sphere cast, with red spheres where hits were detected.
+// Draw SphereCast in green, with red spheres where hits were detected.
 D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10), Shapes.CastColor, Shapes.HitColor, duration);
 ```
 
@@ -25,51 +25,59 @@ D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10),
 > Calls to these methods are stripped when building. You do not have to remove code or use defines.  
 > If your code spans many statements external to the method calls, it is unlikely to be stripped.
 
-# Shapes
+## Shapes
 All new shapes are contained within the Shapes class. I recommend statically importing the class if you are using them often:
 
 ```csharp
 using static Vertx.Debugging.Shapes;
 ```
 
-## General
+### General
 | Name          | Description                                         |
 |---------------|-----------------------------------------------------|
 | `Text`        | A label in the scene view at the provided position. |
 
 
-## 3D
-### Shapes
+### 3D
+#### Shapes
 | Name                                       | Description                                                  |
 |--------------------------------------------|--------------------------------------------------------------|
-| `Sphere`<br>`Box`<br>`Capsule`<br>`Bounds` | A shape at the provided position.                            |
+| `Sphere`<br>`Box`<br>`Capsule`<br>`Bounds` | 3D shapes.                                                   |
 | `Arc`                                      | An arc (using `Angle`[^1] to define its length).             |
 | `SurfacePoint`                             | A ray with a circle to indicate the surface.                 |
 | `Point`                                    | A point without a specified direction.                       |
 | `Axis`                                     | An XYZ direction gizmo.                                      |
 | `Arrow`<br>`ArrowStrip`                    | An arrow vector, or a collection of points forming an arrow. |
 | `Line`<br>`LineStrip`                      | A line, or a collection of points that make up a line.       |
-| `RaycastHit`                               | Draws a `SurfacePoint`.                                      |
 | `MeshNormals`                              | The normals of a mesh.                                       |
+| `Ray`                                      | Draws a line from a position and a direction vector.         |
+| `Ray` (Built-in)                           | Draws a `Ray`.                                               |
+| `Vector3` (Built-in)                       | Draws a `Point`.                                             |
+| `RaycastHit` (Built-in)                    | Draws a `SurfacePoint`.                                      |
+| `Bounds` (Built-in)                        | Draws a `Box`.                                               |
 
 
-### Casts
+#### Casts
 | Name                                                                    | Description                                                                                                                                                     |
 |-------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `Raycast`<br>`SphereCast`<br>`BoxCast`<br>`CapsuleCast`                 | Using similar parameters as<br>`Physics.Raycast`<br>`Physics.SphereCast`<br>`Physics.BoxCast`<br>`Physics.CapsuleCast`<br>with an optional `RaycastHit` result. |
 | <br>`RaycastAll`<br>`SphereCastAll`<br>`BoxCastAll`<br>`CapsuleCastAll` | `RaycastHit[]` results using similar parameters as<br>`Physics.RaycastAll`<br>`Physics.SphereCastAll`<br>`Physics.BoxCastAll`<br>`Physics.CapsuleCastAll`       |
 
-## 2D
-### Shapes
+### 2D
+#### Shapes
 | Name                                                       | Description                                                  |
 |------------------------------------------------------------|--------------------------------------------------------------|
-| `Circle2D`<br>`Box2D`<br>`Area2D`<br>`Capsule2D`<br>`Rect` | A shape at the provided position.                            |
+| `Circle2D`<br>`Box2D`<br>`Area2D`<br>`Capsule2D`<br>`Rect` | 2D shapes.                                                   |
 | `Arc2D`                                                    | An arc (using `Angle`[^1] to define its length).             |
 | `Point2D`                                                  | A point without a specified direction.                       |
 | `Axis2D`                                                   | An XY direction gizmo.                                       |
 | `Arrow2D`<br>`ArrowStrip2D`                                | An arrow vector, or a collection of points forming an arrow. |
+| `Ray2D`                                                    | A line from a position and a direction vector.               |
+| `Spiral2D`                                                 | A spiral, useful for visualising rotation on wheels.         |
+| `Vector2` (Built-in)                                       | Draws a `Point2D`.                                           |
+| `RaycastHit2D` (Built-in)                                  | Draws a `Ray`.                                               |
 
-### Casts
+#### Casts
 | Name                                                                            | Description                                                                                                                                                               |
 |---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `Raycast2D`<br>`CircleCast2D`<br>`BoxCast2D`<br>`CapsuleCast2D`                 | Using similar parameters as<br>`Physics2D.Raycast`<br>`Physics2D.SphereCast`<br>`Physics2D.BoxCast`<br>`Physics2D.CapsuleCast`<br>with an optional `RaycastHit2D` result. |
@@ -77,7 +85,7 @@ using static Vertx.Debugging.Shapes;
 
 [^1]: The helper class `Angle` is used to define angles, author it with the static methods like `Angle.FromDegrees`.
 
-# Components
+## Components
 | Name                   | Description                                         |
 |------------------------|-----------------------------------------------------|
 | Debug Transform        | Draws up, right, forward axes of a Transform.       |

@@ -58,6 +58,13 @@ namespace Vertx.Debugging
 				Direction = direction;
 			}
 
+			public Ray(Vector3 origin, Vector3 direction, float distance)
+			{
+				Origin = origin;
+				direction.EnsureNormalized();
+				Direction = direction * GetClampedMaxDistance(distance);
+			}
+
 			public static implicit operator Ray(UnityEngine.Ray ray) => new Ray(ray.origin, ray.direction);
 
 #if UNITY_EDITOR

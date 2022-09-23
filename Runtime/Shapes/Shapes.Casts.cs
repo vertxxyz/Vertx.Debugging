@@ -13,8 +13,7 @@ namespace Vertx.Debugging
 
 			public Raycast(Vector3 origin, Vector3 direction, RaycastHit hit, float distance = Mathf.Infinity)
 			{
-				direction.EnsureNormalized();
-				Ray = new Ray(origin, direction * GetClampedMaxDistance(distance));
+				Ray = new Ray(origin, direction, distance);
 				Hit = hit;
 			}
 
@@ -41,7 +40,7 @@ namespace Vertx.Debugging
 			public RaycastAll(Vector3 origin, Vector3 direction, RaycastHit[] results, int resultCount, float distance = Mathf.Infinity)
 			{
 				direction.EnsureNormalized();
-				Ray = new Ray(origin, direction * GetClampedMaxDistance(distance));
+				Ray = new Ray(origin, direction, distance);
 				Results = results;
 				ResultCount = resultCount;
 			}

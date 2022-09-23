@@ -268,6 +268,14 @@ namespace Vertx.Debugging
 				PointB.z = z;
 			}
 
+			public Area2D(Rect rect, float z = 0)
+			{
+				Vector2 rectMin = rect.min;
+				Vector2 rectMax = rect.max;
+				PointA = new Vector3(rectMin.x, rectMin.y, z);
+				PointB = new Vector3(rectMax.x, rectMax.y, z);
+			} 
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
@@ -397,7 +405,7 @@ namespace Vertx.Debugging
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
 				Angle fullCircle = Shapes.Angle.FromTurns(1);
-				commandBuilder.AppendArc(new Arc(Origin, Vector3.forward, Vector3.up, Radius, fullCircle), color, duration);
+				commandBuilder.AppendArc(new Arc(Origin, Quaternion.identity, Radius, fullCircle), color, duration);
 				if (Revolutions == 0)
 				{
 					commandBuilder.AppendRay(new Ray(Origin, Rotate(new Vector3(Radius, 0, 0), Angle)), color, duration);

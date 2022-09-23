@@ -18,12 +18,7 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
-			{
-				if (!Application.isPlaying)
-					duration = CommandBuilder.EditorUpdateDuration;
-				commandBuilder.AppendText(this, color, duration);
-			}
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendText(this, color, duration);
 #endif
 		}
 

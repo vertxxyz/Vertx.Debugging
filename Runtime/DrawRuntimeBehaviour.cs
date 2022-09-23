@@ -1,9 +1,10 @@
 #if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 
 namespace Vertx.Debugging.Internal
 {
-	[DefaultExecutionOrder(int.MinValue), AddComponentMenu("")]
+	[DefaultExecutionOrder(int.MinValue), AddComponentMenu(""), ExecuteAlways]
 	public sealed class DrawRuntimeBehaviour : MonoBehaviour
 	{
 		private static DrawRuntimeBehaviour s_Instance;
@@ -25,7 +26,11 @@ namespace Vertx.Debugging.Internal
 			}
 		}
 		
-		private void OnGUI() => DrawText.OnGUI();
+		private void OnGUI()
+		{
+			if (Handles.ShouldRenderGizmos())
+				DrawText.OnGUI();
+		}
 	}
 }
 #endif

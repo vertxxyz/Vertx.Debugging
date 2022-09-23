@@ -90,6 +90,7 @@ namespace Vertx.Debugging
 		/// </summary>
 		private static void DoDrawText(Vector3 position, object text, Color color, Camera camera)
 		{
+			if (camera == null) return;
 			if (!WorldToGUIPoint(position, out Vector2 screenPos, camera)) return;
 			//------DRAW-------
 			string value;
