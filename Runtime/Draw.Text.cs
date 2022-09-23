@@ -4,6 +4,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using static Vertx.Debugging.Shapes;
 using UnityEditor;
+
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
 namespace Vertx.Debugging
@@ -11,8 +12,6 @@ namespace Vertx.Debugging
 	[InitializeOnLoad]
 	internal static class DrawText
 	{
-		private static Font s_Font;
-
 		private static Font Font
 		{
 			get
@@ -22,19 +21,10 @@ namespace Vertx.Debugging
 				return s_Font = AssetDatabase.LoadAssetAtPath<Font>("Packages/com.vertx.debugging/Editor/JetbrainsMono-Regular.ttf");
 			}
 		}
-		
-		private static readonly GUIContent s_SharedContent = new GUIContent();
 
-		private static GUIStyle textStyle;
-		private static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label)
-		{
-			font = Font
-		});
+		private static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = Font });
 
-		private static Type s_GameViewType;
 		private static Type GameViewType => s_GameViewType ?? (s_GameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
-
-		private static EditorWindow s_GameView;
 
 		private static EditorWindow GameView
 		{
@@ -49,6 +39,12 @@ namespace Vertx.Debugging
 			}
 		}
 
+		private static readonly GUIContent s_SharedContent = new GUIContent();
+		private static Font s_Font;
+		private static GUIStyle textStyle;
+		private static Type s_GameViewType;
+		private static EditorWindow s_GameView;
+
 		static DrawText()
 		{
 			SceneView.duringSceneGui -= SceneViewGUI;
@@ -59,7 +55,7 @@ namespace Vertx.Debugging
 		{
 			if (!obj.drawGizmos)
 				return;
-			
+
 			if (Event.current.type != EventType.Repaint)
 				return;
 
@@ -71,14 +67,15 @@ namespace Vertx.Debugging
 				TextData textData = texts.InternalList[i];
 				DoDrawText(textData.Position, textData.Value, texts.ColorsInternalList[i], obj.camera);
 			}
+
 			Handles.EndGUI();
 		}
-		
+
 		public static void OnGUI()
 		{
 			if (Event.current.type != EventType.Repaint)
 				return;
-			
+
 			var commandBuilder = CommandBuilder.Instance;
 			var texts = commandBuilder.Texts;
 			for (int i = 0; i < texts.Count; i++)

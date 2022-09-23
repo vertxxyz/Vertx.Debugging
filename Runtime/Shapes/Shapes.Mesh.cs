@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool;
 #if !UNITY_2021_1_OR_NEWER
 using Vertx.Debugging.Internal;
+#else
+using UnityEngine.Pool;
 #endif
 
 namespace Vertx.Debugging

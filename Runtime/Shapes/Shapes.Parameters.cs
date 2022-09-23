@@ -24,6 +24,13 @@ namespace Vertx.Debugging
 			
 			public static Angle FromTurns(float value) => new Angle(value);
 
+			public static Angle FromLength(float length, float radius)
+			{
+				if (radius == 0 || length == 0)
+					return new Angle();
+				return FromRadians(length / radius);
+			}
+
 			internal Angle Abs() => FromTurns(Mathf.Abs(Turns));
 			
 			public static implicit operator float(Angle value) => value.Turns;

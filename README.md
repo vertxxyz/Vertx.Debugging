@@ -3,77 +3,89 @@ Editor debugging utilities for Unity.
 All of these methods are accessed through `DebugUtils.`.
 
 > **Warning**  
-> Unity 2019.4+
+> Unity 2019.4+  
+> Debugging from jobs and builds is not supported, I recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
 
 https://user-images.githubusercontent.com/21963717/153703387-cc55e3c6-26b6-4474-815a-0e65e27a73f0.mov
 
+# Usage
+
+```csharp
+// Draw a sphere with the specified color.
+D.raw(new Shapes.Sphere(position, radius), color, duration);
+
+// Draw green sphere if no hit was detected, and a red if it was.
+D.raw(new Shapes.Sphere(position, radius), hit, duration);
+
+// Draw green sphere cast, with red spheres where hits were detected.
+D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10), Shapes.CastColor, Shapes.HitColor, duration);
+```
+
 > **Note**  
-> Calls to these methods are stripped when building. You do not have to remove code or use defines.
-> Debugging from jobs and builds is not supported, I would recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
+> Calls to these methods are stripped when building. You do not have to remove code or use defines.  
+> If your code spans many statements external to the method calls, it is unlikely to be stripped.
+
+# Shapes
+All new shapes are contained within the Shapes class. I recommend statically importing the class if you are using them often:
+
+```csharp
+using static Vertx.Debugging.Shapes;
+```
 
 ## General
-| Name       | Description                                               |
-|------------|-----------------------------------------------------------|
-| `DrawText` | Draws a label in the scene view at the provided position. |
+| Name          | Description                                         |
+|---------------|-----------------------------------------------------|
+| `Text`        | A label in the scene view at the provided position. |
 
 
 ## 3D
 ### Shapes
-| Name                                                          | Description                                                        |
-|---------------------------------------------------------------|--------------------------------------------------------------------|
-| `DrawSphere`<br/>`DrawBox`<br/>`DrawCapsule`<br/>`DrawBounds` | Draws a shape at the provided position.                            |
-| `DrawSurfacePoint`                                            | Draws a ray with a circle to indicate the surface.                 |
-| `DrawPoint`                                                   | Draws a point without specifying direction.                        |
-| `DrawAxis`                                                    | Draws an XYZ direction gizmo.                                      |
-| `DrawArrow`                                                   | Draws an arrow gizmo for a vector. +Support for IList/IEnumerable. |
-| `DrawLine`                                                    | +Support for IList/IEnumerable.                                    |
+| Name                                       | Description                                                  |
+|--------------------------------------------|--------------------------------------------------------------|
+| `Sphere`<br>`Box`<br>`Capsule`<br>`Bounds` | A shape at the provided position.                            |
+| `Arc`                                      | An arc (using `Angle`[^1] to define its length).             |
+| `SurfacePoint`                             | A ray with a circle to indicate the surface.                 |
+| `Point`                                    | A point without a specified direction.                       |
+| `Axis`                                     | An XYZ direction gizmo.                                      |
+| `Arrow`<br>`ArrowStrip`                    | An arrow vector, or a collection of points forming an arrow. |
+| `Line`<br>`LineStrip`                      | A line, or a collection of points that make up a line.       |
+| `RaycastHit`                               | Draws a `SurfacePoint`.                                      |
+| `MeshNormals`                              | The normals of a mesh.                                       |
 
 
 ### Casts
-| Name                                   | Description                                                                     |
-|----------------------------------------|---------------------------------------------------------------------------------|
-| `DrawRaycast`                          | Draws a `Ray` using similar parameters as `Physics.Raycast`.                    |
-| `DrawSphereCast`                       | Draws using similar parameters as `Physics.SphereCast`.                         |
-| `DrawBoxCast`                          | Draws using similar parameters as `Physics.BoxCast`.                            |
-| `DrawCapsuleCast`                      | Draws using similar parameters as `Physics.CapsuleCast`.                        |
-| `DrawRaycastHit`<br/>`DrawRaycastHits` | Draws `RaycastHit` and `RaycastHit[]`.                                          |
-| `DrawSphereCastHits`                   | Draws `RaycastHit[]` results using similar parameters as `Physics.SphereCast`.  |
-| `DrawBoxCastHits`                      | Draws `RaycastHit[]` results using similar parameters as `Physics.BoxCast`.     |
-| `DrawCapsuleCastHits`                  | Draws `RaycastHit[]` results using similar parameters as `Physics.CapsuleCast`. |
+| Name                                                                    | Description                                                                                                                                                     |
+|-------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Raycast`<br>`SphereCast`<br>`BoxCast`<br>`CapsuleCast`                 | Using similar parameters as<br>`Physics.Raycast`<br>`Physics.SphereCast`<br>`Physics.BoxCast`<br>`Physics.CapsuleCast`<br>with an optional `RaycastHit` result. |
+| <br>`RaycastAll`<br>`SphereCastAll`<br>`BoxCastAll`<br>`CapsuleCastAll` | `RaycastHit[]` results using similar parameters as<br>`Physics.RaycastAll`<br>`Physics.SphereCastAll`<br>`Physics.BoxCastAll`<br>`Physics.CapsuleCastAll`       |
 
 ## 2D
 ### Shapes
-| Name                                                                               | Description                                                        |
-|------------------------------------------------------------------------------------|--------------------------------------------------------------------|
-| `DrawCircle2D`<br/>`DrawBox2D`<br/>`DrawArea2D`<br/>`DrawCapsule2D`<br/>`DrawRect` | Draws a shape at the provided position.                            |
-| `DrawPoint2D`                                                                      | Draws a point without specifying direction.                        |
-| `DrawAxis2D`                                                                       | Draws an XY direction gizmo.                                       |
-| `DrawArrow2D`                                                                      | Draws an arrow gizmo for a vector. +Support for IList/IEnumerable. |
+| Name                                                       | Description                                                  |
+|------------------------------------------------------------|--------------------------------------------------------------|
+| `Circle2D`<br>`Box2D`<br>`Area2D`<br>`Capsule2D`<br>`Rect` | A shape at the provided position.                            |
+| `Arc2D`                                                    | An arc (using `Angle`[^1] to define its length).             |
+| `Point2D`                                                  | A point without a specified direction.                       |
+| `Axis2D`                                                   | An XY direction gizmo.                                       |
+| `Arrow2D`<br>`ArrowStrip2D`                                | An arrow vector, or a collection of points forming an arrow. |
 
 ### Casts
-| Name                                       | Description                                                                         |
-|--------------------------------------------|-------------------------------------------------------------------------------------|
-| `DrawRaycast2D`                            | Draws a `Ray` using similar parameters as `Physics2D.Raycast`.                      |
-| `DrawCircleCast2D`                         | Draws using similar parameters as `Physics2D.CircleCast`.                           |
-| `DrawBoxCast2D`                            | Draws using similar parameters as `Physics2D.BoxCast`.                              |
-| `DrawCapsuleCast2D`                        | Draws using similar parameters as `Physics2D.CapsuleCast`.                          |
-| `DrawRaycast2DHit`<br/>`DrawRaycast2DHits` | Draws `RaycastHit2D` and `RaycastHit2D[]`.                                          |
-| `DrawCircleCast2DHits`                     | Draws `RaycastHit2D[]` results using similar parameters as `Physics2D.CircleCast`.  |
-| `DrawBoxCast2DHits`                        | Draws `RaycastHit2D[]` results using similar parameters as `Physics2D.BoxCast`.     |
-| `DrawCapsuleCast2DHits`                    | Draws `RaycastHit2D[]` results using similar parameters as `Physics2D.CapsuleCast`. |
+| Name                                                                            | Description                                                                                                                                                               |
+|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Raycast2D`<br>`CircleCast2D`<br>`BoxCast2D`<br>`CapsuleCast2D`                 | Using similar parameters as<br>`Physics2D.Raycast`<br>`Physics2D.SphereCast`<br>`Physics2D.BoxCast`<br>`Physics2D.CapsuleCast`<br>with an optional `RaycastHit2D` result. |
+| <br>`RaycastAll2D`<br>`CircleCastAll2D`<br>`BoxCastAll2D`<br>`CapsuleCastAll2D` | `RaycastHit2D[]` results using similar parameters as<br>`Physics2D.RaycastAll`<br>`Physics2D.SphereCastAll`<br>`Physics2D.BoxCastAll`<br>`Physics2D.CapsuleCastAll`       |
 
-## Gizmos
-| Name                                   | Description                                                                  |
-|----------------------------------------|------------------------------------------------------------------------------|
-| `GameViewGizmosEnabled`                | `bool`: whether Gizmos are enabled in the Game view.                         |
-| `using (DebugUtils.DrawGizmosScope())` | allows the use of other `DebugUtils` methods inside of OnDrawGizmos methods. |
+[^1]: The helper class `Angle` is used to define angles, author it with the static methods like `Angle.FromDegrees`.
 
-## Components
-| Name                  | Description                                 |
-|-----------------------|---------------------------------------------|
-| Debug Mesh Normals    | Draws normals for a (read/write) mesh.      |
-| Debug Renderer Bounds | Draws the bounds of a renderer.             |
-| Debug Transform       | Draws up/right/forward axes of a transform. |
+# Components
+| Name                   | Description                                         |
+|------------------------|-----------------------------------------------------|
+| Debug Transform        | Draws up, right, forward axes of a Transform.       |
+| Debug Renderer Bounds  | Draws the bounds of a Renderer.                     |
+| Debug Collider Bounds  | Draws the bounds of a Collider or Collider2D.       |
+| Debug Collision Events | Draws `OnCollisionEnter`, `Stay` and `Exit` events. |
+| Debug Trigger Events   | Draws `OnTriggerEnter`, `Stay` and `Exit` events.   |
+| Debug Mesh Normals     | Draws normals for a (read/write) Mesh.              |
 
 ---
 If you find this resource helpful:
@@ -107,7 +119,7 @@ To add it the package to your project:
 <details>
 <summary>Add from GitHub | <em>not recommended, no updates through UPM</em></summary>
 
-You can also add it directly from GitHub on Unity 2019.4+. Note that you won't be able to receive updates through Package Manager this way, you'll have to update manually.
+You can also add it directly from GitHub. Note that you won't be able to receive updates through Package Manager this way, you'll have to update manually.
 
 - open Package Manager
 - click <kbd>+</kbd>

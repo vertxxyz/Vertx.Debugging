@@ -1,6 +1,7 @@
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Vertx.Debugging
@@ -101,6 +102,38 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
+		
+		public struct ArrowStrip2D : IDrawable
+		{
+			public IEnumerable<Vector2> Points;
+			public float Z;
+
+			public ArrowStrip2D(IEnumerable<Vector2> points, float z = 0)
+			{
+				Points = points;
+				Z = z;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Vector3? previous = null;
+				Vector3? origin = null;
+				foreach (Vector2 point in Points)
+				{
+					Vector3 point3D = new Vector3(point.x, point.y, Z);
+					if (previous.HasValue)
+						commandBuilder.AppendLine(new Line(previous.Value, point3D), color, duration);
+					origin = previous;
+					previous = point3D;
+				}
+
+				if (!origin.HasValue)
+					return;
+				Arrow2D.DrawArrowHead(commandBuilder, origin.Value, previous.Value - origin.Value, color, duration);
+			}
+#endif
+		}
 
 		public struct Axis2D : IDrawable
 		{
@@ -149,6 +182,24 @@ namespace Vertx.Debugging
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => _circle.Draw(commandBuilder, color, duration);
+#endif
+		}
+		
+		/// <summary>
+		/// This is 2D, the rotation or matrix used will align the arc facing right, aligned with XY.<br/>
+		/// Use the helper constructors to create an Arc aligned how you require.
+		/// </summary>
+		public struct Arc2D : IDrawable
+		{
+			public Arc Arc;
+
+			public Arc2D(Vector2 origin, float rotationDegrees, float radius, Angle angle, float z = 0) 
+				=> Arc = new Arc(new Vector3(origin.x, origin.y, z), Quaternion.AngleAxis(rotationDegrees, Vector3.forward), radius, angle);
+
+			public Arc2D(Vector2 origin, float rotationDegrees, float radius, float z = 0) : this(origin, rotationDegrees, radius, Angle.FromTurns(1), z) { }
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Arc.Draw(commandBuilder, color, duration);
 #endif
 		}
 

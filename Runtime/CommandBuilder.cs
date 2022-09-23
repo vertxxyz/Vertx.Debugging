@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
@@ -19,7 +18,6 @@ using UnityEngine.Rendering.Universal;
 #endif
 using Vertx.Debugging.PlayerLoop;
 using Vertx.Debugging.Internal;
-using Object = UnityEngine.Object;
 
 // ReSharper disable ConvertIfStatementToNullCoalescingAssignment
 
@@ -70,7 +68,12 @@ namespace Vertx.Debugging
 #else
 			RenderPipelineManager.beginFrameRendering += (context, cameras) =>
 			{
+				
+#if !UNITY_2021_1_OR_NEWER
+				using (ListPool<Camera>.Get(out var list))
+#else
 				using (UnityEngine.Pool.ListPool<Camera>.Get(out var list))
+#endif
 				{
 					list.AddRange(cameras);
 					OnBeginContextRendering(context, list);
@@ -78,8 +81,11 @@ namespace Vertx.Debugging
 			};
 			RenderPipelineManager.endFrameRendering += (context, cameras) => OnEndContextRendering(context, null);
 #endif
-			EditorApplication.update += OnUpdate;
+			EditorApplication.update = OnUpdate + EditorApplication.update;
 		}
+
+		[InitializeOnLoadMethod]
+		private static void InitialiseEditor() => InitialiseRuntime();
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void InitialiseRuntime()
@@ -225,7 +231,7 @@ namespace Vertx.Debugging
 		}
 
 #if UNITY_2021_1_OR_NEWER
-		[BurstCompile]
+		[Unity.Burst.BurstCompile]
 #endif
 		private struct RemovalJob<T> : IJob where T : unmanaged
 		{
@@ -302,8 +308,9 @@ namespace Vertx.Debugging
 			if (Application.isPlaying)
 				return;
 
-			if (_editorFrame > _lastRemovedEditorFrame + 1)
-				RemoveShapesByDuration(EditorUpdateDuration, null);
+			// TODO cleanup if things aren't running and stuff is getting out of hand...
+			/*if (_editorFrame > _lastRemovedEditorFrame + 100)
+				ClearAllShapes();*/
 		}
 
 		private void OnPostRender(Camera camera)
@@ -483,7 +490,7 @@ namespace Vertx.Debugging
 
 #if VERTX_URP
 			if (_pass != null)
-				Object.DestroyImmediate(_pass, true);
+				UnityEngine.Object.DestroyImmediate(_pass, true);
 #endif
 		}
 	}
