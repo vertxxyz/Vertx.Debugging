@@ -17,7 +17,6 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 #endif
 using Vertx.Debugging.PlayerLoop;
-using Vertx.Debugging.Internal;
 
 // ReSharper disable ConvertIfStatementToNullCoalescingAssignment
 
@@ -37,15 +36,63 @@ namespace Vertx.Debugging
 
 		public static CommandBuilder Instance { get; }
 
-		private CommandBuffer _commandBuffer;
-		private readonly ShapeBuffersWithData<Shapes.Line> _lines = new ShapeBuffersWithData<Shapes.Line>("line_buffer");
-		private readonly ShapeBuffersWithData<Shapes.Arc> _arcs = new ShapeBuffersWithData<Shapes.Arc>("arc_buffer");
-		private readonly ShapeBuffersWithData<Shapes.Box> _boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer");
-		private readonly ShapeBuffersWithData<Shapes.Box2D> _box2Ds = new ShapeBuffersWithData<Shapes.Box2D>("mesh_buffer");
-		private readonly ShapeBuffersWithData<Shapes.Outline> _outlines = new ShapeBuffersWithData<Shapes.Outline>("outline_buffer");
+		private readonly BufferGroup _defaultGroup = new BufferGroup(true);
+		private readonly BufferGroup _gizmosGroup = new BufferGroup(false);
 		private readonly TextDataLists _texts = new TextDataLists();
 
-		internal const float EditorUpdateDuration = 0.01f;
+		private sealed class BufferGroup : IDisposable
+		{
+			public readonly ShapeBuffersWithData<Shapes.Line> Lines;
+			public readonly ShapeBuffersWithData<Shapes.Arc> Arcs;
+			public readonly ShapeBuffersWithData<Shapes.Box> Boxes;
+			public readonly ShapeBuffersWithData<Shapes.Box2D> Box2Ds;
+			public readonly ShapeBuffersWithData<Shapes.Outline> Outlines;
+
+			private CommandBuffer _commandBuffer;
+
+			public BufferGroup(bool usesDurations)
+			{
+				Lines = new ShapeBuffersWithData<Shapes.Line>("line_buffer", usesDurations);
+				Arcs = new ShapeBuffersWithData<Shapes.Arc>("arc_buffer", usesDurations);
+				Boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer", usesDurations);
+				Box2Ds = new ShapeBuffersWithData<Shapes.Box2D>("mesh_buffer", usesDurations);
+				Outlines = new ShapeBuffersWithData<Shapes.Outline>("outline_buffer", usesDurations);
+			}
+			
+			public CommandBuffer ReadyResources()
+			{
+				if (_commandBuffer == null)
+				{
+					_commandBuffer = new CommandBuffer
+					{
+						name = "Vertx.Debugging"
+					};
+				}
+				else 
+					_commandBuffer.Clear();
+
+				return _commandBuffer;
+			}
+
+			public void Clear()
+			{
+				Lines.Clear();
+				Arcs.Clear();
+				Boxes.Clear();
+				Box2Ds.Clear();
+				Outlines.Clear();
+			}
+
+			public void Dispose()
+			{
+				Lines.Dispose();
+				Arcs.Dispose();
+				Boxes.Dispose();
+				Box2Ds.Dispose();
+				Outlines.Dispose();
+				_commandBuffer?.Dispose();
+			}
+		}
 
 		internal TextDataLists Texts => _texts;
 
@@ -54,8 +101,6 @@ namespace Vertx.Debugging
 #endif
 		private bool _disposeIsQueued;
 		private float _timeThisFrame;
-		private long _editorFrame;
-		private long _lastRemovedEditorFrame;
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
@@ -70,7 +115,7 @@ namespace Vertx.Debugging
 			{
 				
 #if !UNITY_2021_1_OR_NEWER
-				using (ListPool<Camera>.Get(out var list))
+				using (Vertx.Debugging.Internal.ListPool<Camera>.Get(out var list))
 #else
 				using (UnityEngine.Pool.ListPool<Camera>.Get(out var list))
 #endif
@@ -84,18 +129,15 @@ namespace Vertx.Debugging
 			EditorApplication.update = OnUpdate + EditorApplication.update;
 		}
 
-		[InitializeOnLoadMethod]
-		private static void InitialiseEditor() => InitialiseRuntime();
-
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-		private static void InitialiseRuntime()
+		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+		private static void InitialiseUpdate()
 		{
 			// Queue RuntimeEarlyUpdate into the EarlyUpdate portion of the player loop.
 
 			PlayerLoopSystem playerLoop = UnityEngine.LowLevel.PlayerLoop.GetCurrentPlayerLoop();
 			PlayerLoopSystem[] subsystems = playerLoop.subSystemList.ToArray();
 			Type earlyUpdate = typeof(EarlyUpdate);
-			InjectFirstIn(earlyUpdate, typeof(VertxDebugging), Instance.RuntimeEarlyUpdate);
+			InjectFirstIn(earlyUpdate, typeof(VertxDebugging), Instance.EarlyUpdate);
 
 			playerLoop.subSystemList = subsystems;
 			UnityEngine.LowLevel.PlayerLoop.SetPlayerLoop(playerLoop);
@@ -128,8 +170,9 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private void RuntimeEarlyUpdate()
+		private void EarlyUpdate()
 		{
+			UpdateContext.EarlyUpdate();
 			// ReSharper disable once CompareOfFloatsByEqualityOperator
 			if (Time.deltaTime == 0)
 			{
@@ -140,16 +183,6 @@ namespace Vertx.Debugging
 				RemoveShapesByDuration(Time.deltaTime, null);
 				_timeThisFrame = Time.time;
 			}
-		}
-
-		private void ClearAllShapes()
-		{
-			_lines.Clear();
-			_arcs.Clear();
-			_boxes.Clear();
-			_box2Ds.Clear();
-			_outlines.Clear();
-			_texts.Clear();
 		}
 
 		private static bool CombineDependencies(ref JobHandle? handle, JobHandle? other)
@@ -167,16 +200,17 @@ namespace Vertx.Debugging
 		/// </summary>
 		private void RemoveShapesByDuration(float deltaTime, JobHandle? dependency)
 		{
-			_lastRemovedEditorFrame = _editorFrame;
+			// _lastRemovedEditorFrame = _editorFrame;
 
 			Profiler.BeginSample(RemoveShapesByDurationProfilerName);
-
-			int oldLineCount = QueueRemovalJob(_lines, dependency, out JobHandle? lineHandle);
-			int oldArcCount = QueueRemovalJob(_arcs, dependency, out JobHandle? arcHandle);
-			int oldBoxCount = QueueRemovalJob(_boxes, dependency, out JobHandle? boxHandle);
-			int oldBox2DCount = QueueRemovalJob(_box2Ds, dependency, out JobHandle? box2DHandle);
-			int oldOutlineCount = QueueRemovalJob(_outlines, dependency, out JobHandle? outlineHandle);
+			
 			_texts.RemoveByDeltaTime(deltaTime);
+			
+			int oldLineCount = QueueRemovalJob(_defaultGroup.Lines, dependency, out JobHandle? lineHandle);
+			int oldArcCount = QueueRemovalJob(_defaultGroup.Arcs, dependency, out JobHandle? arcHandle);
+			int oldBoxCount = QueueRemovalJob(_defaultGroup.Boxes, dependency, out JobHandle? boxHandle);
+			int oldBox2DCount = QueueRemovalJob(_defaultGroup.Box2Ds, dependency, out JobHandle? box2DHandle);
+			int oldOutlineCount = QueueRemovalJob(_defaultGroup.Outlines, dependency, out JobHandle? outlineHandle);
 
 			JobHandle? coreHandle = null;
 			if (!CombineDependencies(ref coreHandle, lineHandle) & // Purposely an &, so each branch gets executed.
@@ -190,20 +224,20 @@ namespace Vertx.Debugging
 			{
 				coreHandle.Value.Complete();
 
-				if (_lines.Count != oldLineCount)
-					_lines.SetDirty();
+				if (_defaultGroup.Lines.Count != oldLineCount)
+					_defaultGroup.Lines.SetDirty();
 
-				if (_arcs.Count != oldArcCount)
-					_arcs.SetDirty();
+				if (_defaultGroup.Arcs.Count != oldArcCount)
+					_defaultGroup.Arcs.SetDirty();
 
-				if (_boxes.Count != oldBoxCount)
-					_boxes.SetDirty();
+				if (_defaultGroup.Boxes.Count != oldBoxCount)
+					_defaultGroup.Boxes.SetDirty();
 
-				if (_box2Ds.Count != oldBox2DCount)
-					_box2Ds.SetDirty();
+				if (_defaultGroup.Box2Ds.Count != oldBox2DCount)
+					_defaultGroup.Box2Ds.SetDirty();
 
-				if (_outlines.Count != oldOutlineCount)
-					_outlines.SetDirty();
+				if (_defaultGroup.Outlines.Count != oldOutlineCount)
+					_defaultGroup.Outlines.SetDirty();
 			}
 
 			int QueueRemovalJob<T>(ShapeBuffersWithData<T> data, JobHandle? handleIn, out JobHandle? handleOut) where T : unmanaged
@@ -304,52 +338,48 @@ namespace Vertx.Debugging
 
 		private void OnUpdate()
 		{
-			_editorFrame++;
-			if (Application.isPlaying)
-				return;
-
 			// TODO cleanup if things aren't running and stuff is getting out of hand...
-			/*if (_editorFrame > _lastRemovedEditorFrame + 100)
-				ClearAllShapes();*/
 		}
 
 		private void OnPostRender(Camera camera)
 		{
-			if (!SharedRenderingDetails(camera))
+			if (!SharedRenderingDetails(camera, _defaultGroup, out CommandBuffer commandBuffer))
 				return;
 			Profiler.BeginSample(ExecuteProfilerName);
-			Graphics.ExecuteCommandBuffer(_commandBuffer);
+			Graphics.ExecuteCommandBuffer(commandBuffer);
 			Profiler.EndSample();
 		}
 
 		public void ExecuteDrawRenderPass(ScriptableRenderContext context, Camera camera)
 		{
-			if (!SharedRenderingDetails(camera))
+			if (!SharedRenderingDetails(camera, _defaultGroup, out CommandBuffer commandBuffer))
 				return;
 			Profiler.BeginSample(ExecuteProfilerName);
-			context.ExecuteCommandBuffer(_commandBuffer);
+			context.ExecuteCommandBuffer(commandBuffer);
 			Profiler.EndSample();
 		}
 
-		private bool SharedRenderingDetails(Camera camera)
+		internal void RenderGizmosGroup(Camera camera)
+		{
+			if (!SharedRenderingDetails(camera, _gizmosGroup, out CommandBuffer commandBuffer))
+				return;
+			Profiler.BeginSample(ExecuteProfilerName);
+			Graphics.ExecuteCommandBuffer(commandBuffer);
+			Profiler.EndSample();
+			_gizmosGroup.Clear();
+		}
+
+		private bool SharedRenderingDetails(Camera camera, BufferGroup group, out CommandBuffer commandBuffer)
 		{
 			if (!ShouldRenderCamera(camera))
+			{
+				commandBuffer = null;
 				return false;
+			}
 
 			InitialiseIfRequired();
-
-			if (_commandBuffer == null)
-			{
-				_commandBuffer = new CommandBuffer
-				{
-					name = "Vertx.Debugging"
-				};
-			}
-			else
-				_commandBuffer.Clear();
-
-			FillCommandBuffer(_commandBuffer, camera);
-			return true;
+			commandBuffer = group.ReadyResources();
+			return FillCommandBuffer(commandBuffer, group);
 		}
 
 		private static bool ShouldRenderCamera(Camera camera)
@@ -366,23 +396,23 @@ namespace Vertx.Debugging
 			return true;
 		}
 
-		private void FillCommandBuffer(CommandBuffer commandBuffer, Camera camera)
+		private bool FillCommandBuffer(CommandBuffer commandBuffer, BufferGroup group)
 		{
 			Profiler.BeginSample(RemoveShapesByDurationProfilerName);
-			RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, _lines);
-			RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, _arcs);
-			RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, _boxes);
-			RenderShape(AssetsUtility.Box2D, AssetsUtility.DefaultMaterial, _box2Ds);
-			RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, _outlines);
+			bool render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, group.Lines);
+			render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, group.Arcs);
+			render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes);
+			render |= RenderShape(AssetsUtility.Box2D, AssetsUtility.DefaultMaterial, group.Box2Ds);
+			render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, group.Outlines);
 
-			void RenderShape<T>(
+			bool RenderShape<T>(
 				AssetsUtility.Asset<Mesh> mesh,
 				AssetsUtility.Asset<Material> material,
 				ShapeBuffersWithData<T> shape) where T : unmanaged
 			{
 				int shapeCount = shape.Count;
 				if (shapeCount <= 0)
-					return;
+					return false;
 
 				MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
 				// Set the buffers to be used by the property block
@@ -391,67 +421,11 @@ namespace Vertx.Debugging
 
 				// Render boxes
 				commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, -1, shapeCount, propertyBlock);
+				return true;
 			}
 
 			Profiler.EndSample();
-		}
-
-		public void AppendRay(Shapes.Ray ray, Color color, float duration) => AppendLine(new Shapes.Line(ray), color, duration);
-
-		public void AppendLine(Shapes.Line line, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
-		{
-			duration = GetDuration(duration);
-			if (duration < 0)
-				return;
-			InitialiseIfRequired();
-			_lines.Add(line, color, modifications, duration);
-		}
-
-		public void AppendArc(Shapes.Arc arc, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
-		{
-			duration = GetDuration(duration);
-			if (duration < 0)
-				return;
-			InitialiseIfRequired();
-			_arcs.Add(arc, color, modifications, duration);
-		}
-
-		public void AppendBox(Shapes.Box box, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
-		{
-			duration = GetDuration(duration);
-			if (duration < 0)
-				return;
-			InitialiseIfRequired();
-			_boxes.Add(box, color, modifications, duration);
-		}
-
-		public void AppendBox2D(Shapes.Box2D box, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
-		{
-			duration = GetDuration(duration);
-			if (duration < 0)
-				return;
-			InitialiseIfRequired();
-			_box2Ds.Add(box, color, modifications, duration);
-		}
-
-		internal void AppendOutline(Shapes.Outline outline, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
-		{
-			duration = GetDuration(duration);
-			if (duration < 0)
-				return;
-			InitialiseIfRequired();
-			_outlines.Add(outline, color, modifications, duration);
-		}
-
-		public void AppendText(Shapes.Text text, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
-		{
-			duration = GetDuration(duration);
-			if (duration < 0)
-				return;
-			InitialiseIfRequired();
-			_texts.Add(text, color, modifications, duration);
-			// Force the runtime object to exist
-			_ = DrawRuntimeBehaviour.Instance;
+			return render;
 		}
 
 		private static bool IsInFixedUpdate()
@@ -481,12 +455,8 @@ namespace Vertx.Debugging
 		{
 			AssemblyReloadEvents.beforeAssemblyReload -= Dispose;
 
-			_commandBuffer?.Dispose();
-			_lines.Dispose();
-			_arcs.Dispose();
-			_boxes.Dispose();
-			_box2Ds.Dispose();
-			_outlines.Dispose();
+			_defaultGroup?.Dispose();
+			_gizmosGroup?.Dispose();
 
 #if VERTX_URP
 			if (_pass != null)

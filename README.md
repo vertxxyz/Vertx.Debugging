@@ -1,5 +1,4 @@
-Editor debugging utilities for Unity.  
-All of these methods are accessed through `DebugUtils.`.
+Fast editor debugging and gizmo utilities for Unity.  
 
 > **Warning**  
 > Unity 2019.4+  
@@ -25,6 +24,9 @@ D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10),
 > Calls to these methods are stripped when building. You do not have to remove code or use defines.  
 > If your code spans many statements external to the method calls, it is unlikely to be stripped.
 
+You can call these methods from most places, `Update`, `LateUpdate`, `FixedUpdate`, `OnDrawGizmos`, and with `ExecuteAlways`/`ExecuteInEditMode`.  
+If drawn from a gizmo context, `duration` parameters will be ignored.
+
 ## Shapes
 All new shapes are contained within the Shapes class. I recommend statically importing the class if you are using them often:
 
@@ -33,9 +35,10 @@ using static Vertx.Debugging.Shapes;
 ```
 
 ### General
-| Name          | Description                                         |
-|---------------|-----------------------------------------------------|
-| `Text`        | A label in the scene view at the provided position. |
+| Name         | Description                                                                                              |
+|--------------|----------------------------------------------------------------------------------------------------------|
+| `Text`       | A label in the scene at the provided position.                                                           |
+| `ScreenText` | A label in the top left of the view.<br>(Order is not maintained when mixing durations with other text). |
 
 
 ### 3D
@@ -50,11 +53,11 @@ using static Vertx.Debugging.Shapes;
 | `Arrow`<br>`ArrowStrip`                    | An arrow vector, or a collection of points forming an arrow. |
 | `Line`<br>`LineStrip`                      | A line, or a collection of points that make up a line.       |
 | `MeshNormals`                              | The normals of a mesh.                                       |
-| `Ray`                                      | Draws a line from a position and a direction vector.         |
-| `Ray` (Built-in)                           | Draws a `Ray`.                                               |
-| `Vector3` (Built-in)                       | Draws a `Point`.                                             |
-| `RaycastHit` (Built-in)                    | Draws a `SurfacePoint`.                                      |
-| `Bounds` (Built-in)                        | Draws a `Box`.                                               |
+| `Ray`                                      | A line from a position and a direction vector.               |
+| `Ray` (Built-in)                           | Fallback to `Ray`.                                           |
+| `Vector3` (Built-in)                       | Fallback to `Point`.                                         |
+| `RaycastHit` (Built-in)                    | Fallback to `SurfacePoint`.                                  |
+| `Bounds` (Built-in)                        | Fallback to `Box`.                                           |
 
 
 #### Casts
@@ -74,8 +77,8 @@ using static Vertx.Debugging.Shapes;
 | `Arrow2D`<br>`ArrowStrip2D`                                | An arrow vector, or a collection of points forming an arrow. |
 | `Ray2D`                                                    | A line from a position and a direction vector.               |
 | `Spiral2D`                                                 | A spiral, useful for visualising rotation on wheels.         |
-| `Vector2` (Built-in)                                       | Draws a `Point2D`.                                           |
-| `RaycastHit2D` (Built-in)                                  | Draws a `Ray`.                                               |
+| `Vector2` (Built-in)                                       | Fallback to `Point2D`.                                       |
+| `RaycastHit2D` (Built-in)                                  | Fallback to `Ray`.                                           |
 
 #### Casts
 | Name                                                                            | Description                                                                                                                                                               |

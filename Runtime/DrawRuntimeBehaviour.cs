@@ -28,6 +28,8 @@ namespace Vertx.Debugging.Internal
 		
 		private void OnGUI()
 		{
+			UpdateContext.Draw();
+			
 			if (Handles.ShouldRenderGizmos())
 				DrawText.OnGUI();
 		}

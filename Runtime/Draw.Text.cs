@@ -60,14 +60,7 @@ namespace Vertx.Debugging
 				return;
 
 			Handles.BeginGUI();
-			var commandBuilder = CommandBuilder.Instance;
-			var texts = commandBuilder.Texts;
-			for (int i = 0; i < texts.Count; i++)
-			{
-				TextData textData = texts.InternalList[i];
-				DoDrawText(textData.Position, textData.Value, texts.ColorsInternalList[i], obj.camera);
-			}
-
+			DoOnGUI();
 			Handles.EndGUI();
 		}
 
@@ -76,23 +69,55 @@ namespace Vertx.Debugging
 			if (Event.current.type != EventType.Repaint)
 				return;
 
+			DoOnGUI();
+		}
+
+		private static void DoOnGUI()
+		{
+			Vector2 position = new Vector2(10, 10);
+
 			var commandBuilder = CommandBuilder.Instance;
 			var texts = commandBuilder.Texts;
 			for (int i = 0; i < texts.Count; i++)
 			{
 				TextData textData = texts.InternalList[i];
-				DoDrawText(textData.Position, textData.Value, texts.ColorsInternalList[i], textData.Camera);
+				if ((textData.Modifications & DrawModifications.Custom) != 0)
+				{
+					GUIContent content = GetGUIContentFromObject(textData.Value);
+					Rect rect = new Rect(position, TextStyle.CalcSize(content));
+					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor);
+					position.y = rect.yMax + 1;
+				}
+				else
+				{
+					if (textData.Camera == null) continue;
+					if (!WorldToGUIPoint(position, out Vector2 screenPos, textData.Camera)) return;
+					//------DRAW-------
+					GUIContent content = GetGUIContentFromObject(textData.Value);
+					Rect rect = new Rect(screenPos, TextStyle.CalcSize(content));
+					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor);
+				}
 			}
 		}
 
-		/// <summary>
-		/// Only call in EventType.Repaint!
-		/// </summary>
-		private static void DoDrawText(Vector3 position, object text, Color color, Camera camera)
+		private static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor)
 		{
-			if (camera == null) return;
-			if (!WorldToGUIPoint(position, out Vector2 screenPos, camera)) return;
-			//------DRAW-------
+			DrawGUIRect();
+			TextStyle.normal.textColor = textColor;
+			GUI.Label(rect, content, TextStyle);
+			//-----------------
+
+			void DrawGUIRect()
+			{
+				Color color1 = GUI.color;
+				GUI.color *= backgroundColor;
+				GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
+				GUI.color = color1;
+			}
+		}
+
+		private static GUIContent GetGUIContentFromObject(object text)
+		{
 			string value;
 			switch (text)
 			{
@@ -106,20 +131,8 @@ namespace Vertx.Debugging
 					value = text.ToString();
 					break;
 			}
-
 			s_SharedContent.text = value;
-			Rect rect = new Rect(screenPos, TextStyle.CalcSize(s_SharedContent));
-			DrawGUIRect();
-			GUI.Label(rect, s_SharedContent, TextStyle);
-			//-----------------
-
-			void DrawGUIRect()
-			{
-				Color color1 = GUI.color;
-				GUI.color *= color;
-				GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
-				GUI.color = color1;
-			}
+			return s_SharedContent;
 		}
 
 		/// <summary>

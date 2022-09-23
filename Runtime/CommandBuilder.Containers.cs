@@ -15,6 +15,7 @@ using UnityEngine.Rendering;
 
 namespace Vertx.Debugging
 {
+	// ReSharper disable once ClassCannotBeInstantiated
 	public sealed partial class CommandBuilder
 	{
 		private class ListWrapper<T> : IDisposable where T : unmanaged
@@ -81,11 +82,10 @@ namespace Vertx.Debugging
 		{
 			private sealed class TextDataPool :
 #if !UNITY_2021_1_OR_NEWER
-				Vertx.Debugging.Internal.
+				Vertx.Debugging.Internal.ObjectPool<Shapes.TextData>
 #else
-				UnityEngine.Pool.
+				UnityEngine.Pool.ObjectPool<Shapes.TextData>
 #endif
-				ObjectPool<Shapes.TextData>
 			{
 				public TextDataPool(int defaultCapacity = 10, int maxSize = 10000)
 					: base(() => new Shapes.TextData(), null, data =>
@@ -98,28 +98,21 @@ namespace Vertx.Debugging
 			private readonly List<float> _durations = new List<float>();
 			private readonly TextDataPool _textDataPool = new TextDataPool();
 			private readonly List<Shapes.TextData> _elements = new List<Shapes.TextData>();
-			private readonly List<Color> _colors = new List<Color>();
-			private readonly List<Shapes.DrawModifications> _modifications = new List<Shapes.DrawModifications>();
-
-			private MaterialPropertyBlock _propertyBlock;
-
-			public MaterialPropertyBlock PropertyBlock => _propertyBlock ?? (_propertyBlock = new MaterialPropertyBlock());
 
 			public int Count => _elements.Count;
 
 			public List<Shapes.TextData> InternalList => _elements;
-			public List<Shapes.DrawModifications> ModificationsInternalList => _modifications;
-			public List<Color> ColorsInternalList => _colors;
 
-			public void Add(in Shapes.Text text, Color color, Shapes.DrawModifications modifications, float duration)
+			public void Add(in Shapes.Text text, Color backgroundColor, Color textColor, Shapes.DrawModifications modifications, float duration)
 			{
 				Shapes.TextData element = _textDataPool.Get();
 				element.Position = text.Position;
 				element.Value = text.Value;
 				element.Camera = text.Camera;
+				element.BackgroundColor = backgroundColor;
+				element.TextColor = textColor;
+				element.Modifications = modifications;
 				_elements.Add(element);
-				_colors.Add(color);
-				_modifications.Add(modifications);
 				_durations.Add(duration);
 			}
 
@@ -128,8 +121,6 @@ namespace Vertx.Debugging
 				if (_elements.Count == 0)
 					return;
 				_elements.Clear();
-				_colors.Clear();
-				_modifications.Clear();
 				_durations.Clear();
 			}
 
@@ -155,12 +146,6 @@ namespace Vertx.Debugging
 					_textDataPool.Release(_elements[index]);
 					_elements[index] = _elements[endIndex];
 					_elements.RemoveAt(endIndex);
-
-					_modifications[index] = _modifications[endIndex];
-					_modifications.RemoveAt(endIndex);
-
-					_colors[index] = _colors[endIndex];
-					_colors.RemoveAt(endIndex);
 				}
 			}
 		}
@@ -168,7 +153,7 @@ namespace Vertx.Debugging
 		private sealed class ShapeBuffersWithData<T> : IDisposable where T : unmanaged
 		{
 			private bool _dirty = true;
-			private readonly ListWrapper<float> _durations = new ListWrapper<float>();
+			private readonly ListWrapper<float> _durations;
 			private readonly ListAndBuffer<T> _elements;
 			private readonly ListAndBuffer<Color> _colors = new ListAndBuffer<Color>("color_buffer");
 			private readonly ListAndBuffer<Shapes.DrawModifications> _modifications = new ListAndBuffer<Shapes.DrawModifications>("modifications_buffer");
@@ -183,10 +168,13 @@ namespace Vertx.Debugging
 			public NativeList<float> DurationsInternalList => _durations.List;
 			public NativeList<Shapes.DrawModifications> ModificationsInternalList => _modifications.List;
 			public NativeList<Color> ColorsInternalList => _colors.List;
-
-			private ShapeBuffersWithData() { }
-
-			public ShapeBuffersWithData(string bufferName) => _elements = new ListAndBuffer<T>(bufferName);
+			
+			public ShapeBuffersWithData(string bufferName, bool usesDurations = true)
+			{
+				if (usesDurations)
+					_durations = new ListWrapper<float>();
+				_elements = new ListAndBuffer<T>(bufferName);
+			}
 
 			public void Set(CommandBuffer commandBuffer, MaterialPropertyBlock propertyBlock)
 			{
@@ -212,7 +200,7 @@ namespace Vertx.Debugging
 				_elements.Create();
 				_colors.Create();
 				_modifications.Create();
-				_durations.Create();
+				_durations?.Create();
 				_dirty = true;
 			}
 
@@ -222,7 +210,7 @@ namespace Vertx.Debugging
 				_elements.List.Add(element);
 				_colors.List.Add(color);
 				_modifications.List.Add(modifications);
-				_durations.List.Add(duration);
+				_durations?.List.Add(duration);
 				_dirty = true;
 			}
 
@@ -233,7 +221,7 @@ namespace Vertx.Debugging
 				_elements.List.Clear();
 				_colors.List.Clear();
 				_modifications.List.Clear();
-				_durations.List.Clear();
+				_durations?.List.Clear();
 				_dirty = true;
 			}
 
@@ -244,7 +232,7 @@ namespace Vertx.Debugging
 				_elements.Dispose();
 				_colors.Dispose();
 				_modifications.Dispose();
-				_durations.Dispose();
+				_durations?.Dispose();
 			}
 		}
 	}

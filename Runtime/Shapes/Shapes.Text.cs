@@ -4,7 +4,10 @@ namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
-		public readonly struct Text : IDrawable
+		/// <summary>
+		/// Text drawn at a 3D position in the scene.
+		/// </summary>
+		public readonly struct Text : IDrawableCast
 		{
 			public readonly Vector3 Position;
 			public readonly object Value;
@@ -18,7 +21,26 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendText(this, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, Color.white, duration);
+			public void Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> commandBuilder.AppendText(this, backgroundColor, textColor, duration);
+#endif
+		}
+		
+		/// <summary>
+		/// Text drawn in the top left.<br/>
+		/// Order is not maintained when mixing durations, including durations added with <see cref="Text"/>.
+		/// </summary>
+		public readonly struct ScreenText : IDrawableCast
+		{
+			public readonly object Value;
+
+			public ScreenText(object value) => Value = value;
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, Color.white, duration);
+			public void Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> commandBuilder.AppendText(new Text(default, Value), backgroundColor, textColor, duration, DrawModifications.Custom);
 #endif
 		}
 
@@ -27,6 +49,9 @@ namespace Vertx.Debugging
 			public Vector3 Position;
 			public object Value;
 			public Camera Camera;
+			public Color BackgroundColor;
+			public Color TextColor;
+			public DrawModifications Modifications;
 		}
 	}
 }
