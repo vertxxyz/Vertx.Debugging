@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
 namespace Vertx.Debugging
@@ -8,7 +9,7 @@ namespace Vertx.Debugging
 	{
 		private static CircleCache CircleCache => s_circleCache ?? (s_circleCache = new CircleCache());
 		private static CircleCache s_circleCache;
-		
+
 		// Axis
 		public static readonly Color XColor = new Color(1, 0.1f, 0.2f);
 		public static readonly Color YColor = new Color(0.3f, 1, 0.1f);
@@ -137,6 +138,17 @@ namespace Vertx.Debugging
 		private static Vector3 PerpendicularCounterClockwise(Vector3 vector3) => new Vector3(-vector3.y, vector3.x, vector3.z);
 
 		private static Vector3 Add(this Vector3 a, Vector2 b) => new Vector3(a.x + b.x, a.y + b.y, a.z);
+
+		private static bool HasZeroDistanceHit(RaycastHit[] results, int resultCount)
+		{
+			for (int i = 0; i < resultCount; i++)
+			{
+				if (results[i].distance == 0)
+					return true;
+			}
+
+			return false;
+		}
 
 		public static class BoxUtility
 		{

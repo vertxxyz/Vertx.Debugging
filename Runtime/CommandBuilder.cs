@@ -36,12 +36,15 @@ namespace Vertx.Debugging
 
 		public static CommandBuilder Instance { get; }
 
-		private readonly BufferGroup _defaultGroup = new BufferGroup(true);
-		private readonly BufferGroup _gizmosGroup = new BufferGroup(false);
+		private readonly int _unityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
+		private readonly BufferGroup _defaultGroup = new BufferGroup(true, "Vertx.Debugging");
+		private readonly BufferGroup _gizmosGroup = new BufferGroup(false, "Vertx.Debugging.Gizmos");
 		private readonly TextDataLists _texts = new TextDataLists();
+		private Camera _lastRenderingCamera;
 
 		private sealed class BufferGroup : IDisposable
 		{
+			private readonly string _commandBufferName;
 			public readonly ShapeBuffersWithData<Shapes.Line> Lines;
 			public readonly ShapeBuffersWithData<Shapes.Arc> Arcs;
 			public readonly ShapeBuffersWithData<Shapes.Box> Boxes;
@@ -50,8 +53,9 @@ namespace Vertx.Debugging
 
 			private CommandBuffer _commandBuffer;
 
-			public BufferGroup(bool usesDurations)
+			public BufferGroup(bool usesDurations, string commandBufferName)
 			{
+				_commandBufferName = commandBufferName;
 				Lines = new ShapeBuffersWithData<Shapes.Line>("line_buffer", usesDurations);
 				Arcs = new ShapeBuffersWithData<Shapes.Arc>("arc_buffer", usesDurations);
 				Boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer", usesDurations);
@@ -65,7 +69,7 @@ namespace Vertx.Debugging
 				{
 					_commandBuffer = new CommandBuffer
 					{
-						name = "Vertx.Debugging"
+						name = _commandBufferName
 					};
 				}
 				else 
@@ -172,7 +176,7 @@ namespace Vertx.Debugging
 
 		private void EarlyUpdate()
 		{
-			UpdateContext.EarlyUpdate();
+			UpdateContext.ForceStateToUpdate();
 			// ReSharper disable once CompareOfFloatsByEqualityOperator
 			if (Time.deltaTime == 0)
 			{
@@ -343,7 +347,13 @@ namespace Vertx.Debugging
 
 		private void OnPostRender(Camera camera)
 		{
-			if (!SharedRenderingDetails(camera, _defaultGroup, out CommandBuffer commandBuffer))
+			RenderingType type = RenderingType.Default;
+			if (SceneView.currentDrawingSceneView != null && SceneView.currentDrawingSceneView.camera == camera)
+				type |= RenderingType.Scene;
+			else
+				type |= RenderingType.Game;
+			
+			if (!SharedRenderingDetails(camera, _defaultGroup, out CommandBuffer commandBuffer, type))
 				return;
 			Profiler.BeginSample(ExecuteProfilerName);
 			Graphics.ExecuteCommandBuffer(commandBuffer);
@@ -352,26 +362,53 @@ namespace Vertx.Debugging
 
 		public void ExecuteDrawRenderPass(ScriptableRenderContext context, Camera camera)
 		{
-			if (!SharedRenderingDetails(camera, _defaultGroup, out CommandBuffer commandBuffer))
+			RenderingType type = RenderingType.Default;
+			if (SceneView.currentDrawingSceneView != null && SceneView.currentDrawingSceneView.camera == camera)
+				type |= RenderingType.Scene;
+			else
+				type |= RenderingType.Game;
+			
+			if (!SharedRenderingDetails(camera, _defaultGroup, out CommandBuffer commandBuffer, type))
 				return;
 			Profiler.BeginSample(ExecuteProfilerName);
 			context.ExecuteCommandBuffer(commandBuffer);
 			Profiler.EndSample();
 		}
 
-		internal void RenderGizmosGroup(Camera camera)
+		internal void RenderGizmosGroup(bool isSceneView)
 		{
-			if (!SharedRenderingDetails(camera, _gizmosGroup, out CommandBuffer commandBuffer))
+			RenderingType type = RenderingType.Gizmos;
+			if (isSceneView)
+				type |= RenderingType.Scene;
+			else
+				type |= RenderingType.Game;
+			
+			if (!SharedRenderingDetails(_lastRenderingCamera, _gizmosGroup, out CommandBuffer commandBuffer, type))
 				return;
 			Profiler.BeginSample(ExecuteProfilerName);
 			Graphics.ExecuteCommandBuffer(commandBuffer);
 			Profiler.EndSample();
-			_gizmosGroup.Clear();
 		}
+		
+		internal void ClearGizmoGroup() => _gizmosGroup.Clear();
 
-		private bool SharedRenderingDetails(Camera camera, BufferGroup group, out CommandBuffer commandBuffer)
+		[Flags]
+		private enum RenderingType
 		{
-			if (!ShouldRenderCamera(camera))
+			Unknown = 0,
+			Default = 1,
+			Gizmos = 1 << 1,
+			Scene = 1 << 2,
+			Game = 1 << 3,
+			GizmosAndGame = Gizmos | Game
+		}
+		
+		private bool SharedRenderingDetails(Camera camera, BufferGroup group, out CommandBuffer commandBuffer, RenderingType renderingType)
+		{
+			_lastRenderingCamera = camera;
+			UpdateContext.ForceStateToUpdate();
+			
+			if (!ShouldRenderCamera(camera, renderingType))
 			{
 				commandBuffer = null;
 				return false;
@@ -379,15 +416,18 @@ namespace Vertx.Debugging
 
 			InitialiseIfRequired();
 			commandBuffer = group.ReadyResources();
-			return FillCommandBuffer(commandBuffer, group);
+			return FillCommandBuffer(commandBuffer, camera, group, renderingType);
 		}
 
-		private static bool ShouldRenderCamera(Camera camera)
+		private static bool ShouldRenderCamera(Camera camera, RenderingType renderingType)
 		{
 			if (!Handles.ShouldRenderGizmos())
 				return false;
 
-			bool isRenderingSceneView = SceneView.currentDrawingSceneView != null && SceneView.currentDrawingSceneView.camera == camera;
+			if ((renderingType & RenderingType.Gizmos) != 0)
+				return true;
+
+			bool isRenderingSceneView = (renderingType & RenderingType.Scene) != 0;
 
 			// Don't render cameras that render render textures. Always render scene view cameras.
 			if (!isRenderingSceneView && camera.targetTexture != null)
@@ -396,32 +436,50 @@ namespace Vertx.Debugging
 			return true;
 		}
 
-		private bool FillCommandBuffer(CommandBuffer commandBuffer, BufferGroup group)
+		private bool FillCommandBuffer(CommandBuffer commandBuffer, Camera camera, BufferGroup group, RenderingType renderingType)
 		{
-			Profiler.BeginSample(RemoveShapesByDurationProfilerName);
-			bool render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, group.Lines);
-			render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, group.Arcs);
-			render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes);
-			render |= RenderShape(AssetsUtility.Box2D, AssetsUtility.DefaultMaterial, group.Box2Ds);
-			render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, group.Outlines);
+			Profiler.BeginSample(FillCommandBufferProfilerName);
 
-			bool RenderShape<T>(
-				AssetsUtility.Asset<Mesh> mesh,
-				AssetsUtility.Asset<Material> material,
-				ShapeBuffersWithData<T> shape) where T : unmanaged
+			bool render;
+			if (renderingType == RenderingType.GizmosAndGame)
 			{
-				int shapeCount = shape.Count;
-				if (shapeCount <= 0)
-					return false;
+				Matrix4x4 oldMatrix = Shader.GetGlobalMatrix(_unityMatrixVPKey);
+				commandBuffer.SetGlobalMatrix(_unityMatrixVPKey, GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix);
+				RenderShapes();
+				commandBuffer.SetGlobalMatrix(_unityMatrixVPKey, oldMatrix);
+			}
+			else
+			{
+				RenderShapes();
+			}
 
-				MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
-				// Set the buffers to be used by the property block
-				// Synchronise the GraphicsBuffer with the data in the line buffer.
-				shape.Set(commandBuffer, propertyBlock);
 
-				// Render boxes
-				commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, -1, shapeCount, propertyBlock);
-				return true;
+			void RenderShapes()
+			{
+				render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, group.Lines);
+				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, group.Arcs);
+				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes);
+				render |= RenderShape(AssetsUtility.Box2D, AssetsUtility.DefaultMaterial, group.Box2Ds);
+				render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, group.Outlines);
+
+				bool RenderShape<T>(
+					AssetsUtility.Asset<Mesh> mesh,
+					AssetsUtility.Asset<Material> material,
+					ShapeBuffersWithData<T> shape) where T : unmanaged
+				{
+					int shapeCount = shape.Count;
+					if (shapeCount <= 0)
+						return false;
+
+					MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
+					// Set the buffers to be used by the property block
+					// Synchronise the GraphicsBuffer with the data in the line buffer.
+					shape.Set(commandBuffer, propertyBlock);
+
+					// Render boxes
+					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, -1, shapeCount, propertyBlock);
+					return true;
+				}
 			}
 
 			Profiler.EndSample();

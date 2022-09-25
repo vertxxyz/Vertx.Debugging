@@ -13,8 +13,14 @@ namespace Vertx.Debugging
 		{
 			switch (UpdateContext.State)
 			{
-				case UpdateContext.UpdateState.Default:
 				case UpdateContext.UpdateState.Update:
+					// Don't append while we're paused.
+					if (Application.isPlaying && Time.deltaTime == 0)
+					{
+						group = null;
+						return false;
+					}
+
 					duration = GetDuration(duration);
 					if (duration < 0)
 					{
@@ -24,13 +30,14 @@ namespace Vertx.Debugging
 
 					group = _defaultGroup;
 					break;
-				case UpdateContext.UpdateState.GizmosPreImageEffects:
-					// We don't append anything in the PreImageEffects stage
-					group = null;
-					return false;
-				case UpdateContext.UpdateState.GizmosPostImageEffects:
+				case UpdateContext.UpdateState.CapturingGizmos:
+					// Force the runtime object to exist
+					_ = DrawRuntimeBehaviour.Instance;
 					group = _gizmosGroup;
 					break;
+				case UpdateContext.UpdateState.Ignore:
+					group = null;
+					return false;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
@@ -72,7 +79,7 @@ namespace Vertx.Debugging
 
 		public void AppendText(Shapes.Text text, Color backgroundColor, Color textColor, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
-			if (UpdateContext.InGizmoState)
+			if (UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos)
 			{
 				Debug.LogWarning("Drawing Text is unsupported from a Gizmos context.");
 				return;

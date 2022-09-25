@@ -15,20 +15,26 @@ namespace Vertx.Debugging.Internal
 			{
 				if (s_Instance != null)
 					return s_Instance;
-				GameObject gameObject = new GameObject(nameof(DrawRuntimeBehaviour))
+				GameObject gameObject = new GameObject(nameof(DrawRuntimeBehaviour), typeof(DrawRuntimeBehaviour))
 				{
-					hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave
+					hideFlags = HideFlags.HideAndDontSave
 				};
 				if (Application.isPlaying)
 					DontDestroyOnLoad(gameObject);
-				s_Instance = gameObject.AddComponent<DrawRuntimeBehaviour>();
+				s_Instance = gameObject.GetComponent<DrawRuntimeBehaviour>();
 				return s_Instance;
 			}
 		}
-		
+
 		private void OnGUI()
 		{
-			UpdateContext.Draw();
+			if (s_Instance != this)
+			{
+				DestroyImmediate(gameObject);
+				return;
+			}
+
+			UpdateContext.OnGUI();
 			
 			if (Handles.ShouldRenderGizmos())
 				DrawText.OnGUI();

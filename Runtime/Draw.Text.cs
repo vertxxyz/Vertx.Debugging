@@ -90,8 +90,9 @@ namespace Vertx.Debugging
 				}
 				else
 				{
-					if (textData.Camera == null) continue;
-					if (!WorldToGUIPoint(position, out Vector2 screenPos, textData.Camera)) return;
+					Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
+					if (camera == null) continue;
+					if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, camera)) return;
 					//------DRAW-------
 					GUIContent content = GetGUIContentFromObject(textData.Value);
 					Rect rect = new Rect(screenPos, TextStyle.CalcSize(content));
