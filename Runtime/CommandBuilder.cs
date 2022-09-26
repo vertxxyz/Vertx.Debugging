@@ -104,7 +104,7 @@ namespace Vertx.Debugging
 		private VertxDebuggingRendererFeature _pass;
 #endif
 		private bool _disposeIsQueued;
-		private float _timeThisFrame;
+		private double _timeThisFrame;
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
@@ -185,8 +185,9 @@ namespace Vertx.Debugging
 			else
 			{
 				RemoveShapesByDuration(Time.deltaTime, null);
-				_timeThisFrame = Time.time;
 			}
+
+			_timeThisFrame = Time.timeAsDouble;
 		}
 
 		private static bool CombineDependencies(ref JobHandle? handle, JobHandle? other)
@@ -496,8 +497,12 @@ namespace Vertx.Debugging
 		private float GetDuration(float duration)
 		{
 			// Calls from FixedUpdate should hang around until the next FixedUpdate, at minimum.
-			if (IsInFixedUpdate() && duration == 0)
-				duration += Time.fixedDeltaTime - (_timeThisFrame - Time.fixedTime);
+			if (IsInFixedUpdate() && duration < Time.fixedDeltaTime)
+			{
+				// Time from the last 
+				// ReSharper disable once ArrangeRedundantParentheses
+				duration += (float)((Time.fixedTimeAsDouble + Time.fixedDeltaTime) - _timeThisFrame);
+			}
 
 			return duration;
 		}

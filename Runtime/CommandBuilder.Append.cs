@@ -9,7 +9,7 @@ namespace Vertx.Debugging
 	// ReSharper disable once ClassCannotBeInstantiated
 	public sealed partial class CommandBuilder
 	{
-		private bool InitialiseAndGetGroup(float duration, out BufferGroup group)
+		private bool InitialiseAndGetGroup(ref float duration, out BufferGroup group)
 		{
 			switch (UpdateContext.State)
 			{
@@ -49,31 +49,31 @@ namespace Vertx.Debugging
 
 		public void AppendLine(Shapes.Line line, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
-			if (!InitialiseAndGetGroup(duration, out var group)) return;
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Lines.Add(line, color, modifications, duration);
 		}
 
 		public void AppendArc(Shapes.Arc arc, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
-			if (!InitialiseAndGetGroup(duration, out var group)) return;
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Arcs.Add(arc, color, modifications, duration);
 		}
 
 		public void AppendBox(Shapes.Box box, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
-			if (!InitialiseAndGetGroup(duration, out var group)) return;
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Boxes.Add(box, color, modifications, duration);
 		}
 
 		public void AppendBox2D(Shapes.Box2D box, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
-			if (!InitialiseAndGetGroup(duration, out var group)) return;
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Box2Ds.Add(box, color, modifications, duration);
 		}
 
 		internal void AppendOutline(Shapes.Outline outline, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
-			if (!InitialiseAndGetGroup(duration, out var group)) return;
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Outlines.Add(outline, color, modifications, duration);
 		}
 
@@ -85,7 +85,7 @@ namespace Vertx.Debugging
 				return;
 			}
 
-			if (!InitialiseAndGetGroup(duration, out _)) return;
+			if (!InitialiseAndGetGroup(ref duration, out _)) return;
 			_texts.Add(text, backgroundColor, textColor, modifications, duration);
 			// Force the runtime object to exist
 			_ = DrawRuntimeBehaviour.Instance;
