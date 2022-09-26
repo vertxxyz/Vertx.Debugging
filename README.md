@@ -1,5 +1,7 @@
 Fast editor debugging and gizmo utilities for Unity.  
 
+Should support all render pipelines. Uses instanced rendering to efficiently batch drawing functions.
+
 > **Warning**  
 > Unity 2019.4+  
 > Debugging from jobs and builds is not supported, I recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
@@ -97,6 +99,11 @@ using static Vertx.Debugging.Shapes;
 | Debug Collision Events | Draws `OnCollisionEnter`, `Stay` and `Exit` events. |
 | Debug Trigger Events   | Draws `OnTriggerEnter`, `Stay` and `Exit` events.   |
 | Debug Mesh Normals     | Draws normals for a (read/write) Mesh.              |
+
+## Extensions
+
+The `Shapes` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
 
 ---
 If you find this resource helpful:

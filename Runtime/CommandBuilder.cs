@@ -34,7 +34,7 @@ namespace Vertx.Debugging
 		private const string FillCommandBufferProfilerName = ProfilerName + " " + nameof(FillCommandBuffer);
 		private const string ExecuteProfilerName = ProfilerName + " Execute";
 
-		public static CommandBuilder Instance { get; }
+		internal static CommandBuilder Instance { get; }
 
 		private readonly int _unityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
 		private readonly BufferGroup _defaultGroup = new BufferGroup(true, "Vertx.Debugging");
@@ -361,7 +361,7 @@ namespace Vertx.Debugging
 			Profiler.EndSample();
 		}
 
-		public void ExecuteDrawRenderPass(ScriptableRenderContext context, Camera camera)
+		internal void ExecuteDrawRenderPass(ScriptableRenderContext context, Camera camera)
 		{
 			RenderingType type = RenderingType.Default;
 			if (SceneView.currentDrawingSceneView != null && SceneView.currentDrawingSceneView.camera == camera)

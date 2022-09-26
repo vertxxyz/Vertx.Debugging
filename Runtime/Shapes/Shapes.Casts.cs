@@ -94,7 +94,20 @@ namespace Vertx.Debugging
 			{
 				Quaternion orientation = Quaternion.LookRotation(Direction);
 				new Sphere(Origin, orientation, Radius).Draw(commandBuilder, castColor, duration);
-				new Sphere(Origin + Direction * MaxDistance, orientation, Radius).Draw(commandBuilder, castColor, duration);
+				
+				// Cap ----
+				Vector3 endPos = Origin + Direction * MaxDistance;
+				Vector3 perpendicular = orientation * Vector3.up;
+				Vector3 perpendicular2 = orientation * Vector3.right;
+				Angle halfAngle = Angle.FromTurns(0.5f);
+				// 3 arcs
+				commandBuilder.AppendArc(new Arc(endPos, perpendicular, Direction, Radius, halfAngle), castColor, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendArc(new Arc(endPos, perpendicular2, Direction, Radius, halfAngle), castColor, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendArc(new Arc(endPos, Direction, perpendicular, Radius), castColor, duration, DrawModifications.NormalFade);
+				// cap outline
+				commandBuilder.AppendArc(new Arc(endPos, perpendicular, Direction, Radius, halfAngle), castColor, duration, DrawModifications.Custom | DrawModifications.NormalFade);
+				// --------
+				
 				// TODO draw connecting lines
 				if (Hit.HasValue)
 					new Sphere(Origin + Direction * Hit.Value.distance, Quaternion.LookRotation(Hit.Value.normal), Radius).Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);

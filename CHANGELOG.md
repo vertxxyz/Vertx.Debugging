@@ -4,6 +4,24 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-pre.1]
+- **Complete API overhaul**, nothing is as it was previously!
+  - The core drawing function is `D.raw(shape, color = Color.white, duration = 0)`
+  - All drawable shapes are structs inside the `Shapes` class.
+- Greatly improved drawing performance.
+  - Drawing no longer uses Debug.DrawLine or Gizmos.DrawLine internally.
+  - Everything is now instanced rendering.
+- Improved drawing of basic shapes.
+  - Spheres have a proper outline.
+  - Casts have accurate outlines and better terminations.
+  - Text now supports background and foreground colors.
+- Added Arc and Arc2D.
+- Added ScreenText, draws text in the top left of the view. Doesn't currently detect overlaps with scene-view overlays.
+- Added more debug components. Find them in Add Component > Debugging.
+- Removed complex shape parameters.
+  - Specifying segment count is no longer available. If you need this, please let me know.
+- Removed GizmosScope. This should be automatically detected.
+
 ## [1.9.2] - 2022-04-26
 - Added IList/IEnumerable support for DrawLine2D and DrawArrowLine2D.
 - Minor performance improvements to circle drawing.

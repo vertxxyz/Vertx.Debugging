@@ -45,6 +45,7 @@ namespace Vertx.Debugging
 		{
 			None = 0,
 			/// <summary>
+			/// Unimplemented!<br/>
 			/// Fades the shape out to the ends of the defined range.<br/>
 			/// Internally, this will use uv.v as the fade coordinate.
 			/// </summary>
@@ -54,6 +55,7 @@ namespace Vertx.Debugging
             /// </summary>
 			NormalFade = 1 << 1,
 			/// <summary>
+			/// Unimplemented!<br/>
 			/// Turns the shape so it faces the camera.
 			/// </summary>
 			FaceCamera = 1 << 2,

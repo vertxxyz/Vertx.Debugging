@@ -18,17 +18,14 @@ namespace Vertx.Debugging
 			get
 			{
 				var pipelineAsset = GraphicsSettings.currentRenderPipeline;
-#if VERTX_URP
 				if (pipelineAsset == null)
 					return CurrentPipeline.BuiltIn;
-				
+#if VERTX_URP
 				var type = pipelineAsset.GetType();
 				if (type.Name == "UniversalRenderPipelineAsset")
 					return CurrentPipeline.URP;
-#elif VERTX_HDRP
-				if (pipelineAsset == null)
-					return CurrentPipeline.BuiltIn;
-
+#endif
+#if VERTX_HDRP
 				var type = pipelineAsset.GetType();
 				if (type.Name == "HDRenderPipelineAsset")
 					return CurrentPipeline.HDRP;

@@ -1,7 +1,7 @@
 {
   "name": "com.vertx.debugging",
   "displayName": "Debugging",
-  "version": "1.9.2",
+  "version": "2.0.0-pre.1",
   "unity": "2019.4",
   "description": "Debugging Utilities for Unity.",
   "author": {
