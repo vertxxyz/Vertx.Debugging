@@ -42,29 +42,16 @@ float2 rotate(float2 v, float s, float c)
     return v;
 }
 
-float3 circle_right_from_world_pos(float3 originWorld, float3 capsuleUp, float radius)
+bool closest_plane_circle_intersection(
+    float3 circleCenter, 
+    float3 circleNormal, 
+    float circleRadius, 
+    float3 planePoint,
+    float3 planeNormal,
+    out float3 intersection
+)
 {
-    float3 n = _WorldSpaceCameraPos.xyz - originWorld; // Normal
-    float d1 = length(n); // Distance to camera
-    n = n / d1; // Normalise n
-    float3 capsuleRight = normalize(cross(n, capsuleUp));
-
-    float r1Sqrd = radius * radius;
-    float d = r1Sqrd / d1; // Distance from sphere to place circle
-    float r = sqrt(r1Sqrd - d * d); // Radius of circle
-
-    float3 v = float3(1, 0, 0) * r.xxx;
-    return originWorld + n * d
-        + capsuleRight * v.x
-        + capsuleUp * v.y
-        - n * v.z;
-}
-
-float get_tangent_rotation(float aR, float bR, float d)
-{
-    float rR = max(aR, bR) - min(aR, bR);
-    float theta = acos(rR / d);
-    return 3.14159265359 * 0.5f - theta;
+    
 }
 
 v2f vert(vertInput input)
@@ -86,55 +73,35 @@ v2f vert(vertInput input)
     }
     else
     {
-        float aR, offsetToNewCircleA, bR, offsetToNewCircleB;
-        float3 offsetNormalA, offsetNormalB;
-        get_circle_info(outline.A, outline.Radius, aR, offsetToNewCircleA, offsetNormalA);
-        get_circle_info(outline.B, outline.Radius, bR, offsetToNewCircleB, offsetNormalB);
-        float3 circleAPos = outline.A + offsetNormalA * offsetToNewCircleA;
-        float3 circleBPos = outline.B + offsetNormalB * offsetToNewCircleB;
-        // float totalDistance = distance(circleAPos, circleBPos);
-
-        float3 direction = normalize(outline.B - outline.A);
-        float3 capsuleRightA = normalize(cross(offsetNormalA, direction));
-        float3 capsuleRightB = normalize(cross(offsetNormalB, direction));
+        float3 normal = normalize(_WorldSpaceCameraPos.xyz - originWorld); // Normal
         
-        float3 circleTangentA = circleAPos
-            + capsuleRightA * aR;
-        float3 circleTangentB = circleBPos
-            + capsuleRightB * bR;
+        float3 direction = normalize(outline.B - outline.A);
+        float3 right = normalize(cross(normal, direction)) * outline.Radius;
 
-        float4 circleCenterA_NDC = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(circleAPos, 1.0)));
-        float4 circleCenterB_NDC = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(circleBPos, 1.0)));
-        float4 circleTangentA_NDC = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(circleTangentA, 1.0)));
-        float4 circleTangentB_NDC = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(circleTangentB, 1.0)));
-        float2 circleCenterA_screen = circleCenterA_NDC.xy / circleCenterA_NDC.w;
-        float2 circleCenterB_screen = circleCenterB_NDC.xy / circleCenterB_NDC.w;
-        float2 circleTangentA_screen = circleTangentA_NDC.xy / circleTangentA_NDC.w;
-        float2 circleTangentB_screen = circleTangentB_NDC.xy / circleTangentB_NDC.w;
+        float newRadius, offset;
+        float3 oNormal;
+        get_circle_info(originWorld, outline.Radius, newRadius, offset, oNormal);
 
-        float d = distance(circleCenterA_screen, circleCenterB_screen);
-        aR = distance(circleCenterA_screen, circleTangentA_screen);
-        bR = distance(circleCenterB_screen, circleTangentB_screen);
+        // TODO find the intersection between this new plane (the one created by get_circle_info)
+        // and the circle that is at originWorld, facing in direction, and of outline.Radius;
+        // it's at the closest intersection that we should position the line vertex.
+        // First, we must simply the equation to move the plane's origin to 0, 0, 0
 
-        float rotation = get_tangent_rotation(aR, bR, d);
+        float3 intersection;
+        if (!closest_plane_circle_intersection(originWorld, normal, outline.Radius, originWorld + oNormal * offset, oNormal, intersection))
+            intersection = originWorld + right;
 
         if (input.vertexID == 0)
         {
             // A
-            float3 outA;
-            RotateAboutAxis_Radians_float(circleTangentA - circleAPos, offsetNormalA, -rotation, outA);
-            outA = circleAPos + outA;
-            o.position = mul(UNITY_MATRIX_VP, float4(outA, 1.0));
+            o.position = mul(UNITY_MATRIX_VP, float4(outline.A + right, 1.0));
             o.color = color_buffer[input.instanceID];
             return o;
         }
         else
         {
             // B
-            float3 outB;
-            RotateAboutAxis_Radians_float(circleTangentB - circleBPos, offsetNormalB, -rotation, outB);
-            outB = circleBPos + outB;
-            o.position = mul(UNITY_MATRIX_VP, float4(outB, 1.0));
+            o.position = mul(UNITY_MATRIX_VP, float4(outline.B + right, 1.0));
             o.color = float4(1, 0, 0, 1);
             return o;
         }
