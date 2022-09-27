@@ -48,7 +48,7 @@ float3 circle_right_from_world_pos(float3 originWorld, float3 capsuleUp, float r
     float d1 = length(n); // Distance to camera
     n = n / d1; // Normalise n
     float3 capsuleRight = normalize(cross(n, capsuleUp));
-    
+
     float r1Sqrd = radius * radius;
     float d = r1Sqrd / d1; // Distance from sphere to place circle
     float r = sqrt(r1Sqrd - d * d); // Radius of circle
@@ -58,6 +58,13 @@ float3 circle_right_from_world_pos(float3 originWorld, float3 capsuleUp, float r
         + capsuleRight * v.x
         + capsuleUp * v.y
         - n * v.z;
+}
+
+float get_tangent_rotation(float aR, float bR, float d)
+{
+    float rR = max(aR, bR) - min(aR, bR);
+    float theta = acos(rR / d);
+    return 3.14159265359 * 0.5f - theta;
 }
 
 v2f vert(vertInput input)
@@ -73,49 +80,62 @@ v2f vert(vertInput input)
         float3 capsuleDirection = outline.B - outline.A;
         float3 up = normalize(capsuleDirection);
         float3 right = normalize(cross(-camera_direction(), up));
-
-
+        
         worldPos = originWorld
             + right * outline.Radius;
     }
     else
     {
-        float3 capsuleUp = normalize(outline.B - outline.A);
-        float3 aCircle = circle_right_from_world_pos(outline.A, capsuleUp, outline.Radius);
-        float3 bCircle = circle_right_from_world_pos(outline.B, capsuleUp, outline.Radius);
+        float aR, offsetToNewCircleA, bR, offsetToNewCircleB;
+        float3 offsetNormalA, offsetNormalB;
+        get_circle_info(outline.A, outline.Radius, aR, offsetToNewCircleA, offsetNormalA);
+        get_circle_info(outline.B, outline.Radius, bR, offsetToNewCircleB, offsetNormalB);
+        float3 circleAPos = outline.A + offsetNormalA * offsetToNewCircleA;
+        float3 circleBPos = outline.B + offsetNormalB * offsetToNewCircleB;
+        // float totalDistance = distance(circleAPos, circleBPos);
 
-        float4 aProj = mul(UNITY_MATRIX_VP, float4(outline.A, 1.0));
-        float4 bProj = mul(UNITY_MATRIX_VP, float4(outline.B, 1.0));
-        float2 aCircleProj = mul(UNITY_MATRIX_VP, float4(aCircle, 1.0));
-        float2 bCircleProj = mul(UNITY_MATRIX_VP, float4(bCircle, 1.0));
+        float3 direction = normalize(outline.B - outline.A);
+        float3 capsuleRightA = normalize(cross(offsetNormalA, direction));
+        float3 capsuleRightB = normalize(cross(offsetNormalB, direction));
+        
+        float3 circleTangentA = circleAPos
+            + capsuleRightA * aR;
+        float3 circleTangentB = circleBPos
+            + capsuleRightB * bR;
 
-        float2 aToAc = aCircleProj - aProj.xy;
-        float2 bToBc = bCircleProj - bProj.xy;
-        float aR = length(aToAc);
-        float bR = length(bToBc);
-        
-        float rR = max(bR, aR) - abs(bR - aR);
-        float theta = atan(rR / length(bProj.xy - aProj.xy));
-        float pi = 3.14159265359;
-        float pi90 = pi * 0.5f;
-        float theta2 = pi90 - (pi90 - theta);
-        
-        if(input.vertexID == 0)
+        float4 circleCenterA_NDC = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(circleAPos, 1.0)));
+        float4 circleCenterB_NDC = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(circleBPos, 1.0)));
+        float4 circleTangentA_NDC = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(circleTangentA, 1.0)));
+        float4 circleTangentB_NDC = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(circleTangentB, 1.0)));
+        float2 circleCenterA_screen = circleCenterA_NDC.xy / circleCenterA_NDC.w;
+        float2 circleCenterB_screen = circleCenterB_NDC.xy / circleCenterB_NDC.w;
+        float2 circleTangentA_screen = circleTangentA_NDC.xy / circleTangentA_NDC.w;
+        float2 circleTangentB_screen = circleTangentB_NDC.xy / circleTangentB_NDC.w;
+
+        float d = distance(circleCenterA_screen, circleCenterB_screen);
+        aR = distance(circleCenterA_screen, circleTangentA_screen);
+        bR = distance(circleCenterB_screen, circleTangentB_screen);
+
+        float rotation = get_tangent_rotation(aR, bR, d);
+
+        if (input.vertexID == 0)
         {
             // A
-            // aToAc = rotate(aToAc, theta2);
-            // aProj += float4(aToAc, 0, 0);
-            o.position = float4(aCircleProj, aProj.z, 1.0);
+            float3 outA;
+            RotateAboutAxis_Radians_float(circleTangentA - circleAPos, offsetNormalA, -rotation, outA);
+            outA = circleAPos + outA;
+            o.position = mul(UNITY_MATRIX_VP, float4(outA, 1.0));
             o.color = color_buffer[input.instanceID];
             return o;
         }
         else
         {
             // B
-            // bToBc = rotate(bToBc, theta2);
-            // bProj += float4(bToBc, 0, 0);
-            o.position = float4(bCircleProj, bProj.z, 1.0);
-            o.color = color_buffer[input.instanceID];
+            float3 outB;
+            RotateAboutAxis_Radians_float(circleTangentB - circleBPos, offsetNormalB, -rotation, outB);
+            outB = circleBPos + outB;
+            o.position = mul(UNITY_MATRIX_VP, float4(outB, 1.0));
+            o.color = float4(1, 0, 0, 1);
             return o;
         }
     }

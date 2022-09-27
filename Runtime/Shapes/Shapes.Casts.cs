@@ -108,6 +108,9 @@ namespace Vertx.Debugging
 				commandBuilder.AppendArc(new Arc(endPos, perpendicular, Direction, Radius, halfAngle), castColor, duration, DrawModifications.Custom | DrawModifications.NormalFade);
 				// --------
 				
+				commandBuilder.AppendOutline(new Outline(Origin, endPos, Radius), castColor, duration);
+				commandBuilder.AppendOutline(new Outline(endPos, Origin, Radius), castColor, duration);
+				
 				// TODO draw connecting lines
 				if (Hit.HasValue)
 					new Sphere(Origin + Direction * Hit.Value.distance, Quaternion.LookRotation(Hit.Value.normal), Radius).Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);

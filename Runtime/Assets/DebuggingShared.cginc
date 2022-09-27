@@ -41,3 +41,55 @@ float4 billboard(float3 vertex)
         )
     );
 }
+
+void get_circle_info(
+    float3 originWorld,
+    float radius,
+    out float newRadius,
+    out float offsetToNewCircle,
+    out float3 offsetNormal
+)
+{
+    offsetNormal = _WorldSpaceCameraPos.xyz - originWorld; // Normal
+    float d1 = length(offsetNormal); // Distance to camera
+    offsetNormal = offsetNormal / d1; // Normalise n
+    float r1Sqrd = radius * radius;
+    offsetToNewCircle = r1Sqrd / d1; // Distance from sphere to place circle
+    newRadius = sqrt(r1Sqrd - offsetToNewCircle * offsetToNewCircle); // Radius of circle
+}
+
+float4 axis_angle(float3 axis, float angle)
+{
+    float sina, cosa;
+    sincos(0.5f * angle, sina, cosa);
+    return float4(axis * sina, cosa);
+}
+
+float3 rotate(float4 q, float3 v)
+{
+    float3 t = 2 * cross(q.xyz, v);
+    return v + q.w * t + cross(q.xyz, t);
+}
+
+void RotateAboutAxis_Radians_float(float3 In, float3 Axis, float Rotation, out float3 Out)
+{
+    float s = sin(Rotation);
+    float c = cos(Rotation);
+    float one_minus_c = 1.0 - c;
+
+    Axis = normalize(Axis);
+    float3x3 rot_mat = 
+    {   one_minus_c * Axis.x * Axis.x + c, one_minus_c * Axis.x * Axis.y - Axis.z * s, one_minus_c * Axis.z * Axis.x + Axis.y * s,
+        one_minus_c * Axis.x * Axis.y + Axis.z * s, one_minus_c * Axis.y * Axis.y + c, one_minus_c * Axis.y * Axis.z - Axis.x * s,
+        one_minus_c * Axis.z * Axis.x - Axis.y * s, one_minus_c * Axis.y * Axis.z + Axis.x * s, one_minus_c * Axis.z * Axis.z + c
+    };
+    Out = mul(rot_mat,  In);
+}
+
+
+float2 rotate_2d(float2 v, float angle)
+{
+    float s, c;
+    sincos(angle, s, c);
+    return float2(v.x * c - v.y * s, v.x * s + v.y * c);
+}

@@ -67,7 +67,7 @@ namespace Vertx.Debugging
 		public static void raw(Bounds bounds, float duration = 0) => raw(bounds, Color.white, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit hit, Color color, float duration = 0) => raw(new Shapes.Ray(hit.point, hit.normal), color, duration);
+		public static void raw(RaycastHit hit, Color color, float duration = 0) => raw(new Shapes.SurfacePoint(hit.point, hit.normal), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RaycastHit hit, float duration = 0) => raw(hit, Shapes.HitColor, duration);
