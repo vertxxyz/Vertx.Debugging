@@ -94,23 +94,11 @@ namespace Vertx.Debugging
 			{
 				Quaternion orientation = Quaternion.LookRotation(Direction);
 				new Sphere(Origin, orientation, Radius).Draw(commandBuilder, castColor, duration);
-				
-				// Cap ----
 				Vector3 endPos = Origin + Direction * MaxDistance;
-				Vector3 perpendicular = orientation * Vector3.up;
-				Vector3 perpendicular2 = orientation * Vector3.right;
-				Angle halfAngle = Angle.FromTurns(0.5f);
-				// 3 arcs
-				commandBuilder.AppendArc(new Arc(endPos, perpendicular, Direction, Radius, halfAngle), castColor, duration, DrawModifications.NormalFade);
-				commandBuilder.AppendArc(new Arc(endPos, perpendicular2, Direction, Radius, halfAngle), castColor, duration, DrawModifications.NormalFade);
-				commandBuilder.AppendArc(new Arc(endPos, Direction, perpendicular, Radius), castColor, duration, DrawModifications.NormalFade);
-				// cap outline
-				commandBuilder.AppendArc(new Arc(endPos, perpendicular, Direction, Radius, halfAngle), castColor, duration, DrawModifications.Custom | DrawModifications.NormalFade);
-				// --------
-				
+				new Hemisphere(endPos, orientation, Radius).Draw(commandBuilder, castColor, duration);
+
 				commandBuilder.AppendOutline(new Outline(Origin, endPos, Radius), castColor, duration);
 				commandBuilder.AppendOutline(new Outline(endPos, Origin, Radius), castColor, duration);
-				
 				// TODO draw connecting lines
 				if (Hit.HasValue)
 					new Sphere(Origin + Direction * Hit.Value.distance, Quaternion.LookRotation(Hit.Value.normal), Radius).Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);
@@ -297,8 +285,14 @@ namespace Vertx.Debugging
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				Capsule.Draw(commandBuilder, castColor, duration);
-				Capsule.GetTranslated(Direction * MaxDistance).Draw(commandBuilder, castColor, duration);
-				// TODO draw connections
+				Capsule endCapsule = Capsule.GetTranslated(Direction * MaxDistance);
+				endCapsule.Draw(commandBuilder, castColor, duration);
+				Vector3 radiusA = (Capsule.SpherePosition1 - Capsule.SpherePosition2).normalized * Capsule.Radius;
+				Vector3 radiusB = -radiusA;
+				commandBuilder.AppendOutline(new Outline(Capsule.SpherePosition1, endCapsule.SpherePosition1, radiusA), castColor, duration, DrawModifications.Custom);
+				commandBuilder.AppendOutline(new Outline(endCapsule.SpherePosition1, Capsule.SpherePosition1, radiusA), castColor, duration, DrawModifications.Custom);
+				commandBuilder.AppendOutline(new Outline(endCapsule.SpherePosition2, Capsule.SpherePosition2, radiusB), castColor, duration, DrawModifications.Custom);
+				commandBuilder.AppendOutline(new Outline(Capsule.SpherePosition2, endCapsule.SpherePosition2, radiusB), castColor, duration, DrawModifications.Custom);
 				if (Hit.HasValue)
 					Capsule.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
 			}

@@ -67,6 +67,7 @@ namespace Vertx.Debugging
 			/// <summary>
 			/// A custom modification that can be implemented by a shape.<br/>
 			/// - Arc: Will create a full circle, but it spirals inwards using the turns parameter as an inner radius multiplier.
+			/// - Outline: Swaps sides appropriately for a capsule cast.
 			/// </summary>
 			Custom2 = 1 << 4
 		}

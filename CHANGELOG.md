@@ -10,12 +10,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - All drawable shapes are structs inside the `Shapes` class.
 - Greatly improved drawing performance.
   - Drawing no longer uses Debug.DrawLine or Gizmos.DrawLine internally.
-  - Everything is now instanced rendering.
+  - Everything except text is now using instanced rendering.
 - Improved drawing of basic shapes.
-  - Spheres have a proper outline.
+  - Spheres and capsules have a proper outline.
+  - The interior of shapes is faded to better show 3D.
   - Casts have accurate outlines and better terminations.
   - Text now supports background and foreground colors.
 - Added Arc and Arc2D.
+- Added Hemisphere.
 - Added ScreenText, draws text in the top left of the view. Doesn't currently detect overlaps with scene-view overlays.
 - Added more debug components. Find them in Add Component > Debugging.
 - Removed complex shape parameters.

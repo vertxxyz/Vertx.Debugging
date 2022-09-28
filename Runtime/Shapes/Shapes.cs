@@ -384,6 +384,46 @@ namespace Vertx.Debugging
 #endif
 		}
 
+		public struct Hemisphere : IDrawable
+		{
+			public Vector3 Origin;
+			public Quaternion Orientation;
+			public float Radius;
+
+			public Hemisphere(Vector3 origin, Quaternion orientation, float radius)
+			{
+				Origin = origin;
+				Orientation = orientation;
+				Radius = radius;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Vector3 direction = Orientation * Vector3.forward;
+
+				// Cap ----
+				Vector3 perpendicular = Orientation * Vector3.up;
+				Vector3 perpendicular2 = Orientation * Vector3.right;
+				Draw(commandBuilder, Origin, direction, perpendicular, perpendicular2, Radius, color, duration);
+			}
+
+			public static void Draw(CommandBuilder commandBuilder, Vector3 origin, Vector3 direction, Vector3 tangent, Vector3 bitangent, float radius, Color color, float duration)
+			{
+				// Cap ----
+				Vector3 endPos = origin;
+				Angle halfAngle = Angle.FromTurns(0.5f);
+				// 3 arcs
+				commandBuilder.AppendArc(new Arc(endPos, tangent, direction, radius, halfAngle), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendArc(new Arc(endPos, bitangent, direction, radius, halfAngle), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendArc(new Arc(endPos, direction, tangent, radius), color, duration, DrawModifications.NormalFade);
+				// cap outline
+				commandBuilder.AppendArc(new Arc(endPos, tangent, direction, radius, halfAngle), color, duration, DrawModifications.Custom | DrawModifications.NormalFade);
+				// --------
+			}
+#endif
+		}
+
 		public struct Box : IDrawable
 		{
 			public Matrix4x4 Matrix;
@@ -442,19 +482,8 @@ namespace Vertx.Debugging
 
 				Vector3 perpendicular = GetValidPerpendicular(up);
 				Vector3 perpendicular2 = Vector3.Cross(up, perpendicular);
-
-				Angle halfAngle = Angle.FromTurns(0.5f);
-				commandBuilder.AppendArc(new Arc(SpherePosition2, perpendicular, up, Radius, halfAngle), color, duration);
-				commandBuilder.AppendArc(new Arc(SpherePosition2, perpendicular2, up, Radius, halfAngle), color, duration);
-
-				commandBuilder.AppendArc(new Arc(SpherePosition1, perpendicular, down, Radius, halfAngle), color, duration);
-				commandBuilder.AppendArc(new Arc(SpherePosition1, perpendicular2, down, Radius, halfAngle), color, duration);
-
-				commandBuilder.AppendArc(new Arc(SpherePosition1, up, perpendicular, Radius), color, duration);
-				commandBuilder.AppendArc(new Arc(SpherePosition2, down, perpendicular, Radius), color, duration);
-
-				commandBuilder.AppendArc(new Arc(SpherePosition2, perpendicular, up, Radius, halfAngle), color, duration, DrawModifications.Custom);
-				commandBuilder.AppendArc(new Arc(SpherePosition1, perpendicular, down, Radius, halfAngle), color, duration, DrawModifications.Custom);
+				Hemisphere.Draw(commandBuilder, SpherePosition2, up, perpendicular, perpendicular2, Radius, color, duration);
+				Hemisphere.Draw(commandBuilder, SpherePosition1, down, perpendicular, perpendicular2, Radius, color, duration);
 
 				perpendicular *= Radius;
 				perpendicular2 *= Radius;
@@ -463,7 +492,7 @@ namespace Vertx.Debugging
 				commandBuilder.AppendLine(new Line(SpherePosition1 - perpendicular, SpherePosition2 - perpendicular), color, duration);
 				commandBuilder.AppendLine(new Line(SpherePosition1 + perpendicular2, SpherePosition2 + perpendicular2), color, duration);
 				commandBuilder.AppendLine(new Line(SpherePosition1 - perpendicular2, SpherePosition2 - perpendicular2), color, duration);
-				
+
 				commandBuilder.AppendOutline(new Outline(SpherePosition1, SpherePosition2, Radius), color, duration);
 				commandBuilder.AppendOutline(new Outline(SpherePosition2, SpherePosition1, Radius), color, duration);
 			}
@@ -475,18 +504,24 @@ namespace Vertx.Debugging
 		/// </summary>
 		internal readonly struct Outline : IDrawable
 		{
-			public readonly Vector3 A, B;
-			public readonly float Radius;
+			public readonly Vector3 A, B, Radius;
 
 			public Outline(Vector3 a, Vector3 b, float radius)
 			{
 				A = a;
 				B = b;
-				Radius = radius;
+				Radius = new Vector3(radius, 0, 0);
+			}
+
+			public Outline(Vector3 a, Vector3 b, Vector3 normal)
+			{
+				A = a;
+				B = b;
+				Radius = normal;
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) { }
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendOutline(this, color, duration);
 #endif
 		}
 	}
