@@ -488,10 +488,10 @@ namespace Vertx.Debugging
 				perpendicular *= Radius;
 				perpendicular2 *= Radius;
 
-				commandBuilder.AppendLine(new Line(SpherePosition1 + perpendicular, SpherePosition2 + perpendicular), color, duration);
-				commandBuilder.AppendLine(new Line(SpherePosition1 - perpendicular, SpherePosition2 - perpendicular), color, duration);
-				commandBuilder.AppendLine(new Line(SpherePosition1 + perpendicular2, SpherePosition2 + perpendicular2), color, duration);
-				commandBuilder.AppendLine(new Line(SpherePosition1 - perpendicular2, SpherePosition2 - perpendicular2), color, duration);
+				commandBuilder.AppendOutline(new Outline(SpherePosition1 + perpendicular, SpherePosition2 + perpendicular, perpendicular), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(SpherePosition1 - perpendicular, SpherePosition2 - perpendicular, -perpendicular), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(SpherePosition1 + perpendicular2, SpherePosition2 + perpendicular2, perpendicular2), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(SpherePosition1 - perpendicular2, SpherePosition2 - perpendicular2, -perpendicular2), color, duration, DrawModifications.NormalFade);
 
 				commandBuilder.AppendOutline(new Outline(SpherePosition1, SpherePosition2, Radius), color, duration);
 				commandBuilder.AppendOutline(new Outline(SpherePosition2, SpherePosition1, Radius), color, duration);

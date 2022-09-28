@@ -26,6 +26,13 @@ float get_scale()
 
 float3 camera_direction() { return UNITY_MATRIX_IT_MV[2].xyz; }
 
+float3 camera_direction_variable(float3 originWorld)
+{
+    if(is_orthographic())
+        return camera_direction();
+    return normalize(_WorldSpaceCameraPos.xyz - originWorld);
+}
+
 float4 billboard(float3 vertex)
 {
     // Get the origin (it's not affected by rotation or scale)

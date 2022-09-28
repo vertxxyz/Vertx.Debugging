@@ -4,6 +4,8 @@
 struct Outine
 {
     float3 A, B;
+    // Radius can either be (radius, 0, 0)
+    // Or a vector that points 'up' in a hemisphere, that is of radius length.
     float3 Radius;
 };
 
@@ -154,6 +156,22 @@ v2f vert(vertInput input)
 {
     v2f o;
     Outine outline = outline_buffer[input.instanceID];
+    int modifications = modifications_buffer[input.instanceID];
+    o.color = color_buffer[input.instanceID];
+    if (has_normal_fade(modifications))
+    {
+        float3 originWorld = input.vertexID == 0 ? outline.A : outline.B;
+        float3 cameraDirection = camera_direction_variable(originWorld);
+        float d = dot(cameraDirection, outline.Radius);
+        d = saturate(
+            smoothstep(0, 0.1, d) // front face
+        );
+
+        o.color.a *= max(0.3, d);
+        o.position = mul(UNITY_MATRIX_VP, float4(originWorld, 1.0));
+        return o;
+    }
+    
     float radius = length(outline.Radius);
 
     float3 originWorld = input.vertexID == 0 ? outline.A : outline.B;
@@ -165,18 +183,16 @@ v2f vert(vertInput input)
 
         float3 worldPos = originWorld
             + right * radius;
-        o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
-
-        if (has_custom(modifications_buffer[input.instanceID]))
+        
+        if (has_custom(modifications))
         {
             if (dot(outline.Radius, right) < 0)
             {
-                o.color = float4(color_buffer[input.instanceID].xyz, 0);
-                return o;
+                o.color.a = 0;
+                worldPos = float3(0, 0, 0);
             }
         }
-
-        o.color = color_buffer[input.instanceID];
+        o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
         return o;
     }
     else
@@ -195,8 +211,7 @@ v2f vert(vertInput input)
         // Look, this took me forever, give me a break.
         float3 intersection = originWorld + right * radius;
 
-        float alphaMultiplier =
-            closest_plane_circle_intersection(
+        if(!closest_plane_circle_intersection(
                 originWorld,
                 direction,
                 right,
@@ -204,15 +219,18 @@ v2f vert(vertInput input)
                 originWorld + oNormal * offset,
                 oNormal,
                 intersection
-            )
-                ? 1
-                : 0;
-        if (has_custom(modifications_buffer[input.instanceID]))
+            ))
         {
-            if (dot(outline.Radius, intersection - originWorld) < 0)
-                alphaMultiplier = 0;
+            intersection = float3(0, 0, 0);
+            o.color.a = 0;
         }
-        o.color = float4(color_buffer[input.instanceID].xyz, color_buffer[input.instanceID].a * alphaMultiplier);
+
+        if (has_custom(modifications))
+        {
+            // Clip against the hemisphere that makes up a capsule.
+            if (dot(outline.Radius, intersection - originWorld) < 0)
+                o.color.a = 0;
+        }
         o.position = mul(UNITY_MATRIX_VP, float4(intersection, 1.0));
         return o;
     }
