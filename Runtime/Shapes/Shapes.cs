@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
-
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
-		public struct Line : IDrawable
+		public readonly struct Line : IDrawable
 		{
-			public Vector3 A, B;
+			public readonly Vector3 A, B;
 
 			public Line(Vector3 a, Vector3 b)
 			{
@@ -28,9 +29,9 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct LineStrip : IDrawable
+		public readonly struct LineStrip : IDrawable
 		{
-			public IEnumerable<Vector3> Points;
+			public readonly IEnumerable<Vector3> Points;
 
 			public LineStrip(IEnumerable<Vector3> points) => Points = points;
 
@@ -48,9 +49,9 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Ray : IDrawable
+		public readonly struct Ray : IDrawable
 		{
-			public Vector3 Origin, Direction;
+			public readonly Vector3 Origin, Direction;
 
 			public Ray(Vector3 origin, Vector3 direction)
 			{
@@ -72,10 +73,10 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Point : IDrawable
+		public readonly struct Point : IDrawable
 		{
-			public Vector3 Position;
-			public float Scale;
+			public readonly Vector3 Position;
+			public readonly float Scale;
 
 			public Point(Vector3 position, float scale = 0.3f)
 			{
@@ -96,9 +97,9 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Arrow : IDrawable
+		public readonly struct Arrow : IDrawable
 		{
-			public Vector3 Origin, Direction;
+			public readonly Vector3 Origin, Direction;
 
 			public Arrow(Vector3 origin, Vector3 direction)
 			{
@@ -153,9 +154,9 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct ArrowStrip : IDrawable
+		public readonly struct ArrowStrip : IDrawable
 		{
-			public IEnumerable<Vector3> Points;
+			public readonly IEnumerable<Vector3> Points;
 
 			public ArrowStrip(IEnumerable<Vector3> points) => Points = points;
 
@@ -180,13 +181,13 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Axis : IDrawable
+		public readonly struct Axis : IDrawable
 		{
-			public Vector3 Origin;
-			public Quaternion Rotation;
-			public bool ShowArrowHeads;
-			public Axes VisibleAxes;
-			public float Scale;
+			public readonly Vector3 Origin;
+			public readonly Quaternion Rotation;
+			public readonly bool ShowArrowHeads;
+			public readonly Axes VisibleAxes;
+			public readonly float Scale;
 
 			public Axis(Vector3 origin, Quaternion rotation, bool showArrowHeads = true, Axes visibleAxes = Axes.All, float scale = 1)
 			{
@@ -222,10 +223,10 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct SurfacePoint : IDrawable
+		public readonly struct SurfacePoint : IDrawable
 		{
-			public Vector3 Origin, Direction;
-			public float Radius;
+			public readonly Vector3 Origin, Direction;
+			public readonly float Radius;
 
 			public SurfacePoint(Vector3 origin, Vector3 direction)
 			{
@@ -252,15 +253,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Circle : IDrawable
+		public readonly struct Circle : IDrawable
 		{
-			private Arc _arc;
+			private readonly Arc _arc;
 
-			public Matrix4x4 Matrix
-			{
-				get => _arc.Matrix;
-				set => _arc = new Arc(value);
-			}
+			public Matrix4x4 Matrix => _arc.Matrix;
 
 			public Circle(Matrix4x4 matrix) => _arc = new Arc(matrix);
 
@@ -288,29 +285,25 @@ namespace Vertx.Debugging
 		/// This is 2D, the rotation or matrix used will align the arc facing right, aligned with XY.<br/>
 		/// Use the helper constructors to create an Arc aligned how you require.
 		/// </summary>
-		public struct Arc : IDrawable
+		public readonly struct Arc : IDrawable
 		{
-			public Matrix4x4 Matrix;
-			public float Turns;
+			public readonly Matrix4x4 Matrix;
+			public readonly Angle Angle;
 
 			internal static readonly Quaternion s_Base3DRotation = Quaternion.Euler(90, -90, 0);
-
-			public Angle Angle
-			{
-				set => Turns = value;
-			}
+			
 
 			public Arc(Matrix4x4 matrix, Angle angle)
 			{
 				Matrix = matrix;
-				Turns = angle;
+				Angle = angle;
 			}
 
 			public Arc(Matrix4x4 matrix) : this(matrix, Angle.FromTurns(1)) { }
 
 			public Arc(Vector3 origin, Quaternion rotation, float radius, Angle angle)
 			{
-				Turns = angle;
+				Angle = angle;
 				Matrix = Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius));
 			}
 
@@ -340,9 +333,9 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Sphere : IDrawable
+		public readonly struct Sphere : IDrawable
 		{
-			public Matrix4x4 Matrix;
+			public readonly Matrix4x4 Matrix;
 
 			public Sphere(Matrix4x4 matrix) => Matrix = matrix;
 
@@ -384,11 +377,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Hemisphere : IDrawable
+		public readonly struct Hemisphere : IDrawable
 		{
-			public Vector3 Origin;
-			public Quaternion Orientation;
-			public float Radius;
+			public readonly Vector3 Origin;
+			public readonly Quaternion Orientation;
+			public readonly float Radius;
 
 			public Hemisphere(Vector3 origin, Quaternion orientation, float radius)
 			{
@@ -424,11 +417,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Box : IDrawable
+		public readonly struct Box : IDrawable
 		{
-			public Matrix4x4 Matrix;
+			public readonly Matrix4x4 Matrix;
 
-			private Box(Matrix4x4 matrix) => Matrix = matrix;
+			internal Box(Matrix4x4 matrix) => Matrix = matrix;
 
 			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation) : this(Matrix4x4.TRS(position, orientation, halfExtents)) { }
 
@@ -444,10 +437,10 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Capsule : IDrawable
+		public readonly struct Capsule : IDrawable
 		{
-			public Vector3 SpherePosition1, SpherePosition2;
-			public float Radius;
+			public readonly Vector3 SpherePosition1, SpherePosition2;
+			public readonly float Radius;
 
 			public Capsule(Vector3 center, Quaternion rotation, float height, float radius)
 			{

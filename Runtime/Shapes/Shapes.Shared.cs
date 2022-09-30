@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
-
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Vertx.Debugging
 {

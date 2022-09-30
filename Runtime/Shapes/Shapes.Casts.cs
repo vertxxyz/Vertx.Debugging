@@ -1,15 +1,16 @@
 using UnityEngine;
-
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
-		public struct Raycast : IDrawableCast
+		public readonly struct Raycast : IDrawableCast
 		{
-			public Ray Ray;
-			public RaycastHit Hit;
+			public readonly Ray Ray;
+			public readonly RaycastHit Hit;
 
 			public Raycast(Vector3 origin, Vector3 direction, RaycastHit hit, float distance = Mathf.Infinity)
 			{
@@ -31,11 +32,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct RaycastAll : IDrawableCast
+		public readonly struct RaycastAll : IDrawableCast
 		{
-			public Ray Ray;
-			public RaycastHit[] Results;
-			public int ResultCount;
+			public readonly Ray Ray;
+			public readonly RaycastHit[] Results;
+			public readonly int ResultCount;
 
 			public RaycastAll(Vector3 origin, Vector3 direction, RaycastHit[] results, int resultCount, float distance = Mathf.Infinity)
 			{
@@ -66,14 +67,14 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct SphereCast : IDrawableCast
+		public readonly struct SphereCast : IDrawableCast
 		{
 			// Not using a Sphere because it has unnecessary overhead baked into the orientation.
-			public Vector3 Origin;
-			public float Radius;
-			public Vector3 Direction;
-			public float MaxDistance;
-			public RaycastHit? Hit;
+			public readonly Vector3 Origin;
+			public readonly float Radius;
+			public readonly Vector3 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit? Hit;
 
 			public SphereCast(Vector3 origin, Vector3 direction, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 			{
@@ -99,22 +100,21 @@ namespace Vertx.Debugging
 
 				commandBuilder.AppendOutline(new Outline(Origin, endPos, Radius), castColor, duration);
 				commandBuilder.AppendOutline(new Outline(endPos, Origin, Radius), castColor, duration);
-				// TODO draw connecting lines
 				if (Hit.HasValue)
 					new Sphere(Origin + Direction * Hit.Value.distance, Quaternion.LookRotation(Hit.Value.normal), Radius).Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);
 			}
 #endif
 		}
 
-		public struct SphereCastAll : IDrawableCast
+		public readonly struct SphereCastAll : IDrawableCast
 		{
 			// Not using a Sphere because it has unnecessary overhead baked into the orientation.
-			public Vector3 Origin;
-			public float Radius;
-			public Vector3 Direction;
-			public float MaxDistance;
-			public RaycastHit[] Results;
-			public int ResultCount;
+			public readonly Vector3 Origin;
+			public readonly float Radius;
+			public readonly Vector3 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit[] Results;
+			public readonly int ResultCount;
 
 			public SphereCastAll(Vector3 origin, Vector3 direction, float radius, RaycastHit[] results, int resultCount, float maxDistance = Mathf.Infinity)
 			{
@@ -149,12 +149,12 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct BoxCast : IDrawableCast
+		public readonly struct BoxCast : IDrawableCast
 		{
-			public Box Box;
-			public Vector3 Direction;
-			public float MaxDistance;
-			public RaycastHit? Hit;
+			public readonly Box Box;
+			public readonly Vector3 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit? Hit;
 
 			public BoxCast(Box box, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 			{
@@ -182,10 +182,11 @@ namespace Vertx.Debugging
 				Vector3 offset = Direction * MaxDistance;
 				
 				// Draw connectors
-				Vector3 position = Box.Matrix.MultiplyPoint3x4(Vector3.zero);
-				Vector3 up = Box.Matrix.MultiplyPoint3x4(new Vector3(0, 1, 0)) - position;
-				Vector3 right = Box.Matrix.MultiplyPoint3x4(new Vector3(1, 0, 0)) - position;
-				Vector3 forward = Box.Matrix.MultiplyPoint3x4(new Vector3(0, 0, 1)) - position;
+				Matrix4x4 boxMatrix = Box.Matrix;
+				Vector3 position = boxMatrix.MultiplyPoint3x4(Vector3.zero);
+				Vector3 up = boxMatrix.MultiplyPoint3x4(new Vector3(0, 1, 0)) - position;
+				Vector3 right = boxMatrix.MultiplyPoint3x4(new Vector3(1, 0, 0)) - position;
+				Vector3 forward = boxMatrix.MultiplyPoint3x4(new Vector3(0, 0, 1)) - position;
 
 				BoxUtility.Direction direction = BoxUtility.ConstructDirection(
 					Vector3.Dot(right, Direction),
@@ -204,30 +205,30 @@ namespace Vertx.Debugging
 					Vector3 coordinate = Box.Matrix.MultiplyPoint3x4(point.Coordinate) - position;
 					commandBuilder.AppendOutline(new Outline(position, offset, coordinate), castColor, duration, DrawModifications.Custom2);
 				}*/
-				commandBuilder.AppendCast(new Cast(Box.Matrix, offset), castColor, duration);
+				commandBuilder.AppendCast(new Cast(boxMatrix, offset), castColor, duration);
 				
 				// Draw box end
-				var boxEnd = Box.GetTranslated(offset);
+				Matrix4x4 boxEnd = Box.GetTranslated(offset).Matrix;
 				foreach (var edge in BoxUtility.Edges)
 				{
 					BoxUtility.Direction matchedDirections = edge.Direction & direction;
 					if (matchedDirections == 0)
 						continue;
-					Vector3 a = boxEnd.Matrix.MultiplyPoint3x4(edge.A);
-					Vector3 b = boxEnd.Matrix.MultiplyPoint3x4(edge.B);
-					commandBuilder.AppendOutline(new Outline(a, b, boxEnd.Matrix.MultiplyVector(edge.A + edge.B)), castColor, duration, DrawModifications.Custom2);
+					Vector3 a = boxEnd.MultiplyPoint3x4(edge.A);
+					Vector3 b = boxEnd.MultiplyPoint3x4(edge.B);
+					commandBuilder.AppendOutline(new Outline(a, b, boxEnd.MultiplyVector(edge.A + edge.B)), castColor, duration, DrawModifications.Custom2);
 				}
 			}
 #endif
 		}
 
-		public struct BoxCastAll : IDrawableCast
+		public readonly struct BoxCastAll : IDrawableCast
 		{
-			public Box Box;
-			public Vector3 Direction;
-			public float MaxDistance;
-			public RaycastHit[] Results;
-			public int ResultCount;
+			public readonly Box Box;
+			public readonly Vector3 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit[] Results;
+			public readonly int ResultCount;
 
 			public BoxCastAll(Box box, Vector3 direction, RaycastHit[] results, int count, float maxDistance = Mathf.Infinity)
 			{
@@ -265,12 +266,12 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct CapsuleCast : IDrawableCast
+		public readonly struct CapsuleCast : IDrawableCast
 		{
-			public Capsule Capsule;
-			public Vector3 Direction;
-			public float MaxDistance;
-			public RaycastHit? Hit;
+			public readonly Capsule Capsule;
+			public readonly Vector3 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit? Hit;
 
 			public CapsuleCast(Capsule capsule, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 			{
@@ -301,13 +302,13 @@ namespace Vertx.Debugging
 		}
 
 
-		public struct CapsuleCastAll : IDrawableCast
+		public readonly struct CapsuleCastAll : IDrawableCast
 		{
-			public Capsule Capsule;
-			public Vector3 Direction;
-			public float MaxDistance;
-			public RaycastHit[] Results;
-			public int ResultCount;
+			public readonly Capsule Capsule;
+			public readonly Vector3 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit[] Results;
+			public readonly int ResultCount;
 
 			public CapsuleCastAll(Capsule capsule, Vector3 direction, RaycastHit[] results, int count, float maxDistance = Mathf.Infinity)
 			{

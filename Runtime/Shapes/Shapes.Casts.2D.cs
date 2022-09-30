@@ -1,17 +1,18 @@
 #if VERTX_PHYSICS_2D
 using UnityEngine;
-
+// ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
+// ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
-		public struct Raycast2D : IDrawableCast
+		public readonly struct Raycast2D : IDrawableCast
 		{
-			public Vector3 Origin;
-			public Vector2 Direction;
-			public RaycastHit2D? Result;
+			public readonly Vector3 Origin;
+			public readonly Vector2 Direction;
+			public readonly RaycastHit2D? Result;
 
 			public Raycast2D(Vector2 origin, Vector2 direction, RaycastHit2D? result, float distance = Mathf.Infinity, float z = 0)
 			{
@@ -42,11 +43,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct RaycastAll2D : IDrawableCast
+		public readonly struct RaycastAll2D : IDrawableCast
 		{
-			public Raycast2D Raycast;
-			public RaycastHit2D[] Results;
-			public int ResultCount;
+			public readonly Raycast2D Raycast;
+			public readonly RaycastHit2D[] Results;
+			public readonly int ResultCount;
 
 			public RaycastAll2D(Vector2 origin, Vector2 direction, RaycastHit2D[] results, int resultCount, float distance = Mathf.Infinity, float z = 0)
 			{
@@ -71,13 +72,13 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct CircleCast : IDrawableCast
+		public readonly struct CircleCast : IDrawableCast
 		{
-			public Vector3 Origin;
-			public float Radius;
-			public Vector2 Direction;
-			public float MaxDistance;
-			public RaycastHit2D? Hit;
+			public readonly Vector3 Origin;
+			public readonly float Radius;
+			public readonly Vector2 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit2D? Hit;
 
 			public CircleCast(Vector2 origin, Vector2 direction, float radius, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float z = 0)
 			{
@@ -102,11 +103,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct CircleCastAll : IDrawableCast
+		public readonly struct CircleCastAll : IDrawableCast
 		{
-			public CircleCast CircleCast;
-			public RaycastHit2D[] Results;
-			public int ResultCount;
+			public readonly CircleCast CircleCast;
+			public readonly RaycastHit2D[] Results;
+			public readonly int ResultCount;
 
 			public CircleCastAll(Vector2 origin, Vector2 direction, float radius, RaycastHit2D[] results, int resultCount, float maxDistance = Mathf.Infinity, float z = 0)
 			{
@@ -130,12 +131,12 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct BoxCast2D : IDrawableCast
+		public readonly struct BoxCast2D : IDrawableCast
 		{
-			public Box2D Box;
-			public Vector2 Direction;
-			public float MaxDistance;
-			public RaycastHit2D? Hit;
+			public readonly Box2D Box;
+			public readonly Vector2 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit2D? Hit;
 
 			public BoxCast2D(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float z = 0)
 			{
@@ -154,11 +155,12 @@ namespace Vertx.Debugging
 				Box.Draw(commandBuilder, castColor, duration);
 				Vector3 offset = Direction * MaxDistance;
 
-				Vector3 origin = Box.GetPoint(Box2D.Point.Origin);
-				Vector3 tr = Box.GetPoint(Box2D.Point.TopRight);
-				Vector3 bl = Box.GetPoint(Box2D.Point.BottomLeft);
-				Vector3 tl = Box.GetPoint(Box2D.Point.TopLeft);
-				Vector3 br = Box.GetPoint(Box2D.Point.BottomRight);
+				Matrix4x4 boxMatrix = Box.Matrix;
+				Vector3 origin = Box2D.GetPoint(boxMatrix, Box2D.Point.Origin);
+				Vector3 tr = Box2D.GetPoint(boxMatrix, Box2D.Point.TopRight);
+				Vector3 bl = Box2D.GetPoint(boxMatrix, Box2D.Point.BottomLeft);
+				Vector3 tl = Box2D.GetPoint(boxMatrix, Box2D.Point.TopLeft);
+				Vector3 br = Box2D.GetPoint(boxMatrix, Box2D.Point.BottomRight);
 
 				float dotTR = Vector2.Dot(Direction, tr - origin);
 				float dotTL = Vector2.Dot(Direction, tl - origin);
@@ -177,11 +179,11 @@ namespace Vertx.Debugging
 
 				// Draw the edges that make up the end of the cast. This better indicates the cast direction without having to colour it,
 				// and without drawing a whole box where there's not really explanatory value in seeing it.
-				Box2D endBox = Box.GetTranslated(offset);
+				Matrix4x4 endBox = Box.GetTranslated(offset).Matrix;
 				for (int i = 0; i < 4; i++)
 				{
 					var point = (Box2D.Point)(1 << i);
-					Vector3 edge = Box.GetPoint(point);
+					Vector3 edge = Box2D.GetPoint(boxMatrix, point);
 					if (Vector2.Dot(Direction, edge - origin) <= 0)
 						continue;
 					int min = i - 1;
@@ -190,8 +192,8 @@ namespace Vertx.Debugging
 					int max = i + 1;
 					if (max > 3)
 						max = 0;
-					Vector3 p1 = endBox.GetPoint(point | (Box2D.Point)(1 << min));
-					Vector3 p2 = endBox.GetPoint(point | (Box2D.Point)(1 << max));
+					Vector3 p1 = Box2D.GetPoint(endBox, point | (Box2D.Point)(1 << min));
+					Vector3 p2 = Box2D.GetPoint(endBox, point | (Box2D.Point)(1 << max));
 					commandBuilder.AppendLine(new Line(p1, p2), castColor, duration);
 				}
 
@@ -202,11 +204,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct BoxCast2DAll : IDrawableCast
+		public readonly struct BoxCast2DAll : IDrawableCast
 		{
-			public BoxCast2D BoxCast;
-			public RaycastHit2D[] Results;
-			public int ResultCount;
+			public readonly BoxCast2D BoxCast;
+			public readonly RaycastHit2D[] Results;
+			public readonly int ResultCount;
 
 			public BoxCast2DAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, int resultsCount, float maxDistance = Mathf.Infinity, float z = 0)
 			{
@@ -230,12 +232,12 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct CapsuleCast2D : IDrawableCast
+		public readonly struct CapsuleCast2D : IDrawableCast
 		{
-			public Capsule2D Capsule;
-			public Vector2 Direction;
-			public float MaxDistance;
-			public RaycastHit2D? Hit;
+			public readonly Capsule2D Capsule;
+			public readonly Vector2 Direction;
+			public readonly float MaxDistance;
+			public readonly RaycastHit2D? Hit;
 
 			public CapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float z = 0)
 			{
@@ -289,11 +291,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct CapsuleCast2DAll : IDrawableCast
+		public readonly struct CapsuleCast2DAll : IDrawableCast
 		{
-			public CapsuleCast2D CapsuleCast;
-			public RaycastHit2D[] Results;
-			public int ResultCount;
+			public readonly CapsuleCast2D CapsuleCast;
+			public readonly RaycastHit2D[] Results;
+			public readonly int ResultCount;
 
 			public CapsuleCast2DAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, int count, float maxDistance = Mathf.Infinity, float z = 0)
 			{

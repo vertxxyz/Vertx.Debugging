@@ -1,17 +1,18 @@
-// ReSharper disable ConvertToNullCoalescingCompoundAssignment
-
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+// ReSharper disable ConvertToNullCoalescingCompoundAssignment
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
-		public struct Point2D : IDrawable
+		public readonly struct Point2D : IDrawable
 		{
-			public Vector3 Position;
-			public float Scale;
+			public readonly Vector3 Position;
+			public readonly float Scale;
 
 			public Point2D(Vector2 point, float z, float scale = 0.3f)
 			{
@@ -32,10 +33,10 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Ray2D : IDrawable
+		public readonly struct Ray2D : IDrawable
 		{
-			public Vector3 Origin;
-			public Vector2 Direction;
+			public readonly Vector3 Origin;
+			public readonly Vector2 Direction;
 
 			public Ray2D(Vector3 origin, Vector2 direction)
 			{
@@ -58,10 +59,10 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Arrow2D : IDrawable
+		public readonly struct Arrow2D : IDrawable
 		{
-			public Vector3 Origin;
-			public Vector2 Direction;
+			public readonly Vector3 Origin;
+			public readonly Vector2 Direction;
 
 			public Arrow2D(Vector3 origin, Vector2 direction)
 			{
@@ -103,10 +104,10 @@ namespace Vertx.Debugging
 #endif
 		}
 		
-		public struct ArrowStrip2D : IDrawable
+		public readonly struct ArrowStrip2D : IDrawable
 		{
-			public IEnumerable<Vector2> Points;
-			public float Z;
+			public readonly IEnumerable<Vector2> Points;
+			public readonly float Z;
 
 			public ArrowStrip2D(IEnumerable<Vector2> points, float z = 0)
 			{
@@ -135,11 +136,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Axis2D : IDrawable
+		public readonly struct Axis2D : IDrawable
 		{
-			public Vector3 Position;
-			public float Angle;
-			public bool ShowArrowHeads;
+			public readonly Vector3 Position;
+			public readonly float Angle;
+			public readonly bool ShowArrowHeads;
 
 			public Axis2D(Vector2 origin, float angle, float z = 0, bool showArrowHeads = true)
 			{
@@ -165,16 +166,13 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Circle2D : IDrawable
+		public readonly struct Circle2D : IDrawable
 		{
-			private Circle _circle;
+			private readonly Circle _circle;
 
-			public Matrix4x4 Matrix
-			{
-				get => _circle.Matrix;
-				set => _circle = new Circle(value);
-			}
-
+			public Matrix4x4 Matrix => _circle.Matrix;
+			// set => _circle = new Circle(value);
+			
 			public Circle2D(Matrix4x4 matrix) => _circle = new Circle(matrix);
 
 			public Circle2D(Vector2 origin, float radius, float z = 0)
@@ -189,9 +187,9 @@ namespace Vertx.Debugging
 		/// This is 2D, the rotation or matrix used will align the arc facing right, aligned with XY.<br/>
 		/// Use the helper constructors to create an Arc aligned how you require.
 		/// </summary>
-		public struct Arc2D : IDrawable
+		public readonly struct Arc2D : IDrawable
 		{
-			public Arc Arc;
+			public readonly Arc Arc;
 
 			public Arc2D(Vector2 origin, float rotationDegrees, float radius, Angle angle, float z = 0) 
 				=> Arc = new Arc(new Vector3(origin.x, origin.y, z), Quaternion.AngleAxis(rotationDegrees, Vector3.forward), radius, angle);
@@ -203,11 +201,11 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Box2D : IDrawable
+		public readonly struct Box2D : IDrawable
 		{
-			public Matrix4x4 Matrix;
+			public readonly Matrix4x4 Matrix;
 
-			private Box2D(Matrix4x4 matrix) => Matrix = matrix;
+			internal Box2D(Matrix4x4 matrix) => Matrix = matrix;
 
 			public Box2D(Vector2 origin, Vector2 size, float angle = 0, float z = 0) => Matrix = Matrix4x4.TRS(new Vector3(origin.x, origin.y, z), Quaternion.AngleAxis(angle, Vector3.forward), size);
 
@@ -231,13 +229,13 @@ namespace Vertx.Debugging
 				BottomLeft = Bottom | Left
 			}
 
-			internal Vector3 GetPoint(Point point)
+			internal static Vector3 GetPoint(Matrix4x4 matrix, Point point)
 			{
 				Vector3 position = new Vector3(
 					(point & Point.Left) != 0 ? -0.5f : 0 + (point & Point.Right) != 0 ? 0.5f : 0,
 					(point & Point.Bottom) != 0 ? -0.5f : 0 + (point & Point.Top) != 0 ? 0.5f : 0
 				);
-				return Matrix.MultiplyPoint3x4(position);
+				return matrix.MultiplyPoint3x4(position);
 			}
 
 #if UNITY_EDITOR
@@ -245,9 +243,9 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Area2D : IDrawable
+		public readonly struct Area2D : IDrawable
 		{
-			public Vector3 PointA, PointB;
+			public readonly Vector3 PointA, PointB;
 
 			public Area2D(Vector2 pointA, Vector2 pointB, float z = 0)
 			{
@@ -291,16 +289,18 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Capsule2D : IDrawable
+		public readonly struct Capsule2D : IDrawable
 		{
 			public Vector3 PointA => _pointA;
 			public Vector3 PointB => _pointB;
 			public float Radius => _radius;
 
+			// ReSharper disable InconsistentNaming
 			internal readonly Vector3 _pointA, _pointB;
 			internal readonly float _radius;
 			internal readonly Vector3 _verticalDirection;
 			internal readonly Vector3 _scaledLeft;
+			// ReSharper restore InconsistentNaming
 
 			public enum Direction
 			{
@@ -359,11 +359,11 @@ namespace Vertx.Debugging
 				GetRotationCoefficients(angle, out float s, out float c);
 				_verticalDirection = RotateUsingCoefficients(Vector3.up, s, c);
 				Vector2 verticalOffset = RotateUsingCoefficients(new Vector2(0, vertical), s, c);
-				_pointA = GetVector3(point + verticalOffset, z);
-				_pointB = GetVector3(point - verticalOffset, z);
+				_pointA = GetVector3(point + verticalOffset);
+				_pointB = GetVector3(point - verticalOffset);
 				_scaledLeft = new Vector2(c, s) * _radius;
 
-				Vector3 GetVector3(Vector2 v2, float z) => new Vector3(v2.x, v2.y, z);
+				Vector3 GetVector3(Vector2 v2) => new Vector3(v2.x, v2.y, z);
 			}
 
 			internal Capsule2D(Vector3 pointA, Vector3 pointB, float radius)
@@ -388,12 +388,12 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		public struct Spiral2D : IDrawable
+		public readonly struct Spiral2D : IDrawable
 		{
-			public Vector3 Origin;
-			public float Radius;
-			public float Angle;
-			public float Revolutions;
+			public readonly Vector3 Origin;
+			public readonly float Radius;
+			public readonly float Angle;
+			public readonly float Revolutions;
 
 			public Spiral2D(Vector2 origin, float radius, float angle = 0, float revolutions = 3, float z = 0)
 			{

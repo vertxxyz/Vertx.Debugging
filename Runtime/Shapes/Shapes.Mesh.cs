@@ -5,16 +5,19 @@ using Vertx.Debugging.Internal;
 #else
 using UnityEngine.Pool;
 #endif
+// ReSharper disable ConvertToNullCoalescingCompoundAssignment
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Vertx.Debugging
 {
 	public static partial class Shapes
 	{
-		public struct MeshNormals : IDrawable
+		public readonly struct MeshNormals : IDrawable
 		{
-			public Mesh Mesh;
-			public Matrix4x4 Matrix;
-			public float ArrowLength;
+			public readonly Mesh Mesh;
+			public readonly Matrix4x4 Matrix;
+			public readonly float ArrowLength;
 
 			public MeshNormals(Mesh mesh, Matrix4x4 matrix4X4, float arrowLength)
 			{
@@ -38,7 +41,8 @@ namespace Vertx.Debugging
 					return;
 				}
 
-				var unscaledMatrix = Matrix4x4.TRS(Matrix.MultiplyPoint(Vector3.zero), Matrix.rotation, Vector3.one);
+				Matrix4x4 matrix = Matrix;
+				var unscaledMatrix = Matrix4x4.TRS(matrix.MultiplyPoint(Vector3.zero), matrix.rotation, Vector3.one);
 
 				using (ListPool<Vector3>.Get(out List<Vector3> vertices))
 				using (ListPool<Vector3>.Get(out List<Vector3> normals))
@@ -46,7 +50,7 @@ namespace Vertx.Debugging
 					Mesh.GetVertices(vertices);
 					Mesh.GetNormals(normals);
 					for (int i = 0; i < vertices.Count; i++)
-						new Arrow(Matrix.MultiplyPoint(vertices[i]), unscaledMatrix.MultiplyVector(normals[i]) * ArrowLength).Draw(commandBuilder, color, duration);
+						new Arrow(matrix.MultiplyPoint(vertices[i]), unscaledMatrix.MultiplyVector(normals[i]) * ArrowLength).Draw(commandBuilder, color, duration);
 				}
 			}
 #endif

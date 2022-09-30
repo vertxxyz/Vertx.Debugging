@@ -127,8 +127,10 @@ bool closest_plane_circle_intersection(
     float3 i13 = circleCenter + circlePerpendicular * i1.x + circlePerpendicular2 * i1.y;
     float3 i23 = circleCenter + circlePerpendicular * i2.x + circlePerpendicular2 * i2.y;
     // Find the closest intersection to our input.
-    float d1 = distance(i1, intersection);
-    float d2 = distance(i2, intersection);
+    i1 -= intersection;
+    i2 -= intersection;
+    float d1 = dot(i1, i1);
+    float d2 = dot(i2, i2);
     intersection = d1 < d2 ? i13 : i23;
     return true;
 }

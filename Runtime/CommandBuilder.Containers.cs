@@ -205,7 +205,7 @@ namespace Vertx.Debugging
 				_dirty = true;
 			}
 
-			public void Add(T element, Color color, Shapes.DrawModifications modifications, float duration)
+			public void Add(in T element, Color color, Shapes.DrawModifications modifications, float duration)
 			{
 				EnsureCreated();
 				_elements.List.Add(element);
