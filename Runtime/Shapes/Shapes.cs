@@ -500,28 +500,51 @@ namespace Vertx.Debugging
 		}
 
 		/// <summary>
-		/// An outline is a special structure that creates a line that is correctly bounded against a capsule, outlining it.
+		/// An outline is a special structure:<br/>
+		/// - Handles straight lines that are correctly bounded against a capsule, outlining it.<br/>
+		/// - Creates single-sided lines for capsules;<br/>
+		/// - Handles the lines between sphere and capsule casts.<br/>
 		/// </summary>
 		internal readonly struct Outline : IDrawable
 		{
-			public readonly Vector3 A, B, Radius;
+			public readonly Vector3 A, B, C;
 
 			public Outline(Vector3 a, Vector3 b, float radius)
 			{
 				A = a;
 				B = b;
-				Radius = new Vector3(radius, 0, 0);
+				C = new Vector3(radius, 0, 0);
 			}
 
-			public Outline(Vector3 a, Vector3 b, Vector3 normal)
+			public Outline(Vector3 a, Vector3 b, Vector3 c)
 			{
 				A = a;
 				B = b;
-				Radius = normal;
+				C = c;
 			}
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendOutline(this, color, duration);
+#endif
+		}
+		
+		/// <summary>
+		/// Cast is a special structure:<br/>
+		/// - Used in combination with a geometry shader for the outlines of a box cast.
+		/// </summary>
+		internal readonly struct Cast : IDrawable
+		{
+			public readonly Matrix4x4 Matrix;
+			public readonly Vector3 Vector;
+
+			public Cast(Matrix4x4 matrix, Vector3 vector)
+			{
+				Matrix = matrix;
+				Vector = vector;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendCast(this, color, duration);
 #endif
 		}
 	}

@@ -24,7 +24,12 @@ namespace Vertx.Debugging
 				Duration = 0;
 			}
 		}
+		
+		protected abstract bool ShouldDraw();
 
+		protected abstract void Draw();
+		
+#if UNITY_EDITOR
 		private void OnDrawGizmos()
 		{
 			if (_drawOnlyWhenSelected || !enabled || !ShouldDraw())
@@ -41,14 +46,11 @@ namespace Vertx.Debugging
 			Draw();
 		}
 
-		protected abstract bool ShouldDraw();
-
-		protected abstract void Draw();
-		
 		// ReSharper disable once Unity.RedundantEventFunction
-		protected virtual void OnDisable()
+		private void OnDisable()
 		{
 			// Only here to get the enabled tick-box.
 		}
+#endif
 	}
 }

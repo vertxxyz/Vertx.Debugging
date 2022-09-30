@@ -1,4 +1,4 @@
-Shader "Hidden/Vertx/Line"
+Shader "Hidden/Vertx/Cast"
 {
 	Properties {}
 	SubShader
@@ -17,14 +17,16 @@ Shader "Hidden/Vertx/Line"
 		{
 			ZTest Greater
 			CGPROGRAM
+			#pragma require geometry
 			#pragma vertex vert
+			#pragma geometry geo
 			#pragma fragment frag
 			#pragma multi_compile_instancing
-			#include "LineShared.cginc"
+			#include "CastShared.cginc"
 			#pragma instancing_options assumeuniformscaling nolightmap nolightprobe nolodfade
 			#pragma target 4.5
 			
-			fixed4 frag(v2f i) : SV_Target
+			fixed4 frag(fragInput i) : SV_Target
 			{
 				i.color.a *= 0.25;
 				return i.color;
@@ -36,14 +38,16 @@ Shader "Hidden/Vertx/Line"
 		{
 			ZTest LEqual
 			CGPROGRAM
+			#pragma require geometry
 			#pragma vertex vert
+			#pragma geometry geo
 			#pragma fragment frag
 			#pragma multi_compile_instancing
-			#include "LineShared.cginc"
+			#include "CastShared.cginc"
 			#pragma instancing_options assumeuniformscaling nolightmap nolightprobe nolodfade
 			#pragma target 4.5
 			
-			fixed4 frag(v2f i) : SV_Target
+			fixed4 frag(fragInput i) : SV_Target
 			{
 				return i.color;
 			}

@@ -212,6 +212,8 @@ namespace Vertx.Debugging
 			public Box2D(Vector2 origin, Vector2 size, float angle = 0, float z = 0) => Matrix = Matrix4x4.TRS(new Vector3(origin.x, origin.y, z), Quaternion.AngleAxis(angle, Vector3.forward), size);
 
 			public Box2D(Vector3 origin, Vector2 size, float angle = 0) => Matrix = Matrix4x4.TRS(origin, Quaternion.AngleAxis(angle, Vector3.forward), size);
+			
+			public Box2D(Vector3 origin, Quaternion rotation, Vector2 size) => Matrix = Matrix4x4.TRS(origin, rotation, size);
 
 			public Box2D GetTranslated(Vector3 translation) => new Box2D(Matrix4x4.Translate(translation) * Matrix);
 

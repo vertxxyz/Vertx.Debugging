@@ -179,6 +179,8 @@ namespace Vertx.Debugging
 				if (Hit.HasValue)
 					Box.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
 
+				Vector3 offset = Direction * MaxDistance;
+				
 				// Draw connectors
 				Vector3 position = Box.Matrix.MultiplyPoint3x4(Vector3.zero);
 				Vector3 up = Box.Matrix.MultiplyPoint3x4(new Vector3(0, 1, 0)) - position;
@@ -190,10 +192,8 @@ namespace Vertx.Debugging
 					Vector3.Dot(up, Direction),
 					Vector3.Dot(forward, Direction)
 				);
-				
-				Vector3 offset = Direction * MaxDistance;
 
-				foreach (var point in BoxUtility.Points)
+				/*foreach (var point in BoxUtility.Points)
 				{
 					BoxUtility.Direction matchedDirections = point.Direction & direction;
 					if (matchedDirections == 0)
@@ -201,9 +201,10 @@ namespace Vertx.Debugging
 					int count = BoxUtility.CountDirections(matchedDirections);
 					if (count != 1 && count != 2)
 						continue;
-					Vector3 coordinate = Box.Matrix.MultiplyPoint3x4(point.Coordinate);
-					commandBuilder.AppendLine(new Line(coordinate, coordinate + offset), castColor, duration);
-				}
+					Vector3 coordinate = Box.Matrix.MultiplyPoint3x4(point.Coordinate) - position;
+					commandBuilder.AppendOutline(new Outline(position, offset, coordinate), castColor, duration, DrawModifications.Custom2);
+				}*/
+				commandBuilder.AppendCast(new Cast(Box.Matrix, offset), castColor, duration);
 				
 				// Draw box end
 				var boxEnd = Box.GetTranslated(offset);
@@ -214,7 +215,7 @@ namespace Vertx.Debugging
 						continue;
 					Vector3 a = boxEnd.Matrix.MultiplyPoint3x4(edge.A);
 					Vector3 b = boxEnd.Matrix.MultiplyPoint3x4(edge.B);
-					commandBuilder.AppendLine(new Line(a, b), castColor, duration);
+					commandBuilder.AppendOutline(new Outline(a, b, boxEnd.Matrix.MultiplyVector(edge.A + edge.B)), castColor, duration, DrawModifications.Custom2);
 				}
 			}
 #endif

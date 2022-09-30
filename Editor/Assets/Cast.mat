@@ -20,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Line
-  m_Shader: {fileID: 4800000, guid: 48c771053493ce34eab487f1fb776840, type: 3}
+  m_Name: Cast
+  m_Shader: {fileID: 4800000, guid: 8a3e40dd1f0a48878a55169e8cde0b43, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

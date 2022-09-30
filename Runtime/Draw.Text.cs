@@ -18,7 +18,7 @@ namespace Vertx.Debugging
 			{
 				if (s_Font != null)
 					return s_Font;
-				return s_Font = AssetDatabase.LoadAssetAtPath<Font>("Packages/com.vertx.debugging/Editor/JetbrainsMono-Regular.ttf");
+				return s_Font = AssetDatabase.LoadAssetAtPath<Font>("Packages/com.vertx.debugging/Editor/Assets/JetbrainsMono-Regular.ttf");
 			}
 		}
 

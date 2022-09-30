@@ -1,8 +1,7 @@
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 using Vertx.Debugging.Internal;
-
-#if UNITY_EDITOR
 
 namespace Vertx.Debugging
 {
@@ -75,6 +74,12 @@ namespace Vertx.Debugging
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Outlines.Add(outline, color, modifications, duration);
+		}
+		
+		internal void AppendCast(Shapes.Cast cast, Color color, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
+		{
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
+			group.Casts.Add(cast, color, modifications, duration);
 		}
 
 		public void AppendText(Shapes.Text text, Color backgroundColor, Color textColor, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)

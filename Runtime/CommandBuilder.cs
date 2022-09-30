@@ -50,6 +50,7 @@ namespace Vertx.Debugging
 			public readonly ShapeBuffersWithData<Shapes.Box> Boxes;
 			public readonly ShapeBuffersWithData<Shapes.Box2D> Box2Ds;
 			public readonly ShapeBuffersWithData<Shapes.Outline> Outlines;
+			public readonly ShapeBuffersWithData<Shapes.Cast> Casts;
 
 			private CommandBuffer _commandBuffer;
 
@@ -61,6 +62,7 @@ namespace Vertx.Debugging
 				Boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer", usesDurations);
 				Box2Ds = new ShapeBuffersWithData<Shapes.Box2D>("mesh_buffer", usesDurations);
 				Outlines = new ShapeBuffersWithData<Shapes.Outline>("outline_buffer", usesDurations);
+				Casts = new ShapeBuffersWithData<Shapes.Cast>("cast_buffer", usesDurations);
 			}
 			
 			public CommandBuffer ReadyResources()
@@ -85,6 +87,7 @@ namespace Vertx.Debugging
 				Boxes.Clear();
 				Box2Ds.Clear();
 				Outlines.Clear();
+				Casts.Clear();
 			}
 
 			public void Dispose()
@@ -94,6 +97,7 @@ namespace Vertx.Debugging
 				Boxes.Dispose();
 				Box2Ds.Dispose();
 				Outlines.Dispose();
+				Casts.Dispose();
 				_commandBuffer?.Dispose();
 			}
 		}
@@ -216,13 +220,15 @@ namespace Vertx.Debugging
 			int oldBoxCount = QueueRemovalJob(_defaultGroup.Boxes, dependency, out JobHandle? boxHandle);
 			int oldBox2DCount = QueueRemovalJob(_defaultGroup.Box2Ds, dependency, out JobHandle? box2DHandle);
 			int oldOutlineCount = QueueRemovalJob(_defaultGroup.Outlines, dependency, out JobHandle? outlineHandle);
+			int oldMatrixAndVectorsCount = QueueRemovalJob(_defaultGroup.Casts, dependency, out JobHandle? castsHandle);
 
 			JobHandle? coreHandle = null;
 			if (!CombineDependencies(ref coreHandle, lineHandle) & // Purposely an &, so each branch gets executed.
 			    !CombineDependencies(ref coreHandle, arcHandle) &
 			    !CombineDependencies(ref coreHandle, boxHandle) &
 			    !CombineDependencies(ref coreHandle, box2DHandle) &
-			    !CombineDependencies(ref coreHandle, outlineHandle))
+			    !CombineDependencies(ref coreHandle, outlineHandle) &
+			    !CombineDependencies(ref coreHandle, castsHandle))
 				coreHandle = dependency;
 
 			if (coreHandle.HasValue)
@@ -243,6 +249,9 @@ namespace Vertx.Debugging
 
 				if (_defaultGroup.Outlines.Count != oldOutlineCount)
 					_defaultGroup.Outlines.SetDirty();
+				
+				if (_defaultGroup.Casts.Count != oldMatrixAndVectorsCount)
+					_defaultGroup.Casts.SetDirty();
 			}
 
 			int QueueRemovalJob<T>(ShapeBuffersWithData<T> data, JobHandle? handleIn, out JobHandle? handleOut) where T : unmanaged
@@ -397,10 +406,13 @@ namespace Vertx.Debugging
 		private enum RenderingType
 		{
 			Unknown = 0,
+			// Call origin
 			Default = 1,
 			Gizmos = 1 << 1,
+			// Rendering view
 			Scene = 1 << 2,
 			Game = 1 << 3,
+			// -
 			GizmosAndGame = Gizmos | Game
 		}
 		
@@ -462,6 +474,7 @@ namespace Vertx.Debugging
 				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes);
 				render |= RenderShape(AssetsUtility.Box2D, AssetsUtility.DefaultMaterial, group.Box2Ds);
 				render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, group.Outlines);
+				render |= RenderShape(AssetsUtility.Line, AssetsUtility.CastMaterial, group.Casts);
 
 				bool RenderShape<T>(
 					AssetsUtility.Asset<Mesh> mesh,

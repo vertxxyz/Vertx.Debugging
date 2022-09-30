@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 #if UNITY_2020_1_OR_NEWER
 #define HAS_GRAPHICS_BUFFER
 #endif
@@ -237,3 +238,4 @@ namespace Vertx.Debugging
 		}
 	}
 }
+#endif

@@ -23,7 +23,7 @@ namespace Vertx.Debugging
 				}
 			}
 
-			public Asset(string name, string extension = "asset") => _path = $"Packages/com.vertx.debugging/Runtime/Assets/{name}.{extension}";
+			public Asset(string name, string extension = "asset") => _path = $"Packages/com.vertx.debugging/Editor/Assets/{name}.{extension}";
 		}
 
 		public static readonly Asset<Mesh> Line = new Asset<Mesh>("Line");
@@ -35,5 +35,6 @@ namespace Vertx.Debugging
 		public static readonly Asset<Material> ArcMaterial = new Asset<Material>("Arc", "mat");
 		public static readonly Asset<Material> BoxMaterial = new Asset<Material>("Box", "mat");
 		public static readonly Asset<Material> OutlineMaterial = new Asset<Material>("Outline", "mat");
+		public static readonly Asset<Material> CastMaterial = new Asset<Material>("Cast", "mat");
 	}
 }
