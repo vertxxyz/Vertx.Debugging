@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
@@ -38,3 +39,4 @@ namespace Vertx.Debugging
 		public static readonly Asset<Material> CastMaterial = new Asset<Material>("Cast", "mat");
 	}
 }
+#endif

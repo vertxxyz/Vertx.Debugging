@@ -108,7 +108,7 @@ namespace Vertx.Debugging
 		private VertxDebuggingRendererFeature _pass;
 #endif
 		private bool _disposeIsQueued;
-		private double _timeThisFrame;
+		private float _timeThisFrame;
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
@@ -191,7 +191,7 @@ namespace Vertx.Debugging
 				RemoveShapesByDuration(Time.deltaTime, null);
 			}
 
-			_timeThisFrame = Time.timeAsDouble;
+			_timeThisFrame = Time.time;
 		}
 
 		private static bool CombineDependencies(ref JobHandle? handle, JobHandle? other)
@@ -514,7 +514,7 @@ namespace Vertx.Debugging
 			{
 				// Time from the last 
 				// ReSharper disable once ArrangeRedundantParentheses
-				duration += (float)((Time.fixedTimeAsDouble + Time.fixedDeltaTime) - _timeThisFrame);
+				duration += (Time.fixedTime + Time.fixedDeltaTime) - _timeThisFrame;
 			}
 
 			return duration;

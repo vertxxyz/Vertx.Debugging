@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 #if VERTX_URP
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -42,4 +43,5 @@ namespace Vertx.Debugging
 		public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) => AddRenderPasses(renderer);
 	}
 }
+#endif
 #endif
