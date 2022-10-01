@@ -22,7 +22,13 @@ namespace Vertx.Debugging
 
 #if UNITY_EDITOR
 
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -53,7 +59,13 @@ namespace Vertx.Debugging
 			public RaycastAll(UnityEngine.Ray ray, RaycastHit[] results, float distance = Mathf.Infinity) : this(ray, results, results.Length, distance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -89,7 +101,13 @@ namespace Vertx.Debugging
 			public SphereCast(UnityEngine.Ray ray, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity) : this(ray.origin, ray.direction, radius, hit, maxDistance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -134,7 +152,13 @@ namespace Vertx.Debugging
 			public SphereCastAll(UnityEngine.Ray ray, float radius, RaycastHit[] results, float distance = Mathf.Infinity) : this(ray, radius, results, results.Length, distance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -171,7 +195,13 @@ namespace Vertx.Debugging
 				: this(center, halfExtents, direction, hit, Quaternion.identity, maxDistance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -252,7 +282,13 @@ namespace Vertx.Debugging
 				: this(center, halfExtents, direction, results, results.Length, Quaternion.identity, maxDistance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -282,7 +318,13 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -323,7 +365,13 @@ namespace Vertx.Debugging
 				: this(capsule, direction, results, results.Length, maxDistance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{

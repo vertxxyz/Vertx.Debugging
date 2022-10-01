@@ -15,7 +15,10 @@ namespace Vertx.Debugging
 			public readonly Vector3 Position;
 			public readonly object Value;
 			public readonly Camera Camera;
-
+			
+			/// <param name="position">Position to anchor the text to.</param>
+			/// <param name="value">The value to be converted to a string.</param>
+			/// <param name="camera">If a camera is not provided, the text will only draw in the Scene view.</param>
 			public Text(Vector3 position, object value, Camera camera = null)
 			{
 				Camera = camera;
@@ -40,10 +43,13 @@ namespace Vertx.Debugging
 		{
 			public readonly object Value;
 
+			/// <param name="value">The value to be converted to a string.</param>
 			public ScreenText(object value) => Value = value;
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, Color.white, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
+			
 			public void Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
 				=> commandBuilder.AppendText(new Text(default, Value), backgroundColor, textColor, duration, DrawModifications.Custom);
 #endif

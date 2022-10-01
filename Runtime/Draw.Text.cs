@@ -4,6 +4,9 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using static Vertx.Debugging.Shapes;
 using UnityEditor;
+#if !UNITY_2022_1_OR_NEWER
+using System.Reflection;
+#endif
 
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
@@ -131,7 +134,7 @@ namespace Vertx.Debugging
 				return GizmoUtility.use3dIcons;
 #else
 				if (s_use3dGizmos == null)
-					s_use3dGizmos = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), Type.GetType("UnityEditor.AnnotationUtility,UnityEditor").GetProperty("use3dGizmos").GetMethod);
+					s_use3dGizmos = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), Type.GetType("UnityEditor.AnnotationUtility,UnityEditor").GetProperty("use3dGizmos", BindingFlags.Static | BindingFlags.NonPublic).GetMethod);
 				return s_use3dGizmos();
 #endif
 			}
@@ -145,7 +148,7 @@ namespace Vertx.Debugging
 				return GizmoUtility.iconSize;
 #else
 				if (s_iconSize == null)
-					s_iconSize = (Func<float>)Delegate.CreateDelegate(typeof(Func<float>), Type.GetType("UnityEditor.AnnotationUtility,UnityEditor").GetProperty("iconSize").GetMethod);
+					s_iconSize = (Func<float>)Delegate.CreateDelegate(typeof(Func<float>), Type.GetType("UnityEditor.AnnotationUtility,UnityEditor").GetProperty("iconSize", BindingFlags.Static | BindingFlags.NonPublic).GetMethod);
 				return s_iconSize();
 #endif
 			}

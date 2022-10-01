@@ -18,8 +18,9 @@ D.raw(new Shapes.Sphere(position, radius), color, duration);
 // or draw a red sphere if something was.
 D.raw(new Shapes.Sphere(position, radius), hit, duration);
 
-// Draw SphereCast in green, with red spheres where hits were detected.
-D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10), Shapes.CastColor, Shapes.HitColor, duration);
+// Casts draw in green, with red where hits were detected if no color is provided.
+// Cast color and hit color can be overrided manually.
+D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10), duration);
 ```
 
 > **Note**  

@@ -24,7 +24,12 @@ namespace Vertx.Debugging
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, color, duration);
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -58,7 +63,12 @@ namespace Vertx.Debugging
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, color, duration);
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -91,7 +101,13 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -117,7 +133,13 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -148,7 +170,13 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -218,7 +246,13 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -249,7 +283,13 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
@@ -305,7 +345,13 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{

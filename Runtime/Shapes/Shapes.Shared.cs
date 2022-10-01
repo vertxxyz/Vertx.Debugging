@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
@@ -150,6 +151,11 @@ namespace Vertx.Debugging
 
 			return false;
 		}
+
+		// ReSharper disable CompareOfFloatsByEqualityOperator
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static bool IsWhite(Color c) => c.r == 1 && c.g == 1 && c.b == 1 && c.a == 1;
+		// ReSharper restore CompareOfFloatsByEqualityOperator
 
 		public static class BoxUtility
 		{
