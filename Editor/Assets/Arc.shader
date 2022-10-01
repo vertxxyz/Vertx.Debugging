@@ -29,7 +29,7 @@ Shader "Hidden/Vertx/Arc"
 				// turns - uv.v
 				clip(i.uvAndTurns.z - i.uvAndTurns.y);
 
-				i.color.a *= 0.25;
+				i.color.a *= Z_GREATER_FADE;
 				
 				return i.color;
 			}

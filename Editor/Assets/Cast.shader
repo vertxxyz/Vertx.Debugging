@@ -28,7 +28,7 @@ Shader "Hidden/Vertx/Cast"
 			
 			fixed4 frag(fragInput i) : SV_Target
 			{
-				i.color.a *= 0.25;
+				i.color.a *= Z_GREATER_FADE;
 				return i.color;
 			}
 			ENDCG

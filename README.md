@@ -39,7 +39,7 @@ using static Vertx.Debugging.Shapes;
 ### General
 | Name         | Description                                                                                              |
 |--------------|----------------------------------------------------------------------------------------------------------|
-| `Text`       | A label in the scene at the provided position.                                                           |
+| `Text`       | A label in the scene at the provided position. (Text respects 3D gizmo fade distance)                    |
 | `ScreenText` | A label in the top left of the view.<br>(Order is not maintained when mixing durations with other text). |
 
 

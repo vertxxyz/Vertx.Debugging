@@ -39,9 +39,11 @@ namespace Vertx.Debugging
 		private readonly int _unityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
 		private readonly BufferGroup _defaultGroup = new BufferGroup(true, "Vertx.Debugging");
 		private readonly BufferGroup _gizmosGroup = new BufferGroup(false, "Vertx.Debugging.Gizmos");
-		private readonly TextDataLists _texts = new TextDataLists();
 		private Camera _lastRenderingCamera;
 
+		internal TextDataLists DefaultTexts => _defaultGroup.Texts;
+		internal TextDataLists GizmoTexts => _gizmosGroup.Texts;
+		
 		private sealed class BufferGroup : IDisposable
 		{
 			private readonly string _commandBufferName;
@@ -51,6 +53,7 @@ namespace Vertx.Debugging
 			public readonly ShapeBuffersWithData<Shapes.Box2D> Box2Ds;
 			public readonly ShapeBuffersWithData<Shapes.Outline> Outlines;
 			public readonly ShapeBuffersWithData<Shapes.Cast> Casts;
+			public readonly TextDataLists Texts = new TextDataLists();
 
 			private CommandBuffer _commandBuffer;
 
@@ -88,6 +91,7 @@ namespace Vertx.Debugging
 				Box2Ds.Clear();
 				Outlines.Clear();
 				Casts.Clear();
+				Texts.Clear();
 			}
 
 			public void Dispose()
@@ -101,9 +105,7 @@ namespace Vertx.Debugging
 				_commandBuffer?.Dispose();
 			}
 		}
-
-		internal TextDataLists Texts => _texts;
-
+		
 #if VERTX_URP
 		private VertxDebuggingRendererFeature _pass;
 #endif
@@ -213,7 +215,7 @@ namespace Vertx.Debugging
 
 			Profiler.BeginSample(RemoveShapesByDurationProfilerName);
 			
-			_texts.RemoveByDeltaTime(deltaTime);
+			_defaultGroup.Texts.RemoveByDeltaTime(deltaTime);
 			
 			int oldLineCount = QueueRemovalJob(_defaultGroup.Lines, dependency, out JobHandle? lineHandle);
 			int oldArcCount = QueueRemovalJob(_defaultGroup.Arcs, dependency, out JobHandle? arcHandle);

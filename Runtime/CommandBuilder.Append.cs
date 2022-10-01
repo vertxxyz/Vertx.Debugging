@@ -118,14 +118,8 @@ namespace Vertx.Debugging
 
 		public void AppendText(in Shapes.Text text, Color backgroundColor, Color textColor, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
 		{
-			if (UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos)
-			{
-				Debug.LogWarning("Drawing Text is unsupported from a Gizmos context.");
-				return;
-			}
-
-			if (!InitialiseAndGetGroup(ref duration, out _)) return;
-			_texts.Add(text, backgroundColor, textColor, modifications, duration);
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
+			group.Texts.Add(text, backgroundColor, textColor, modifications, duration);
 			// Force the runtime object to exist
 			_ = DrawRuntimeBehaviour.Instance;
 		}

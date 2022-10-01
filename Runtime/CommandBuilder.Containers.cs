@@ -96,8 +96,8 @@ namespace Vertx.Debugging
 					}, null, false, defaultCapacity, maxSize) { }
 			}
 
+			private static readonly TextDataPool _textDataPool = new TextDataPool();
 			private readonly List<float> _durations = new List<float>();
-			private readonly TextDataPool _textDataPool = new TextDataPool();
 			private readonly List<Shapes.TextData> _elements = new List<Shapes.TextData>();
 
 			public int Count => _elements.Count;
@@ -107,7 +107,7 @@ namespace Vertx.Debugging
 			public void Add(in Shapes.Text text, Color backgroundColor, Color textColor, Shapes.DrawModifications modifications, float duration)
 			{
 				Shapes.TextData element = _textDataPool.Get();
-				element.Position = text.Position;
+				element.Position = UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? Gizmos.matrix.MultiplyPoint3x4(text.Position) : text.Position;
 				element.Value = text.Value;
 				element.Camera = text.Camera;
 				element.BackgroundColor = backgroundColor;
@@ -121,6 +121,8 @@ namespace Vertx.Debugging
 			{
 				if (_elements.Count == 0)
 					return;
+				foreach (Shapes.TextData element in _elements)
+					_textDataPool.Release(element);
 				_elements.Clear();
 				_durations.Clear();
 			}

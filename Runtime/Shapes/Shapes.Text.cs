@@ -24,7 +24,9 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Draw(commandBuilder, color, Color.white, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
+
 			public void Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
 				=> commandBuilder.AppendText(this, backgroundColor, textColor, duration);
 #endif

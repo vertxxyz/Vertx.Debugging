@@ -59,6 +59,12 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Vector3 position, float duration = 0) => raw(position, Color.white, duration);
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Vector2 position, Color color, float duration = 0) => raw(new Shapes.Point2D(position), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Vector2 position, float duration = 0) => raw(position, Color.white, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Bounds bounds, Color color, float duration = 0) => raw(new Shapes.Box(bounds), color, duration);

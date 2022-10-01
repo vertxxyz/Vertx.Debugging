@@ -75,29 +75,79 @@ namespace Vertx.Debugging
 		private static void DoOnGUI()
 		{
 			Vector2 position = new Vector2(10, 10);
-
+			bool uses3DIcons = Uses3DIcons;
+			float size = IconSize;
+			
 			var commandBuilder = CommandBuilder.Instance;
-			var texts = commandBuilder.Texts;
-			for (int i = 0; i < texts.Count; i++)
+			DrawTexts(commandBuilder.DefaultTexts);
+			DrawTexts(commandBuilder.GizmoTexts);
+			
+			void DrawTexts(CommandBuilder.TextDataLists textDataLists)
 			{
-				TextData textData = texts.InternalList[i];
-				if ((textData.Modifications & DrawModifications.Custom) != 0)
+				for (int i = 0; i < textDataLists.Count; i++)
 				{
-					GUIContent content = GetGUIContentFromObject(textData.Value);
-					Rect rect = new Rect(position, TextStyle.CalcSize(content));
-					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor);
-					position.y = rect.yMax + 1;
+					TextData textData = textDataLists.InternalList[i];
+					Color backgroundColor = textData.BackgroundColor;
+					Color textColor = textData.TextColor;
+					if ((textData.Modifications & DrawModifications.Custom) != 0)
+					{
+						GUIContent content = GetGUIContentFromObject(textData.Value);
+						Rect rect = new Rect(position, TextStyle.CalcSize(content));
+						DrawAtScreenPosition(rect, content, backgroundColor, textColor);
+						position.y = rect.yMax + 1;
+					}
+					else
+					{
+						Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
+						if (camera == null) continue;
+						if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) return;
+						if (uses3DIcons)
+						{
+							float iconSize = size * 1000;
+							float alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
+							if (alpha <= 0) return;
+							backgroundColor.a *= alpha;
+							textColor.a *= alpha;
+						}
+						//------DRAW-------
+						GUIContent content = GetGUIContentFromObject(textData.Value);
+						Rect rect = new Rect(screenPos, TextStyle.CalcSize(content));
+						DrawAtScreenPosition(rect, content, backgroundColor, textColor);
+					}
 				}
-				else
-				{
-					Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
-					if (camera == null) continue;
-					if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, camera)) return;
-					//------DRAW-------
-					GUIContent content = GetGUIContentFromObject(textData.Value);
-					Rect rect = new Rect(screenPos, TextStyle.CalcSize(content));
-					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor);
-				}
+			}
+		}
+
+#if !UNITY_2022_1_OR_NEWER
+		private static Func<bool> s_use3dGizmos;
+		private static Func<float> s_iconSize;
+#endif
+		
+		private static bool Uses3DIcons
+		{
+			get
+			{
+#if UNITY_2022_1_OR_NEWER
+				return GizmoUtility.use3dIcons;
+#else
+				if (s_use3dGizmos == null)
+					s_use3dGizmos = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), Type.GetType("UnityEditor.AnnotationUtility,UnityEditor").GetProperty("use3dGizmos").GetMethod);
+				return s_use3dGizmos();
+#endif
+			}
+		}
+		
+		private static float IconSize
+		{
+			get
+			{
+#if UNITY_2022_1_OR_NEWER
+				return GizmoUtility.iconSize;
+#else
+				if (s_iconSize == null)
+					s_iconSize = (Func<float>)Delegate.CreateDelegate(typeof(Func<float>), Type.GetType("UnityEditor.AnnotationUtility,UnityEditor").GetProperty("iconSize").GetMethod);
+				return s_iconSize();
+#endif
 			}
 		}
 
@@ -141,14 +191,14 @@ namespace Vertx.Debugging
 		/// </summary>
 		/// <param name="query">The world point query</param>
 		/// <param name="point">The GUI point. Zero if behind the camera.</param>
+		/// <param name="distance">The distance to the query from the camera.</param>
 		/// <param name="camera">The camera that owns the GUI space.</param>
 		/// <returns>True if a valid position in front of the camera.</returns>
-		private static bool WorldToGUIPoint(Vector3 query, out Vector2 point, Camera camera)
+		private static bool WorldToGUIPoint(Vector3 query, out Vector2 point, out float distance, Camera camera)
 		{
 			Vector3 viewPos = camera.WorldToViewportPoint(query);
-			bool behindScreen = viewPos.z < 0;
-
-			if (behindScreen)
+			distance = viewPos.z;
+			if (distance < 0)
 			{
 				point = Vector2.zero;
 				return false;
