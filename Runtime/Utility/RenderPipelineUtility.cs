@@ -1,4 +1,5 @@
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Vertx.Debugging
 {
@@ -11,26 +12,29 @@ namespace Vertx.Debugging
 
 	internal static class RenderPipelineUtility
 	{
-		private static bool _initialised;
+		private static bool s_Initialised;
+		private static CurrentPipeline s_CurrentPipeline;
+
+		public static CurrentPipeline PipelineCached => s_Initialised ? s_CurrentPipeline : Pipeline;
 
 		public static CurrentPipeline Pipeline
 		{
 			get
 			{
-				var pipelineAsset = GraphicsSettings.currentRenderPipeline;
-				if (pipelineAsset == null)
-					return CurrentPipeline.BuiltIn;
+				s_Initialised = true;
+				switch (GraphicsSettings.currentRenderPipeline)
+				{
 #if VERTX_URP
-				var type = pipelineAsset.GetType();
-				if (type.Name == "UniversalRenderPipelineAsset")
-					return CurrentPipeline.URP;
+					case UniversalRenderPipelineAsset:
+						return s_CurrentPipeline = CurrentPipeline.URP;
 #endif
 #if VERTX_HDRP
-				var type = pipelineAsset.GetType();
-				if (type.Name == "HDRenderPipelineAsset")
-					return CurrentPipeline.HDRP;
+					case HDRenderPipelineAsset:
+						return s_CurrentPipeline = CurrentPipeline.URP;
 #endif
-				return CurrentPipeline.BuiltIn;
+					default:
+						return s_CurrentPipeline = CurrentPipeline.BuiltIn;
+				}
 			}
 		}
 	}

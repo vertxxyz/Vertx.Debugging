@@ -1,6 +1,10 @@
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
+#if VERTX_HDRP
+using UnityEngine.Rendering.HighDefinition;
+#endif
 
 namespace Vertx.Debugging.Internal
 {
@@ -24,6 +28,29 @@ namespace Vertx.Debugging.Internal
 				s_Instance = gameObject.GetComponent<DrawRuntimeBehaviour>();
 				return s_Instance;
 			}
+		}
+
+		private CurrentPipeline _currentConfiguration;
+
+		public void InitialiseRenderPipelineSetup()
+		{
+#if VERTX_HDRP
+			CurrentPipeline currentPipeline = RenderPipelineUtility.Pipeline;
+			if (_currentConfiguration == currentPipeline)
+				return;
+
+			if (_currentConfiguration == CurrentPipeline.HDRP && TryGetComponent(out CustomPassVolume volume))
+				DestroyImmediate(volume);
+			_currentConfiguration = currentPipeline;
+			if (currentPipeline == CurrentPipeline.HDRP)
+			{
+				if (!TryGetComponent(out volume))
+					volume = gameObject.AddComponent<CustomPassVolume>();
+				volume.isGlobal = true;
+				volume.injectionPoint = CustomPassInjectionPoint.AfterPostProcess;
+				volume.customPasses.Add(new VertxDebuggingCustomPass());
+			}
+#endif
 		}
 
 		private void OnGUI()

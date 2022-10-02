@@ -57,12 +57,18 @@ namespace Vertx.Debugging
 
 		internal sealed class TextData
 		{
-			public Vector3 Position;
 			public object Value;
-			public Camera Camera;
 			public Color BackgroundColor;
 			public Color TextColor;
 			public DrawModifications Modifications;
+
+			// Only used for 3D Text
+			public Vector3 Position;
+			public Camera Camera;
+			// Only used after 3D text is calculated.
+			public Vector2 ScreenPosition;
+			public float Distance;
+			public float Alpha;
 		}
 	}
 }

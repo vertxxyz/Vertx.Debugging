@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - Casts have accurate outlines and better terminations.
   - Text now supports background and foreground colors.
   - Text now responds to Gizmos' 3D Icons settings (size is only interpreted as distance fade).
+  - 3D Text is now depth sorted.
 - Added Arc and Arc2D.
 - Added Hemisphere.
 - Added ScreenText, draws text in the top left of the view. Doesn't currently detect overlaps with scene-view overlays.

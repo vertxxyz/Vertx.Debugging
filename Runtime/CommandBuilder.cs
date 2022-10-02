@@ -15,6 +15,7 @@ using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 #if VERTX_URP
 using UnityEngine.Rendering.Universal;
+using Vertx.Debugging.Internal;
 #endif
 using Vertx.Debugging.PlayerLoop;
 
@@ -354,6 +355,9 @@ namespace Vertx.Debugging
 
 		private void OnUpdate()
 		{
+#if VERTX_HDRP
+			DrawRuntimeBehaviour.Instance.InitialiseRenderPipelineSetup();
+#endif
 			// TODO cleanup if things aren't running and stuff is getting out of hand...
 		}
 

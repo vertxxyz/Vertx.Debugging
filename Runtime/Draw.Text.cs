@@ -1,11 +1,17 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using static Vertx.Debugging.Shapes;
 using UnityEditor;
 #if !UNITY_2022_1_OR_NEWER
 using System.Reflection;
+#endif
+#if !UNITY_2021_1_OR_NEWER
+using Vertx.Debugging.Internal;
+#else
+using UnityEngine.Pool;
 #endif
 
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
@@ -77,26 +83,49 @@ namespace Vertx.Debugging
 
 		private static void DoOnGUI()
 		{
+			var commandBuilder = CommandBuilder.Instance;
+			if (commandBuilder.DefaultTexts.Count == 0 && commandBuilder.GizmoTexts.Count == 0)
+				return;
+
 			Vector2 position = new Vector2(10, 10);
 			bool uses3DIcons = Uses3DIcons;
 			float size = IconSize;
-			
-			var commandBuilder = CommandBuilder.Instance;
-			DrawTexts(commandBuilder.DefaultTexts);
-			DrawTexts(commandBuilder.GizmoTexts);
-			
-			void DrawTexts(CommandBuilder.TextDataLists textDataLists)
+
+			using (ListPool<TextData>.Get(out List<TextData> text3D))
+			{
+				DrawTexts(commandBuilder.DefaultTexts, text3D);
+				DrawTexts(commandBuilder.GizmoTexts, text3D);
+
+				// 3D text is collected and sorted by distance before being displayed.
+				if (text3D.Count > 0)
+				{
+					text3D.Sort((a, b) => b.Distance.CompareTo(a.Distance));
+
+					foreach (TextData textData in text3D)
+					{
+						//------DRAW-------
+						Color backgroundColor = textData.BackgroundColor;
+						Color textColor = textData.TextColor;
+						backgroundColor.a *= textData.Alpha;
+						textColor.a *= textData.Alpha;
+
+						GUIContent content = GetGUIContentFromObject(textData.Value);
+						Rect rect = new Rect(textData.ScreenPosition, TextStyle.CalcSize(content));
+						DrawAtScreenPosition(rect, content, backgroundColor, textColor);
+					}
+				}
+			}
+
+			void DrawTexts(CommandBuilder.TextDataLists textDataLists, List<TextData> text3D)
 			{
 				for (int i = 0; i < textDataLists.Count; i++)
 				{
 					TextData textData = textDataLists.InternalList[i];
-					Color backgroundColor = textData.BackgroundColor;
-					Color textColor = textData.TextColor;
 					if ((textData.Modifications & DrawModifications.Custom) != 0)
 					{
 						GUIContent content = GetGUIContentFromObject(textData.Value);
 						Rect rect = new Rect(position, TextStyle.CalcSize(content));
-						DrawAtScreenPosition(rect, content, backgroundColor, textColor);
+						DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor);
 						position.y = rect.yMax + 1;
 					}
 					else
@@ -104,18 +133,23 @@ namespace Vertx.Debugging
 						Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
 						if (camera == null) continue;
 						if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) return;
+						float alpha;
 						if (uses3DIcons)
 						{
 							float iconSize = size * 1000;
-							float alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
-							if (alpha <= 0) return;
-							backgroundColor.a *= alpha;
-							textColor.a *= alpha;
+							alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
+							if (alpha <= 0)
+								return;
 						}
-						//------DRAW-------
-						GUIContent content = GetGUIContentFromObject(textData.Value);
-						Rect rect = new Rect(screenPos, TextStyle.CalcSize(content));
-						DrawAtScreenPosition(rect, content, backgroundColor, textColor);
+						else
+						{
+							alpha = 1;
+						}
+
+						textData.ScreenPosition = screenPos;
+						textData.Distance = distance;
+						textData.Alpha = alpha;
+						text3D.Add(textData);
 					}
 				}
 			}
@@ -125,7 +159,7 @@ namespace Vertx.Debugging
 		private static Func<bool> s_use3dGizmos;
 		private static Func<float> s_iconSize;
 #endif
-		
+
 		private static bool Uses3DIcons
 		{
 			get
@@ -139,7 +173,7 @@ namespace Vertx.Debugging
 #endif
 			}
 		}
-		
+
 		private static float IconSize
 		{
 			get
@@ -185,6 +219,7 @@ namespace Vertx.Debugging
 					value = text.ToString();
 					break;
 			}
+
 			s_SharedContent.text = value;
 			return s_SharedContent;
 		}
