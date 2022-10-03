@@ -1,5 +1,4 @@
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 
 namespace Vertx.Debugging
 {
@@ -25,12 +24,12 @@ namespace Vertx.Debugging
 				switch (GraphicsSettings.currentRenderPipeline)
 				{
 #if VERTX_URP
-					case UniversalRenderPipelineAsset:
+					case UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset:
 						return s_CurrentPipeline = CurrentPipeline.URP;
 #endif
 #if VERTX_HDRP
-					case HDRenderPipelineAsset:
-						return s_CurrentPipeline = CurrentPipeline.URP;
+					case UnityEngine.Rendering.HighDefinition.HDRenderPipelineAsset:
+						return s_CurrentPipeline = CurrentPipeline.HDRP;
 #endif
 					default:
 						return s_CurrentPipeline = CurrentPipeline.BuiltIn;

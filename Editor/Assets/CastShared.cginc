@@ -38,10 +38,10 @@ geoInput vert(vertInput input)
     return o;
 }
 
-[maxvertexcount(40)]
+[maxvertexcount(4)]
 void geo(line geoInput input[2], inout LineStream<fragInput> outputStream)
 {
-    float3 vertices[8] =
+    const float3 vertices[8] =
     {
         float3(-1, -1, -1),
         float3(1, -1, -1),

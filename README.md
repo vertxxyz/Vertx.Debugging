@@ -150,3 +150,6 @@ You can also add it directly from GitHub. Note that you won't be able to receive
 
 To update the package with new changes, remove the lock from the `packages-lock.json` file.
 </details>
+
+> **Note**  
+> If you're on a 2021.1+ Unity version, this package may benefit from [Burst](https://docs.unity3d.com/Packages/com.unity.burst@latest/).
