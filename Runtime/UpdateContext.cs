@@ -1,9 +1,11 @@
 #if UNITY_EDITOR
+using System;
 using UnityEditor;
 using UnityEngine;
 
 namespace Vertx.Debugging
 {
+	[DefaultExecutionOrder(int.MinValue + 1)]
 	internal static class UpdateContext
 	{
 		public enum UpdateState
@@ -36,6 +38,9 @@ namespace Vertx.Debugging
 
 		private static void OnDuringSceneGUI(SceneView obj)
 		{
+			if (RenderPipelineUtility.PipelineCached != CurrentPipeline.BuiltIn)
+				return;
+			
 			if (Event.current.type != EventType.Repaint)
 				return;
 			if (State == UpdateState.CapturingGizmos)
@@ -45,6 +50,9 @@ namespace Vertx.Debugging
 
 		public static void OnGUI()
 		{
+			if (RenderPipelineUtility.PipelineCached != CurrentPipeline.BuiltIn)
+				return;
+			
 			if (Event.current.type != EventType.Repaint)
 				return;
 			if (State == UpdateState.CapturingGizmos)
