@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [2.0.0-pre.1]
-- **Complete API overhaul**, nothing is as it was previously!
+### Added, changed, improved
+- **Complete API overhaul**, nothing is as it was previously! See README for more information.
   - The core drawing function is `D.raw(shape, color = Color.white, duration = 0)`
   - All drawable shapes are structs inside the `Shapes` class.
 - Greatly improved drawing performance.
@@ -16,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - The interior of shapes is faded to better show 3D.
   - Casts have accurate outlines and better terminations.
   - Text now supports background and foreground colors.
-  - Text now responds to Gizmos' 3D Icons settings (size is only interpreted as distance fade).
+  - Text now responds to Gizmos' "3D Icons" setting (only interpreted as distance fade).
   - 3D Text is now depth sorted.
 - Added Arc and Arc2D.
 - Added Hemisphere.
@@ -25,6 +26,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Removed complex shape parameters.
   - Specifying segment count is no longer available. If you need this, please let me know.
 - Removed GizmosScope. This should be automatically detected.
+
+### Known Issues
+- 2022.2 URP versions may have a depth buffer flipped in Y in the Game view. This is a Unity bug that will also affect built-in gizmos.
 
 ## [1.9.2] - 2022-04-26
 - Added IList/IEnumerable support for DrawLine2D and DrawArrowLine2D.

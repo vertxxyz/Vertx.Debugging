@@ -12,6 +12,9 @@ using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 using UnityEngine.Profiling;
 using Vertx.Debugging.PlayerLoop;
+#if VERTX_HDRP
+using Vertx.Debugging.Internal;
+#endif
 
 // ReSharper disable ConvertIfStatementToNullCoalescingAssignment
 
@@ -19,7 +22,7 @@ namespace Vertx.Debugging
 {
 	public sealed partial class CommandBuilder
 	{
-		private const string RemoveShapesByDurationProfilerName = ProfilerName + " " + nameof(RemoveShapesByDuration);
+		private const string RemoveShapesByDurationProfilerName = Name + " " + nameof(RemoveShapesByDuration);
 
 		private float _timeThisFrame;
 
@@ -101,12 +104,12 @@ namespace Vertx.Debugging
 
 			_defaultGroup.Texts.RemoveByDeltaTime(deltaTime);
 
-			int oldLineCount = QueueRemovalJob(_defaultGroup.Lines, dependency, out JobHandle? lineHandle);
-			int oldArcCount = QueueRemovalJob(_defaultGroup.Arcs, dependency, out JobHandle? arcHandle);
-			int oldBoxCount = QueueRemovalJob(_defaultGroup.Boxes, dependency, out JobHandle? boxHandle);
-			int oldBox2DCount = QueueRemovalJob(_defaultGroup.Box2Ds, dependency, out JobHandle? box2DHandle);
-			int oldOutlineCount = QueueRemovalJob(_defaultGroup.Outlines, dependency, out JobHandle? outlineHandle);
-			int oldMatrixAndVectorsCount = QueueRemovalJob(_defaultGroup.Casts, dependency, out JobHandle? castsHandle);
+			int oldLineCount = QueueRemovalJob<Shapes.Line, RemovalJob<Shapes.Line>>(_defaultGroup.Lines, dependency, out JobHandle? lineHandle);
+			int oldArcCount = QueueRemovalJob<Shapes.Arc, RemovalJob<Shapes.Arc>>(_defaultGroup.Arcs, dependency, out JobHandle? arcHandle);
+			int oldBoxCount = QueueRemovalJob<Shapes.Box, RemovalJob<Shapes.Box>>(_defaultGroup.Boxes, dependency, out JobHandle? boxHandle);
+			int oldBox2DCount = QueueRemovalJob<Shapes.Box2D, RemovalJob<Shapes.Box2D>>(_defaultGroup.Box2Ds, dependency, out JobHandle? box2DHandle);
+			int oldOutlineCount = QueueRemovalJob<Shapes.Outline, RemovalJob<Shapes.Outline>>(_defaultGroup.Outlines, dependency, out JobHandle? outlineHandle);
+			int oldMatrixAndVectorsCount = QueueRemovalJob<Shapes.Cast, RemovalJob<Shapes.Cast>>(_defaultGroup.Casts, dependency, out JobHandle? castsHandle);
 
 			JobHandle? coreHandle = null;
 			if (!CombineDependencies(ref coreHandle, lineHandle) & // Purposely an &, so each branch gets executed.
@@ -140,7 +143,9 @@ namespace Vertx.Debugging
 					_defaultGroup.Casts.SetDirty();
 			}
 
-			int QueueRemovalJob<T>(ShapeBuffersWithData<T> data, JobHandle? handleIn, out JobHandle? handleOut) where T : unmanaged
+			int QueueRemovalJob<T, TJob>(ShapeBuffersWithData<T> data, JobHandle? handleIn, out JobHandle? handleOut)
+				where T : unmanaged
+				where TJob : struct, IRemovalJob<T>
 			{
 				int length = data.Count;
 				if (length == 0)
@@ -149,14 +154,14 @@ namespace Vertx.Debugging
 					return 0;
 				}
 
-				var removalJob = new RemovalJob<T>
-				{
-					Elements = data.InternalList,
-					Durations = data.DurationsInternalList,
-					Modifications = data.ModificationsInternalList,
-					Colors = data.ColorsInternalList,
-					DeltaTime = deltaTime
-				};
+				var removalJob = new TJob();
+				removalJob.Configure(
+					data.InternalList,
+					data.DurationsInternalList,
+					data.ModificationsInternalList,
+					data.ColorsInternalList,
+					deltaTime
+				);
 				handleOut = removalJob.Schedule(handleIn ?? default);
 				return length;
 			}
@@ -164,16 +169,36 @@ namespace Vertx.Debugging
 			Profiler.EndSample();
 		}
 
-#if UNITY_2021_1_OR_NEWER && VERTX_BURST
+		private interface IRemovalJob<T> : IJob where T : unmanaged
+		{
+			void Configure(
+				NativeList<T> elements,
+				NativeList<float> durations,
+				NativeList<Shapes.DrawModifications> modifications,
+				NativeList<Color> colors,
+				float deltaTime
+			);
+		}
+
+#if VERTX_BURST
 		[Unity.Burst.BurstCompile]
 #endif
-		private struct RemovalJob<T> : IJob where T : unmanaged
+		private struct RemovalJob<T> : IRemovalJob<T> where T : unmanaged
 		{
 			public NativeList<T> Elements;
 			public NativeList<float> Durations;
 			public NativeList<Shapes.DrawModifications> Modifications;
 			public NativeList<Color> Colors;
 			public float DeltaTime;
+
+			public void Configure(NativeList<T> elements, NativeList<float> durations, NativeList<Shapes.DrawModifications> modifications, NativeList<Color> colors, float deltaTime)
+			{
+				Elements = elements;
+				Durations = durations;
+				Modifications = modifications;
+				Colors = colors;
+				DeltaTime = deltaTime;
+			}
 
 			/// <summary>
 			/// Removes indices in an unordered fashion,

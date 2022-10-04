@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -38,33 +39,49 @@ namespace Vertx.Debugging.Internal
 			CurrentPipeline currentPipeline = RenderPipelineUtility.Pipeline;
 			if (_currentConfiguration == currentPipeline)
 				return;
-
-			if (_currentConfiguration == CurrentPipeline.HDRP && TryGetComponent(out CustomPassVolume volume))
-				DestroyImmediate(volume);
+			
 			_currentConfiguration = currentPipeline;
 			if (currentPipeline == CurrentPipeline.HDRP)
 			{
-				if (!TryGetComponent(out volume))
+				if (!TryGetComponent(out CustomPassVolume volume))
+				{
 					volume = gameObject.AddComponent<CustomPassVolume>();
-				volume.isGlobal = true;
-				volume.injectionPoint = CustomPassInjectionPoint.AfterPostProcess;
-				volume.customPasses.Add(new VertxDebuggingCustomPass());
+					volume.isGlobal = true;
+					volume.injectionPoint = CustomPassInjectionPoint.AfterPostProcess;
+					volume.customPasses.Add(new VertxDebuggingCustomPass { name = CommandBuilder.Name });
+				}
+			}
+			else if(TryGetComponent(out CustomPassVolume volume))
+			{
+				DestroyImmediate(volume);
 			}
 #endif
 		}
 
+		private void Update()
+		{
+			if (DestroyedIfInvalid())
+				return;
+		}
+
 		private void OnGUI()
 		{
-			if (s_Instance != this)
-			{
-				DestroyImmediate(gameObject);
+			if (DestroyedIfInvalid())
 				return;
-			}
-
+			
 			UpdateContext.OnGUI();
 			
 			if (Handles.ShouldRenderGizmos())
 				DrawText.OnGUI();
+		}
+
+		private bool DestroyedIfInvalid()
+		{
+			if (s_Instance == this && s_Instance.gameObject.scene.isLoaded)
+				return false;
+			DestroyImmediate(gameObject);
+			return true;
+
 		}
 	}
 }

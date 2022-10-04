@@ -6,10 +6,10 @@ using UnityEngine.Rendering.Universal;
 
 namespace Vertx.Debugging
 {
-	internal class VertxDebuggingRenderPass : ScriptableRenderPass
+	internal sealed class VertxDebuggingRenderPass : ScriptableRenderPass
 	{
 		private static readonly RTHandle k_CurrentActive = RTHandles.Alloc(BuiltinRenderTextureType.CurrentActive);
-		// private static readonly RTHandle k_Depth = RTHandles.Alloc(BuiltinRenderTextureType.Depth);
+		private readonly ProfilingSampler _defaultProfilingSampler = new ProfilingSampler(CommandBuilder.Name);
 			
 		/// <summary>
 		/// This method is called by the renderer before executing the render pass.
@@ -19,7 +19,6 @@ namespace Vertx.Debugging
 		/// </summary>
 		public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
 		{
-			ConfigureInput(ScriptableRenderPassInput.Depth);
 			ConfigureTarget(k_CurrentActive);
 		}
 			
@@ -31,11 +30,23 @@ namespace Vertx.Debugging
 		/// </summary>
 		public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
 		{
-			ConfigureInput(ScriptableRenderPassInput.Depth);
+			
 		}*/
 
+		/// <summary>
+		/// Execute the pass. This is where custom rendering occurs. Specific details are left to the implementation
+		/// </summary>
 		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-			=> CommandBuilder.Instance.ExecuteDrawRenderPass(context, renderingData.cameraData.camera);
+		{
+			CommandBuffer commandBuffer = CommandBufferPool.Get(CommandBuilder.Name);
+			using (new ProfilingScope(commandBuffer, _defaultProfilingSampler))
+			{
+				commandBuffer.Clear();
+				CommandBuilder.Instance.ExecuteDrawRenderPass(context, commandBuffer, renderingData.cameraData.camera);
+			}
+			context.ExecuteCommandBuffer(commandBuffer);
+			CommandBufferPool.Release(commandBuffer);
+		}
 
 		public override void FrameCleanup(CommandBuffer cmd) { }
 	}

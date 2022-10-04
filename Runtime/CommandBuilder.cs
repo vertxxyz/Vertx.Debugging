@@ -25,18 +25,14 @@ namespace Vertx.Debugging
 {
 	public sealed partial class CommandBuilder
 	{
-		private const string ProfilerName = "Vertx.Debugging";
-		private const string GizmosProfilerName = ProfilerName + ".Gizmos";
+		internal const string Name = "Vertx.Debugging";
+		internal const string GizmosName = Name + ".Gizmos";
 
 		internal static CommandBuilder Instance { get; }
 
 		private readonly int _unityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
-		private readonly BufferGroup _defaultGroup = new BufferGroup(true, ProfilerName);
-		private readonly BufferGroup _gizmosGroup = new BufferGroup(false, GizmosProfilerName);
-#if VERTX_URP || VERTX_HDRP
-		private readonly ProfilingSampler _defaultProfilingSampler = new ProfilingSampler(ProfilerName);
-		private readonly ProfilingSampler _gizmosProfilingSampler = new ProfilingSampler(GizmosProfilerName);
-#endif
+		private readonly BufferGroup _defaultGroup = new BufferGroup(true, Name);
+		private readonly BufferGroup _gizmosGroup = new BufferGroup(false, GizmosName);
 #if VERTX_URP
 		private VertxDebuggingRenderPass _pass;
 #endif
@@ -57,6 +53,7 @@ namespace Vertx.Debugging
 			public readonly ShapeBuffersWithData<Shapes.Cast> Casts;
 			public readonly TextDataLists Texts = new TextDataLists();
 
+			// Command buffer only used by the Built-in render pipeline.
 			private CommandBuffer _commandBuffer;
 
 			public BufferGroup(bool usesDurations, string commandBufferName)
@@ -70,19 +67,19 @@ namespace Vertx.Debugging
 				Casts = new ShapeBuffersWithData<Shapes.Cast>("cast_buffer", usesDurations);
 			}
 
-			public CommandBuffer ReadyResources()
+			/// <summary>
+			/// Creates and caches a command buffer if none was passed into the function.<br/>
+			/// Buffer is cleared if it was previously cached.
+			/// </summary>
+			public void ReadyResources(ref CommandBuffer commandBuffer)
 			{
+				if (commandBuffer != null)
+					return;
 				if (_commandBuffer == null)
-				{
-					_commandBuffer = new CommandBuffer
-					{
-						name = _commandBufferName
-					};
-				}
+					_commandBuffer = new CommandBuffer { name = _commandBufferName };
 				else
 					_commandBuffer.Clear();
-
-				return _commandBuffer;
+				commandBuffer = _commandBuffer;
 			}
 
 			public void Clear()
@@ -146,14 +143,15 @@ namespace Vertx.Debugging
 				_pass = new VertxDebuggingRenderPass { renderPassEvent = RenderPassEvent.AfterRendering + 10 };
 			}
 
-			//_pass.ConfigureInput(ScriptableRenderPassInput.Color | ScriptableRenderPassInput.Depth);
+			_pass.ConfigureInput(ScriptableRenderPassInput.Color | ScriptableRenderPassInput.Depth);
+			
 
 			foreach (Camera camera in cameras)
 			{
 				UniversalAdditionalCameraData cameraData = camera.GetUniversalAdditionalCameraData();
 				if (cameraData == null)
 					continue;
-
+				
 				cameraData.scriptableRenderer.EnqueuePass(_pass);
 			}
 #endif
@@ -164,7 +162,7 @@ namespace Vertx.Debugging
 			// After cameras are rendered, we have collected gizmos and it is safe to render them.
 			foreach (Camera camera in cameras)
 			{
-				RenderGizmosGroup(camera, SceneView.currentDrawingSceneView != null);
+				RenderGizmosGroup(camera, SceneView.currentDrawingSceneView != null ? RenderingType.Scene : RenderingType.Game);
 			}
 		}
 
@@ -176,14 +174,15 @@ namespace Vertx.Debugging
 			else
 				type |= RenderingType.Game;
 
-			Profiler.BeginSample(ProfilerName);
-			if (!SharedRenderingDetails(camera, _defaultGroup, out CommandBuffer commandBuffer, type))
+			Profiler.BeginSample(Name);
+			CommandBuffer commandBuffer = null;
+			if (!SharedRenderingDetails(camera, _defaultGroup, ref commandBuffer, type))
 				return;
 			Graphics.ExecuteCommandBuffer(commandBuffer);
 			Profiler.EndSample();
 		}
 
-		internal void ExecuteDrawRenderPass(ScriptableRenderContext context, Camera camera)
+		internal void ExecuteDrawRenderPass(ScriptableRenderContext context, CommandBuffer commandBuffer, Camera camera)
 		{
 			RenderingType type = RenderingType.Default;
 			if (SceneView.currentDrawingSceneView != null && SceneView.currentDrawingSceneView.camera == camera)
@@ -191,40 +190,26 @@ namespace Vertx.Debugging
 			else
 				type |= RenderingType.Game;
 
-			if (!SharedRenderingDetails(camera, _defaultGroup, out CommandBuffer commandBuffer, type))
-				return;
-#if VERTX_URP || VERTX_HDRP
-			// TODO fix profiling scope issues.
-			// using (new ProfilingScope(commandBuffer, _defaultProfilingSampler))
-#endif
-			{
-				context.ExecuteCommandBuffer(commandBuffer);
-			}
+			SharedRenderingDetails(camera, _defaultGroup, ref commandBuffer, type);
 		}
 
-		// Called by Built-in (from OnGUI)
-		internal void RenderGizmosGroup(bool sceneViewCamera) => RenderGizmosGroup(_lastRenderingCamera, sceneViewCamera);
+		/// <summary>
+		/// Called by Built-in (from OnGUI)
+		/// </summary>
+		internal void RenderGizmosGroup(bool sceneViewCamera) => RenderGizmosGroup(_lastRenderingCamera, sceneViewCamera ? RenderingType.Scene : RenderingType.Game);
 
-		// Called by render pipelines (From EndContextRendering)
-		private void RenderGizmosGroup(Camera camera, bool isSceneViewCamera)
+		/// <summary>
+		/// Called by render pipelines (From EndContextRendering)
+		/// </summary>
+		private void RenderGizmosGroup(Camera camera, RenderingType type)
 		{
 			UpdateContext.ForceStateToUpdate();
-			RenderingType type = RenderingType.Gizmos;
-			
-			if (isSceneViewCamera)
-				type |= RenderingType.Scene;
-			else
-				type |= RenderingType.Game;
+			type |= RenderingType.Gizmos;
 
-			if (!SharedRenderingDetails(camera, _gizmosGroup, out CommandBuffer commandBuffer, type))
+			CommandBuffer commandBuffer = null;
+			if (!SharedRenderingDetails(camera, _gizmosGroup, ref commandBuffer, type))
 				return;
-#if VERTX_URP || VERTX_HDRP
-			// TODO fix profiling scope issues.
-			//using (new ProfilingScope(commandBuffer, _gizmosProfilingSampler))
-#endif
-			{
-				Graphics.ExecuteCommandBuffer(commandBuffer);
-			}
+			Graphics.ExecuteCommandBuffer(commandBuffer);
 		}
 
 		internal void ClearGizmoGroup() => _gizmosGroup.Clear();
@@ -232,7 +217,7 @@ namespace Vertx.Debugging
 		[Flags]
 		private enum RenderingType
 		{
-			Unknown = 0,
+			Unset = 0,
 			// Call origin
 			Default = 1,
 			Gizmos = 1 << 1,
@@ -243,19 +228,16 @@ namespace Vertx.Debugging
 			GizmosAndGame = Gizmos | Game
 		}
 
-		private bool SharedRenderingDetails(Camera camera, BufferGroup group, out CommandBuffer commandBuffer, RenderingType renderingType)
+		private bool SharedRenderingDetails(Camera camera, BufferGroup group, ref CommandBuffer commandBuffer, RenderingType renderingType)
 		{
 			_lastRenderingCamera = camera;
 			UpdateContext.ForceStateToUpdate();
 
 			if (!ShouldRenderCamera(camera, renderingType))
-			{
-				commandBuffer = null;
 				return false;
-			}
 
-			InitialiseIfRequired();
-			commandBuffer = group.ReadyResources();
+			InitialiseDisposal();
+			group.ReadyResources(ref commandBuffer);
 			return FillCommandBuffer(commandBuffer, camera, group, renderingType);
 		}
 
@@ -264,6 +246,7 @@ namespace Vertx.Debugging
 			if (!Handles.ShouldRenderGizmos())
 				return false;
 
+			// If we're rendering from a gizmo context, always render.
 			if ((renderingType & RenderingType.Gizmos) != 0)
 				return true;
 
@@ -276,6 +259,10 @@ namespace Vertx.Debugging
 			return true;
 		}
 
+		/// <summary>
+		/// The core rendering loop.
+		/// </summary>
+		/// <returns>True if relevant rendering commands were issued.</returns>
 		private bool FillCommandBuffer(CommandBuffer commandBuffer, Camera camera, BufferGroup group, RenderingType renderingType)
 		{
 			bool render;
@@ -324,7 +311,10 @@ namespace Vertx.Debugging
 			return render;
 		}
 
-		private void InitialiseIfRequired()
+		/// <summary>
+		/// Ensures Dispose is called for allocated resources.
+		/// </summary>
+		private void InitialiseDisposal()
 		{
 			if (_disposeIsQueued) return;
 			_disposeIsQueued = true;

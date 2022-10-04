@@ -155,6 +155,7 @@ namespace Vertx.Debugging
 
 		private sealed class ShapeBuffersWithData<T> : IDisposable where T : unmanaged
 		{
+			// Avoids redundantly setting internal GraphicsBuffer data.
 			private bool _dirty = true;
 			private readonly ListWrapper<float> _durations;
 			private readonly ListAndBuffer<T> _elements;
