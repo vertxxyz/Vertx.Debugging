@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - 3D Text is now depth sorted.
 - Added Arc and Arc2D.
 - Added Hemisphere.
-- Added ScreenText, draws text in the top left of the view. Doesn't currently detect overlaps with scene-view overlays.
+- Added ScreenText, draws text in the top left of the view, uses an Overlay in the scene view. It's optional, you can also dock it if it's distracting.
 - Added more debug components. Find them in Add Component > Debugging.
 - Removed complex shape parameters.
   - Specifying segment count is no longer available. If you need this, please let me know.
@@ -29,7 +29,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Known Issues
 - 2022.2 URP versions may have a depth buffer flipped in Y in the Game view. This is a Unity bug that will also affect built-in gizmos.
-- Some versions of Unity will not depth test in the Game view. This seems to be consistent with Debug and Gizmo drawing.
+- Some versions of Unity will not depth test in the Game view. This seems to be consistent with built-in Debug and Gizmo drawing.
+  Fixes welcome if anyone has them!
 
 ## [1.9.2] - 2022-04-26
 - Added IList/IEnumerable support for DrawLine2D and DrawArrowLine2D.

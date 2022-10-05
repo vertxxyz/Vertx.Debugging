@@ -40,70 +40,9 @@ namespace Vertx.Debugging
 		private bool _disposeIsQueued;
 
 		internal TextDataLists DefaultTexts => _defaultGroup.Texts;
+		internal ScreenTextDataLists DefaultScreenTexts => _defaultGroup.ScreenTexts;
 		internal TextDataLists GizmoTexts => _gizmosGroup.Texts;
-
-		private sealed class BufferGroup : IDisposable
-		{
-			private readonly string _commandBufferName;
-			public readonly ShapeBuffersWithData<Shapes.Line> Lines;
-			public readonly ShapeBuffersWithData<Shapes.Arc> Arcs;
-			public readonly ShapeBuffersWithData<Shapes.Box> Boxes;
-			public readonly ShapeBuffersWithData<Shapes.Box2D> Box2Ds;
-			public readonly ShapeBuffersWithData<Shapes.Outline> Outlines;
-			public readonly ShapeBuffersWithData<Shapes.Cast> Casts;
-			public readonly TextDataLists Texts = new TextDataLists();
-
-			// Command buffer only used by the Built-in render pipeline.
-			private CommandBuffer _commandBuffer;
-
-			public BufferGroup(bool usesDurations, string commandBufferName)
-			{
-				_commandBufferName = commandBufferName;
-				Lines = new ShapeBuffersWithData<Shapes.Line>("line_buffer", usesDurations);
-				Arcs = new ShapeBuffersWithData<Shapes.Arc>("arc_buffer", usesDurations);
-				Boxes = new ShapeBuffersWithData<Shapes.Box>("box_buffer", usesDurations);
-				Box2Ds = new ShapeBuffersWithData<Shapes.Box2D>("mesh_buffer", usesDurations);
-				Outlines = new ShapeBuffersWithData<Shapes.Outline>("outline_buffer", usesDurations);
-				Casts = new ShapeBuffersWithData<Shapes.Cast>("cast_buffer", usesDurations);
-			}
-
-			/// <summary>
-			/// Creates and caches a command buffer if none was passed into the function.<br/>
-			/// Buffer is cleared if it was previously cached.
-			/// </summary>
-			public void ReadyResources(ref CommandBuffer commandBuffer)
-			{
-				if (commandBuffer != null)
-					return;
-				if (_commandBuffer == null)
-					_commandBuffer = new CommandBuffer { name = _commandBufferName };
-				else
-					_commandBuffer.Clear();
-				commandBuffer = _commandBuffer;
-			}
-
-			public void Clear()
-			{
-				Lines.Clear();
-				Arcs.Clear();
-				Boxes.Clear();
-				Box2Ds.Clear();
-				Outlines.Clear();
-				Casts.Clear();
-				Texts.Clear();
-			}
-
-			public void Dispose()
-			{
-				Lines.Dispose();
-				Arcs.Dispose();
-				Boxes.Dispose();
-				Box2Ds.Dispose();
-				Outlines.Dispose();
-				Casts.Dispose();
-				_commandBuffer?.Dispose();
-			}
-		}
+		internal ScreenTextDataLists GizmoScreenTexts => _gizmosGroup.ScreenTexts;
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
@@ -160,13 +99,13 @@ namespace Vertx.Debugging
 				UniversalAdditionalCameraData cameraData = camera.GetUniversalAdditionalCameraData();
 				if (cameraData == null)
 					continue;
-				
+
 				cameraData.scriptableRenderer.EnqueuePass(_pass);
 			}
 #endif
 		}
 
-		private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera) 
+		private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
 			// After cameras are rendered, we have collected gizmos and it is safe to render them.
 			=> RenderGizmosGroup(camera, SceneView.currentDrawingSceneView != null ? RenderingType.Scene : RenderingType.Game);
 

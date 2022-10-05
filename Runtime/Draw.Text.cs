@@ -31,7 +31,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = Font });
+		public static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = Font });
 
 		private static Type GameViewType => s_GameViewType ?? (s_GameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
 
@@ -69,7 +69,7 @@ namespace Vertx.Debugging
 				return;
 
 			Handles.BeginGUI();
-			DoOnGUI();
+			DoOnGUI(View.Scene);
 			Handles.EndGUI();
 		}
 
@@ -78,23 +78,22 @@ namespace Vertx.Debugging
 			if (Event.current.type != EventType.Repaint)
 				return;
 
-			DoOnGUI();
+			DoOnGUI(View.Game);
 		}
 
-		private static void DoOnGUI()
+		private static void DoOnGUI(View view)
 		{
 			var commandBuilder = CommandBuilder.Instance;
 			if (commandBuilder.DefaultTexts.Count == 0 && commandBuilder.GizmoTexts.Count == 0)
 				return;
-
-			Vector2 position = new Vector2(10, 10);
+			
 			bool uses3DIcons = Uses3DIcons;
 			float size = IconSize;
 
 			using (ListPool<TextData>.Get(out List<TextData> text3D))
 			{
-				DrawTexts(commandBuilder.DefaultTexts, text3D);
-				DrawTexts(commandBuilder.GizmoTexts, text3D);
+				Gather3DText(commandBuilder.DefaultTexts, text3D);
+				Gather3DText(commandBuilder.GizmoTexts, text3D);
 
 				// 3D text is collected and sorted by distance before being displayed.
 				if (text3D.Count > 0)
@@ -111,46 +110,59 @@ namespace Vertx.Debugging
 
 						GUIContent content = GetGUIContentFromObject(textData.Value);
 						Rect rect = new Rect(textData.ScreenPosition, TextStyle.CalcSize(content));
-						DrawAtScreenPosition(rect, content, backgroundColor, textColor);
+						DrawAtScreenPosition(rect, content, backgroundColor, textColor, null);
 					}
 				}
 			}
 
-			void DrawTexts(CommandBuilder.TextDataLists textDataLists, List<TextData> text3D)
+			if ((view & View.Scene) == 0)
+				DrawScreenTexts(commandBuilder, view);
+
+			void Gather3DText(CommandBuilder.TextDataLists list, List<TextData> text3D)
 			{
-				for (int i = 0; i < textDataLists.Count; i++)
+				for (int i = 0; i < list.Count; i++)
 				{
-					TextData textData = textDataLists.InternalList[i];
-					if ((textData.Modifications & DrawModifications.Custom) != 0)
+					TextData textData = list.Elements[i];
+					Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
+					if (camera == null) continue;
+					if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) return;
+					float alpha;
+					if (uses3DIcons)
 					{
-						GUIContent content = GetGUIContentFromObject(textData.Value);
-						Rect rect = new Rect(position, TextStyle.CalcSize(content));
-						DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor);
-						position.y = rect.yMax + 1;
+						float iconSize = size * 1000;
+						alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
+						if (alpha <= 0)
+							return;
 					}
 					else
 					{
-						Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
-						if (camera == null) continue;
-						if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) return;
-						float alpha;
-						if (uses3DIcons)
-						{
-							float iconSize = size * 1000;
-							alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
-							if (alpha <= 0)
-								return;
-						}
-						else
-						{
-							alpha = 1;
-						}
-
-						textData.ScreenPosition = screenPos;
-						textData.Distance = distance;
-						textData.Alpha = alpha;
-						text3D.Add(textData);
+						alpha = 1;
 					}
+
+					textData.ScreenPosition = screenPos;
+					textData.Distance = distance;
+					textData.Alpha = alpha;
+					text3D.Add(textData);
+				}
+			}
+		}
+		
+		private static void DrawScreenTexts(CommandBuilder commandBuilder, View view)
+		{
+			Vector2 position = new Vector2(10, 10);
+			DrawScreenText(commandBuilder.DefaultScreenTexts);
+			DrawScreenText(commandBuilder.GizmoScreenTexts);
+			
+			void DrawScreenText(CommandBuilder.ScreenTextDataLists list)
+			{
+				for (int i = 0; i < list.Count; i++)
+				{
+					ScreenTextData textData = list.Elements[i];
+					if((textData.ActiveViews & view) == 0) continue;
+					GUIContent content = GetGUIContentFromObject(textData.Value);
+					Rect rect = new Rect(position, TextStyle.CalcSize(content));
+					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor, textData.Context);
+					position.y = rect.yMax + 1;
 				}
 			}
 		}
@@ -188,9 +200,20 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor)
+		public static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor, Object context)
 		{
-			DrawGUIRect();
+			bool hasContext = context != null;
+			if (hasContext && rect.Contains(Event.current.mousePosition))
+			{
+				if (Event.current.type == EventType.MouseDown)
+					EditorGUIUtility.PingObject(context);
+				textColor = Color.white;
+			}
+			else
+			{
+				DrawGUIRect();
+			}
+
 			TextStyle.normal.textColor = textColor;
 			GUI.Label(rect, content, TextStyle);
 			//-----------------
@@ -204,23 +227,22 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private static GUIContent GetGUIContentFromObject(object text)
+		private static string GetContentFromObject(object text)
 		{
-			string value;
 			switch (text)
 			{
 				case Vector3 vector3:
-					value = vector3.ToString("F3");
-					break;
+					return vector3.ToString("F3");
 				case Vector2 vector2:
-					value = vector2.ToString("F3");
-					break;
+					return  vector2.ToString("F3");
 				default:
-					value = text.ToString();
-					break;
+					return text.ToString();
 			}
+		}
 
-			s_SharedContent.text = value;
+		public static GUIContent GetGUIContentFromObject(object text)
+		{
+			s_SharedContent.text = GetContentFromObject(text);
 			return s_SharedContent;
 		}
 

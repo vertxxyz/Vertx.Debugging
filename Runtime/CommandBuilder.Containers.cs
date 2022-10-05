@@ -79,52 +79,78 @@ namespace Vertx.Debugging
 			}
 		}
 
-		internal sealed class TextDataLists
+		internal sealed class TextDataLists : TextDataLists<Shapes.TextData>
 		{
-			private sealed class TextDataPool :
-#if !UNITY_2021_1_OR_NEWER
-				Vertx.Debugging.Internal.ObjectPool<Shapes.TextData>
-#else
-				UnityEngine.Pool.ObjectPool<Shapes.TextData>
-#endif
+			public void Add(in Shapes.Text text, Color backgroundColor, Color textColor, float duration)
 			{
-				public TextDataPool(int defaultCapacity = 10, int maxSize = 10000)
-					: base(() => new Shapes.TextData(), null, data =>
-					{
-						data.Camera = null;
-						data.Value = null;
-					}, null, false, defaultCapacity, maxSize) { }
-			}
-
-			private static readonly TextDataPool _textDataPool = new TextDataPool();
-			private readonly List<float> _durations = new List<float>();
-			private readonly List<Shapes.TextData> _elements = new List<Shapes.TextData>();
-
-			public int Count => _elements.Count;
-
-			public List<Shapes.TextData> InternalList => _elements;
-
-			public void Add(in Shapes.Text text, Color backgroundColor, Color textColor, Shapes.DrawModifications modifications, float duration)
-			{
-				Shapes.TextData element = _textDataPool.Get();
+				Shapes.TextData element = s_TextDataPool.Get();
+				_elements.Add(element);
+				_durations.Add(duration);
+				_isDirty = true;
 				element.Position = UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? Gizmos.matrix.MultiplyPoint3x4(text.Position) : text.Position;
 				element.Value = text.Value;
 				element.Camera = text.Camera;
 				element.BackgroundColor = backgroundColor;
 				element.TextColor = textColor;
-				element.Modifications = modifications;
+			}
+		}
+		
+		internal sealed class ScreenTextDataLists : TextDataLists<Shapes.ScreenTextData>
+		{
+			public void Add(in Shapes.ScreenText text, Color backgroundColor, Color textColor, float duration)
+			{
+				Shapes.ScreenTextData element = s_TextDataPool.Get();
 				_elements.Add(element);
 				_durations.Add(duration);
+				_isDirty = true;
+				element.Value = text.Value;
+				element.BackgroundColor = backgroundColor;
+				element.TextColor = textColor;
+				element.Context = text.Context;
+				element.ActiveViews = text.ActiveViews;
+			}
+		}
+
+		internal abstract class TextDataLists<T> where T : class, Shapes.IText, new()
+		{
+			protected sealed class TextDataPool :
+#if !UNITY_2021_1_OR_NEWER
+				Vertx.Debugging.Internal.ObjectPool<T>
+#else
+				UnityEngine.Pool.ObjectPool<T>
+#endif
+			{
+				public TextDataPool(int defaultCapacity = 10, int maxSize = 10000)
+					: base(() => new T(), null, data => data.Reset(), null, false, defaultCapacity, maxSize) { }
+			}
+
+			protected static readonly TextDataPool s_TextDataPool = new TextDataPool();
+			// ReSharper disable InconsistentNaming
+			protected readonly List<float> _durations = new List<float>();
+			protected readonly List<T> _elements = new List<T>();
+			protected bool _isDirty = true;
+			// ReSharper restore InconsistentNaming
+
+			public int Count => _elements.Count;
+
+			public IReadOnlyList<T> Elements => _elements;
+
+			public bool ReadAndResetIsDirty()
+			{
+				bool isDirty = _isDirty;
+				_isDirty = false;
+				return isDirty;
 			}
 
 			public void Clear()
 			{
 				if (_elements.Count == 0)
 					return;
-				foreach (Shapes.TextData element in _elements)
-					_textDataPool.Release(element);
+				foreach (T element in _elements)
+					s_TextDataPool.Release(element);
 				_elements.Clear();
 				_durations.Clear();
+				_isDirty = true;
 			}
 
 			public void RemoveByDeltaTime(float deltaTime)
@@ -146,9 +172,10 @@ namespace Vertx.Debugging
 					_durations[index] = _durations[endIndex];
 					_durations.RemoveAt(endIndex);
 
-					_textDataPool.Release(_elements[index]);
+					s_TextDataPool.Release(_elements[index]);
 					_elements[index] = _elements[endIndex];
 					_elements.RemoveAt(endIndex);
+					_isDirty = true;
 				}
 			}
 		}

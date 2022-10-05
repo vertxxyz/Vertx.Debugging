@@ -116,10 +116,18 @@ namespace Vertx.Debugging
 			);
 		}
 
-		public void AppendText(in Shapes.Text text, Color backgroundColor, Color textColor, float duration, Shapes.DrawModifications modifications = Shapes.DrawModifications.None)
+		public void AppendText(in Shapes.Text text, Color backgroundColor, Color textColor, float duration)
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
-			group.Texts.Add(text, backgroundColor, textColor, modifications, duration);
+			group.Texts.Add(text, backgroundColor, textColor, duration);
+			// Force the runtime object to exist
+			_ = DrawRuntimeBehaviour.Instance;
+		}
+		
+		public void AppendScreenText(in Shapes.ScreenText text, Color backgroundColor, Color textColor, float duration)
+		{
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
+			group.ScreenTexts.Add(text, backgroundColor, textColor, duration);
 			// Force the runtime object to exist
 			_ = DrawRuntimeBehaviour.Instance;
 		}

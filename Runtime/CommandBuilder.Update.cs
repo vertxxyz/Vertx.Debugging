@@ -83,89 +83,13 @@ namespace Vertx.Debugging
 			_timeThisFrame = Time.time;
 		}
 
-		private static bool CombineDependencies(ref JobHandle? handle, JobHandle? other)
-		{
-			if (!other.HasValue)
-				return false;
-			handle = handle.HasValue
-				? JobHandle.CombineDependencies(handle.Value, other.Value)
-				: other.Value;
-			return true;
-		}
-
 		/// <summary>
 		/// Remove data where the duration has been met.
 		/// </summary>
 		private void RemoveShapesByDuration(float deltaTime, JobHandle? dependency)
 		{
-			// _lastRemovedEditorFrame = _editorFrame;
-
 			Profiler.BeginSample(RemoveShapesByDurationProfilerName);
-
-			_defaultGroup.Texts.RemoveByDeltaTime(deltaTime);
-
-			int oldLineCount = QueueRemovalJob<Shapes.Line, RemovalJob<Shapes.Line>>(_defaultGroup.Lines, dependency, out JobHandle? lineHandle);
-			int oldArcCount = QueueRemovalJob<Shapes.Arc, RemovalJob<Shapes.Arc>>(_defaultGroup.Arcs, dependency, out JobHandle? arcHandle);
-			int oldBoxCount = QueueRemovalJob<Shapes.Box, RemovalJob<Shapes.Box>>(_defaultGroup.Boxes, dependency, out JobHandle? boxHandle);
-			int oldBox2DCount = QueueRemovalJob<Shapes.Box2D, RemovalJob<Shapes.Box2D>>(_defaultGroup.Box2Ds, dependency, out JobHandle? box2DHandle);
-			int oldOutlineCount = QueueRemovalJob<Shapes.Outline, RemovalJob<Shapes.Outline>>(_defaultGroup.Outlines, dependency, out JobHandle? outlineHandle);
-			int oldMatrixAndVectorsCount = QueueRemovalJob<Shapes.Cast, RemovalJob<Shapes.Cast>>(_defaultGroup.Casts, dependency, out JobHandle? castsHandle);
-
-			JobHandle? coreHandle = null;
-			if (!CombineDependencies(ref coreHandle, lineHandle) & // Purposely an &, so each branch gets executed.
-			    !CombineDependencies(ref coreHandle, arcHandle) &
-			    !CombineDependencies(ref coreHandle, boxHandle) &
-			    !CombineDependencies(ref coreHandle, box2DHandle) &
-			    !CombineDependencies(ref coreHandle, outlineHandle) &
-			    !CombineDependencies(ref coreHandle, castsHandle))
-				coreHandle = dependency;
-
-			if (coreHandle.HasValue)
-			{
-				coreHandle.Value.Complete();
-
-				if (_defaultGroup.Lines.Count != oldLineCount)
-					_defaultGroup.Lines.SetDirty();
-
-				if (_defaultGroup.Arcs.Count != oldArcCount)
-					_defaultGroup.Arcs.SetDirty();
-
-				if (_defaultGroup.Boxes.Count != oldBoxCount)
-					_defaultGroup.Boxes.SetDirty();
-
-				if (_defaultGroup.Box2Ds.Count != oldBox2DCount)
-					_defaultGroup.Box2Ds.SetDirty();
-
-				if (_defaultGroup.Outlines.Count != oldOutlineCount)
-					_defaultGroup.Outlines.SetDirty();
-
-				if (_defaultGroup.Casts.Count != oldMatrixAndVectorsCount)
-					_defaultGroup.Casts.SetDirty();
-			}
-
-			int QueueRemovalJob<T, TJob>(ShapeBuffersWithData<T> data, JobHandle? handleIn, out JobHandle? handleOut)
-				where T : unmanaged
-				where TJob : struct, IRemovalJob<T>
-			{
-				int length = data.Count;
-				if (length == 0)
-				{
-					handleOut = null;
-					return 0;
-				}
-
-				var removalJob = new TJob();
-				removalJob.Configure(
-					data.InternalList,
-					data.DurationsInternalList,
-					data.ModificationsInternalList,
-					data.ColorsInternalList,
-					deltaTime
-				);
-				handleOut = removalJob.Schedule(handleIn ?? default);
-				return length;
-			}
-
+			_defaultGroup.RemoveByDeltaTime(deltaTime, dependency);
 			Profiler.EndSample();
 		}
 
