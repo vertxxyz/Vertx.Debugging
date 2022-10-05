@@ -48,9 +48,9 @@ namespace Vertx.Debugging
 			{
 				commandBuffer.Clear();
 				CommandBuilder.Instance.ExecuteDrawRenderPass(context, commandBuffer, renderingData.cameraData.camera);
+				context.ExecuteCommandBuffer(commandBuffer);
 			}
 
-			context.ExecuteCommandBuffer(commandBuffer);
 			CommandBufferPool.Release(commandBuffer);
 		}
 

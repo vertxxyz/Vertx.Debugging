@@ -181,7 +181,11 @@ namespace Vertx.Debugging
 			Profiler.BeginSample(Name);
 			CommandBuffer commandBuffer = null;
 			if (!SharedRenderingDetails(camera, _defaultGroup, ref commandBuffer, type))
+			{
+				Profiler.EndSample();
 				return;
+			}
+
 			Graphics.ExecuteCommandBuffer(commandBuffer);
 			Profiler.EndSample();
 		}
@@ -207,7 +211,6 @@ namespace Vertx.Debugging
 		/// </summary>
 		private void RenderGizmosGroup(Camera camera, RenderingType type)
 		{
-			UpdateContext.ForceStateToUpdate();
 			type |= RenderingType.Gizmos;
 
 			CommandBuffer commandBuffer = null;
@@ -301,13 +304,24 @@ namespace Vertx.Debugging
 					if (shapeCount <= 0)
 						return false;
 
+					Material mat = material.Value;
+					int passCount = mat.passCount;
+					for (int i = 0; i < passCount; i++)
+					{
+						if (ShaderUtil.IsPassCompiled(mat, i))
+							continue;
+						if (ShaderUtil.anythingCompiling)
+							return false;
+						ShaderUtil.CompilePass(mat, i);
+					}
+
 					MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
 					// Set the buffers to be used by the property block
 					// Synchronise the GraphicsBuffer with the data in the line buffer.
 					shape.Set(commandBuffer, propertyBlock);
 
 					// Render boxes
-					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, material.Value, -1, shapeCount, propertyBlock);
+					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, -1, shapeCount, propertyBlock);
 					return true;
 				}
 			}
