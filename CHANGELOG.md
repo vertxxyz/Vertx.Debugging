@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Known Issues
 - 2022.2 URP versions may have a depth buffer flipped in Y in the Game view. This is a Unity bug that will also affect built-in gizmos.
+- Some versions of Unity will not depth test in the Game view. This seems to be consistent with Debug and Gizmo drawing.
 
 ## [1.9.2] - 2022-04-26
 - Added IList/IEnumerable support for DrawLine2D and DrawArrowLine2D.

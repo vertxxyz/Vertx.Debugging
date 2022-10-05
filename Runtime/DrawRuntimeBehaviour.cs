@@ -68,20 +68,25 @@ namespace Vertx.Debugging.Internal
 		{
 			if (DestroyedIfInvalid())
 				return;
-			
+
 			UpdateContext.OnGUI();
-			
+
 			if (Handles.ShouldRenderGizmos())
 				DrawText.OnGUI();
 		}
 
 		private bool DestroyedIfInvalid()
 		{
-			if (s_Instance == this && s_Instance.gameObject.scene.isLoaded)
+			if (s_Instance == this)
 				return false;
 			DestroyImmediate(gameObject);
 			return true;
+		}
 
+		private void OnDestroy()
+		{
+			if (s_Instance == this)
+				s_Instance = null;
 		}
 	}
 }

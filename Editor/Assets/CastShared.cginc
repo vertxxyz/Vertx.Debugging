@@ -55,7 +55,8 @@ void geo(line geoInput input[2], inout LineStream<fragInput> outputStream)
 
     Cast c = cast_buffer[input[0].instanceID];
     float3 center = mul(c.Matrix, float4(0, 0, 0, 1)).xyz;
-
+    float3 v = normalize(c.Vector);
+    
     float highest = -10000;
     float lowest = 10000;
     float3 h, l;
@@ -65,18 +66,21 @@ void geo(line geoInput input[2], inout LineStream<fragInput> outputStream)
         p = mul(c.Matrix, float4(p, 1)).xyz;
 
         float3 direction = camera_direction_variable(p);
-        float3 perpendicular = normalize(cross(direction, normalize(c.Vector)));
+        float3 perpendicular = normalize(cross(direction, v));
         
         float3 pl = p - center;
         float d = dot(pl, perpendicular);
-        if (d < lowest)
+        float vd = dot(v, normalize(pl));
+        // If our box is aligned with the cast vector, hint the distance comparisons with values that are aligned to the corners furthest along the cast.
+        vd = max(1 - distance(0.5773502691896258, vd), 0) * 0.001;
+        if (d - vd < lowest)
         {
-            lowest = d;
+            lowest = d - vd;
             l = p;
         }
-        if (d > highest)
+        if (d + vd > highest)
         {
-            highest = d;
+            highest = d + vd;
             h = p;
         }
     }

@@ -37,6 +37,11 @@
             "define": "VERTX_HDRP_9_0_OR_NEWER"
         },
         {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "9",
+            "define": "VERTX_URP_9_0_OR_NEWER"
+        },
+        {
             "name": "com.unity.burst",
             "expression": "",
             "define": "VERTX_BURST"

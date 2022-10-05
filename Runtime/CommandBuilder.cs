@@ -110,9 +110,10 @@ namespace Vertx.Debugging
 		private CommandBuilder()
 		{
 			Camera.onPostRender += OnPostRender;
+			RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
 #if HAS_CONTEXT_RENDERING
 			RenderPipelineManager.beginContextRendering += OnBeginContextRendering;
-			RenderPipelineManager.endContextRendering += OnEndContextRendering;
+			// RenderPipelineManager.endContextRendering += OnEndContextRendering;
 #else
 			RenderPipelineManager.beginFrameRendering += (context, cameras) =>
 			{
@@ -127,9 +128,18 @@ namespace Vertx.Debugging
 					OnBeginContextRendering(context, list);
 				}
 			};
-			RenderPipelineManager.endFrameRendering += (context, cameras) => OnEndContextRendering(context, null);
+			// RenderPipelineManager.endFrameRendering += (context, cameras) => OnEndContextRendering(context, null);
 #endif
 			EditorApplication.update = OnUpdate + EditorApplication.update;
+			EditorApplication.playModeStateChanged += EditorApplicationOnplayModeStateChanged;
+		}
+
+		private void EditorApplicationOnplayModeStateChanged(PlayModeStateChange obj)
+		{
+			if (obj != PlayModeStateChange.EnteredPlayMode && obj != PlayModeStateChange.EnteredEditMode)
+				return;
+			_defaultGroup.Clear();
+			_gizmosGroup.Clear();
 		}
 
 		private void OnBeginContextRendering(ScriptableRenderContext context, List<Camera> cameras)
@@ -143,8 +153,7 @@ namespace Vertx.Debugging
 				_pass = new VertxDebuggingRenderPass { renderPassEvent = RenderPassEvent.AfterRendering + 10 };
 			}
 
-			_pass.ConfigureInput(ScriptableRenderPassInput.Color | ScriptableRenderPassInput.Depth);
-			
+			//_pass.ConfigureInput(ScriptableRenderPassInput.Color | ScriptableRenderPassInput.Depth);
 
 			foreach (Camera camera in cameras)
 			{
@@ -157,14 +166,9 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		private void OnEndContextRendering(ScriptableRenderContext context, List<Camera> cameras)
-		{
+		private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera) 
 			// After cameras are rendered, we have collected gizmos and it is safe to render them.
-			foreach (Camera camera in cameras)
-			{
-				RenderGizmosGroup(camera, SceneView.currentDrawingSceneView != null ? RenderingType.Scene : RenderingType.Game);
-			}
-		}
+			=> RenderGizmosGroup(camera, SceneView.currentDrawingSceneView != null ? RenderingType.Scene : RenderingType.Game);
 
 		private void OnPostRender(Camera camera)
 		{

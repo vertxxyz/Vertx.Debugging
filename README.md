@@ -28,7 +28,7 @@ D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10),
 > If your code spans many statements external to the method calls, it is unlikely to be stripped.
 
 You can call these methods from most places, `Update`, `LateUpdate`, `FixedUpdate`, `OnDrawGizmos`, and with `ExecuteAlways`/`ExecuteInEditMode`.  
-If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.matrix` works, `Gizmos.color` is unsupported.
+If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.matrix` works, `Gizmos.color` is unsupported. Gizmos are not pickable.
 
 ## Shapes
 All new shapes are contained within the Shapes class. I recommend statically importing the class if you are using them often:
@@ -152,4 +152,4 @@ To update the package with new changes, remove the lock from the `packages-lock.
 </details>
 
 > **Note**  
-> If you're on a 2021.1+ Unity version, this package may benefit from [Burst](https://docs.unity3d.com/Packages/com.unity.burst@latest/).
+> This package will benefit from [Burst](https://docs.unity3d.com/Packages/com.unity.burst@latest/), though it's an optional dependency.

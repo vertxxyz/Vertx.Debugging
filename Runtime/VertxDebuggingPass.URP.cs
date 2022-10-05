@@ -8,9 +8,16 @@ namespace Vertx.Debugging
 {
 	internal sealed class VertxDebuggingRenderPass : ScriptableRenderPass
 	{
-		private static readonly RTHandle k_CurrentActive = RTHandles.Alloc(BuiltinRenderTextureType.CurrentActive);
+#if VERTX_URP_9_0_OR_NEWER
+		private static readonly RTHandle k_CurrentActive = RTHandles.Alloc(
+			BuiltinRenderTextureType.CurrentActive
+		);
+#else
+		private static readonly RenderTargetIdentifier k_CurrentActive = new RenderTargetIdentifier(BuiltinRenderTextureType.CurrentActive);
+#endif
+		
 		private readonly ProfilingSampler _defaultProfilingSampler = new ProfilingSampler(CommandBuilder.Name);
-			
+
 		/// <summary>
 		/// This method is called by the renderer before executing the render pass.
 		/// Override this method if you need to to configure render targets and their clear state, and to create temporary render target textures.
@@ -18,10 +25,8 @@ namespace Vertx.Debugging
 		/// You should never call CommandBuffer.SetRenderTarget. Instead call ConfigureTarget and ConfigureClear.
 		/// </summary>
 		public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
-		{
-			ConfigureTarget(k_CurrentActive);
-		}
-			
+			=> ConfigureTarget(k_CurrentActive);
+
 		/*/// <summary>
 		/// Gets called by the renderer before executing the pass.
 		/// Can be used to configure render targets and their clearing state.
@@ -44,6 +49,7 @@ namespace Vertx.Debugging
 				commandBuffer.Clear();
 				CommandBuilder.Instance.ExecuteDrawRenderPass(context, commandBuffer, renderingData.cameraData.camera);
 			}
+
 			context.ExecuteCommandBuffer(commandBuffer);
 			CommandBufferPool.Release(commandBuffer);
 		}
