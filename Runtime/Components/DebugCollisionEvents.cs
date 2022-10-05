@@ -3,22 +3,35 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
+    #if UNITY_EDITOR
+    /// <summary>
+    /// This only exists to avoid an issue with enum fields of an underlying type: byte.
+    /// https://issuetracker.unity3d.com/issues/none-or-mixed-option-gets-set-to-enumflagsfield-when-selecting-the-everything-option
+    /// Which has also regressed in later versions of 2022.
+    /// </summary>
+    [UnityEditor.CustomEditor(typeof(DebugCollisionEvents))]
+    internal sealed class DebugCollisionEventsEditor : UnityEditor.Editor
+    {
+        public override void OnInspectorGUI() => DrawDefaultInspector();
+    }
+    #endif
+    
     [AddComponentMenu("Debugging/Debug Collision Events")]
-    public class DebugCollisionEvents : MonoBehaviour
+    public sealed class DebugCollisionEvents : MonoBehaviour
     {
         [SerializeField] private Type _type = Type.Enter;
-        [Pair(null, "Duration")]
+        [PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Enter)]
         [SerializeField]
         private DebugComponentBase.ColorDurationPair _enter =
-            new DebugComponentBase.ColorDurationPair(DebugUtils.HitColor, 0.1f);
-        [Pair(null, "Duration")]
+            new DebugComponentBase.ColorDurationPair(Shapes.EnterColor, 0.1f);
+        [PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Stay)]
         [SerializeField]
         private DebugComponentBase.ColorDurationPair _stay =
-            new DebugComponentBase.ColorDurationPair(DebugUtils.StartColor);
-        [Pair(null, "Duration")]
+            new DebugComponentBase.ColorDurationPair(Shapes.StayColor);
+        [PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Exit)]
         [SerializeField]
         private DebugComponentBase.ColorDurationPair _exit =
-            new DebugComponentBase.ColorDurationPair(DebugUtils.EndColor, 0.1f);
+            new DebugComponentBase.ColorDurationPair(Shapes.ExitColor, 0.1f);
 
         [Flags]
         private enum Type : byte
@@ -36,7 +49,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint contact = collision.GetContact(i);
-                DebugUtils.DrawSurfacePoint(contact.point, contact.normal, _enter.Color, _enter.Duration);
+                D.raw(new Shapes.SurfacePoint(contact.point, contact.normal), _enter.Color, _enter.Duration);
             }
         }
 
@@ -46,7 +59,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint contact = collision.GetContact(i);
-                DebugUtils.DrawSurfacePoint(contact.point, contact.normal, _stay.Color, _stay.Duration);
+                D.raw(new Shapes.SurfacePoint(contact.point, contact.normal), _stay.Color, _stay.Duration);
             }
         }
 
@@ -56,7 +69,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint contact = collision.GetContact(i);
-                DebugUtils.DrawSurfacePoint(contact.point, contact.normal, _exit.Color, _exit.Duration);
+                D.raw(new Shapes.SurfacePoint(contact.point, contact.normal), _exit.Color, _exit.Duration);
             }
         }
 
@@ -67,7 +80,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint2D contact = collision.GetContact(i);
-                DebugUtils.DrawArrow2D(contact.point, contact.normal, _enter.Color, _enter.Duration);
+                D.raw(new Shapes.Arrow2D(contact.point, contact.normal), _enter.Color, _enter.Duration);
             }
         }
 
@@ -77,7 +90,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint2D contact = collision.GetContact(i);
-                DebugUtils.DrawArrow2D(contact.point, contact.normal, _stay.Color, _stay.Duration);
+                D.raw(new Shapes.Arrow2D(contact.point, contact.normal), _stay.Color, _stay.Duration);
             }
         }
 
@@ -87,7 +100,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint2D contact = collision.GetContact(i);
-                DebugUtils.DrawArrow2D(contact.point, contact.normal, _exit.Color, _exit.Duration);
+                D.raw(new Shapes.Arrow2D(contact.point, contact.normal), _exit.Color, _exit.Duration);
             }
         }
 #endif

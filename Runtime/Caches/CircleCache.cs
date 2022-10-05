@@ -3,15 +3,12 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	internal class CircleCache
+	internal sealed class CircleCache
 	{
-		private Dictionary<int, Vector2[]> _circles;
+		private readonly Dictionary<int, Vector2[]> _circles = new Dictionary<int, Vector2[]>();
 
 		public Vector2[] GetCircle(int segments)
 		{
-			if (_circles == null)
-				_circles = new Dictionary<int, Vector2[]>();
-
 			if (_circles.TryGetValue(segments, out Vector2[] circle))
 				return circle;
 
