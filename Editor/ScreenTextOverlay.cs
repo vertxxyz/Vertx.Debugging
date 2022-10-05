@@ -1,3 +1,4 @@
+#if UNITY_2021_1_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -7,7 +8,11 @@ using UnityEngine.Pool;
 
 namespace Vertx.Debugging
 {
-	[Overlay(typeof(SceneView), Id, null, defaultLayout = Layout.Panel, defaultDockZone = DockZone.LeftColumn)]
+	[Overlay(typeof(SceneView), Id, null
+#if UNITY_2022_1_OR_NEWER
+		, defaultLayout = Layout.Panel, defaultDockZone = DockZone.LeftColumn
+#endif
+	)]
 	[Icon("d_UnityEditor.ConsoleWindow")]
 	// If Unity wanted me to use UIToolkit for new things maybe they would make it easier to make this Overlay in a stateful way. I tried.
 	internal sealed class ScreenTextOverlay : IMGUIOverlay, ITransientOverlay
@@ -32,43 +37,61 @@ namespace Vertx.Debugging
 
 		public ScreenTextOverlay()
 		{
+#if UNITY_2022_1_OR_NEWER
 			size = new Vector2(180, 300);
 			minSize = _minSize;
 			maxSize = _maxSize;
+#endif
 		}
-		
+
 
 		protected override Layout supportedLayouts => Layout.Panel;
 
 		public override void OnGUI()
 		{
 			var commandBuilder = CommandBuilder.Instance;
-			// If I don't perform any GUILayout then mouse click events are never sent. Hooray!
-			GUILayoutUtility.GetRect(minSize.x, minSize.y);
+
+			// Overlays seem to hate size settings. It barely functions.
+			float maxHeight = Screen.height * 0.75f;
+			
 			if (Event.current.type == EventType.Layout)
 			{
 				_layout.Clear();
 				_bounds = GetScreenTextLayout(commandBuilder.DefaultScreenTexts, _layout, Rect.zero);
 				_bounds = GetScreenTextLayout(commandBuilder.GizmoScreenTexts, _layout, _bounds);
-				
-				// Overlays seem to hate size settings. It barely functions.
-				float maxHeight = Screen.height * 0.75f;
+
+#if UNITY_2022_1_OR_NEWER
 				if (size.y > maxHeight)
 					size = new Vector2(Mathf.Min(_bounds.width + OverlayBounds.x, _maxSize.x), Mathf.Min(_bounds.height + OverlayBounds.y, maxHeight));
 				if (size.y < _minSize.y)
 					size = new Vector2(Mathf.Max(_bounds.width + OverlayBounds.x, _minSize.x), Mathf.Max(_bounds.height + OverlayBounds.y, _minSize.y));
+#endif
+				// If I don't perform any GUILayout then mouse click events are never sent. Hooray!
+				GUILayoutUtility.GetRect(Mathf.Clamp(_bounds.width, _minSize.x, _maxSize.x) - OverlayBounds.x + 6, Mathf.Clamp(_bounds.height, _minSize.y, maxHeight) - OverlayBounds.y);
 			}
 			else if (Event.current.type != EventType.Layout)
 			{
-				using (var scope = new GUI.ScrollViewScope(new Rect(0, 0, size.x - OverlayBounds.x, size.y - OverlayBounds.y), position, _bounds))
+				using (var scope = new GUI.ScrollViewScope(
+#if UNITY_2022_1_OR_NEWER
+					       new Rect(0, 0, size.x - OverlayBounds.x, size.y - OverlayBounds.y),
+#else
+					       new Rect(0, 0, Mathf.Clamp(_bounds.width, _minSize.x, _maxSize.x) - OverlayBounds.x + 6, Mathf.Clamp(_bounds.height, _minSize.y, maxHeight) - OverlayBounds.y),
+#endif
+					       position, _bounds)
+				      )
 				{
+					Color temp = GUI.color;
+					GUI.color = Color.white;
 					int c = DrawScreenTextLayout(commandBuilder.DefaultScreenTexts, _layout);
 					DrawScreenTextLayout(commandBuilder.GizmoScreenTexts, _layout, c);
 					position = scope.scrollPosition;
+					GUI.color = temp;
 				}
 			}
 		}
 
+		private static readonly GUIContent s_SharedContent = new GUIContent();
+		
 
 		private static Rect GetScreenTextLayout(CommandBuilder.ScreenTextDataLists list, List<(Rect, string)> layout, Rect bounds)
 		{
@@ -86,8 +109,6 @@ namespace Vertx.Debugging
 			return bounds;
 		}
 
-		private static readonly GUIContent s_SharedContent = new GUIContent();
-
 		private static int DrawScreenTextLayout(CommandBuilder.ScreenTextDataLists list, List<(Rect rect, string text)> layout, int startIndex = 0)
 		{
 			int c = startIndex;
@@ -104,3 +125,4 @@ namespace Vertx.Debugging
 		}
 	}
 }
+#endif

@@ -65,7 +65,8 @@ namespace Vertx.Debugging
 			if (!obj.drawGizmos)
 				return;
 
-			if (Event.current.type != EventType.Repaint)
+			EventType eventType = Event.current.type;
+			if (eventType != EventType.Repaint && eventType != EventType.MouseDown)
 				return;
 
 			Handles.BeginGUI();
@@ -84,6 +85,18 @@ namespace Vertx.Debugging
 		private static void DoOnGUI(View view)
 		{
 			var commandBuilder = CommandBuilder.Instance;
+			Draw3DText(commandBuilder);
+			
+#if UNITY_2021_1_OR_NEWER
+			if ((view & View.Scene) == 0)
+#endif
+				DrawScreenTexts(commandBuilder, view);
+		}
+
+		private static void Draw3DText(CommandBuilder commandBuilder)
+		{
+			if (Event.current.type != EventType.Repaint)
+				return;
 			if (commandBuilder.DefaultTexts.Count == 0 && commandBuilder.GizmoTexts.Count == 0)
 				return;
 			
@@ -114,10 +127,7 @@ namespace Vertx.Debugging
 					}
 				}
 			}
-
-			if ((view & View.Scene) == 0)
-				DrawScreenTexts(commandBuilder, view);
-
+			
 			void Gather3DText(CommandBuilder.TextDataLists list, List<TextData> text3D)
 			{
 				for (int i = 0; i < list.Count; i++)
@@ -149,7 +159,9 @@ namespace Vertx.Debugging
 		
 		private static void DrawScreenTexts(CommandBuilder commandBuilder, View view)
 		{
+			int height = Screen.height;
 			Vector2 position = new Vector2(10, 10);
+			bool isNotGameView = (view & View.Game) == 0;
 			DrawScreenText(commandBuilder.DefaultScreenTexts);
 			DrawScreenText(commandBuilder.GizmoScreenTexts);
 			
@@ -157,11 +169,13 @@ namespace Vertx.Debugging
 			{
 				for (int i = 0; i < list.Count; i++)
 				{
+					if (position.y > height)
+						return;
 					ScreenTextData textData = list.Elements[i];
 					if((textData.ActiveViews & view) == 0) continue;
 					GUIContent content = GetGUIContentFromObject(textData.Value);
 					Rect rect = new Rect(position, TextStyle.CalcSize(content));
-					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor, textData.Context);
+					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor, isNotGameView ? textData.Context : null);
 					position.y = rect.yMax + 1;
 				}
 			}
@@ -199,6 +213,7 @@ namespace Vertx.Debugging
 #endif
 			}
 		}
+		
 
 		public static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor, Object context)
 		{
@@ -211,20 +226,11 @@ namespace Vertx.Debugging
 			}
 			else
 			{
-				DrawGUIRect();
+				EditorGUI.DrawRect(rect, GUI.color * backgroundColor);
 			}
 
 			TextStyle.normal.textColor = textColor;
 			GUI.Label(rect, content, TextStyle);
-			//-----------------
-
-			void DrawGUIRect()
-			{
-				Color color1 = GUI.color;
-				GUI.color *= backgroundColor;
-				GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
-				GUI.color = color1;
-			}
 		}
 
 		private static string GetContentFromObject(object text)
