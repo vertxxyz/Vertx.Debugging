@@ -49,7 +49,7 @@ namespace Vertx.Debugging
 		
 		/// <summary>
 		/// Text drawn in the top left.<br/>
-		/// Order is not maintained when mixing durations, including durations added with <see cref="Text"/>.
+		/// Drawn in the Scene view using an Overlay for versions that support it.
 		/// </summary>
 		public readonly struct ScreenText : IDrawableCast
 		{

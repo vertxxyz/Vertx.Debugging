@@ -31,7 +31,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		public static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = Font });
+		private static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = Font });
 
 		private static Type GameViewType => s_GameViewType ?? (s_GameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
 
@@ -215,7 +215,7 @@ namespace Vertx.Debugging
 		}
 		
 
-		public static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor, Object context)
+		private static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor, Object context)
 		{
 			bool hasContext = context != null;
 			if (hasContext && rect.Contains(Event.current.mousePosition))
@@ -246,7 +246,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		public static GUIContent GetGUIContentFromObject(object text)
+		private static GUIContent GetGUIContentFromObject(object text)
 		{
 			s_SharedContent.text = GetContentFromObject(text);
 			return s_SharedContent;

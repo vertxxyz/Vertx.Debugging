@@ -109,6 +109,26 @@ namespace Vertx.Debugging
 				element.Context = text.Context;
 				element.ActiveViews = text.ActiveViews;
 			}
+
+			public override void RemoveByDeltaTime(float deltaTime)
+			{
+				for (int index = _elements.Count - 1; index >= 0; index--)
+				{
+					float oldDuration = _durations[index];
+					float newDuration = oldDuration - deltaTime;
+					if (newDuration > 0)
+					{
+						_durations[index] = newDuration;
+						continue;
+					}
+
+					// We care about order for on-screen text, so we are forced to do an unoptimised remove.
+					_durations.RemoveAt(index);
+					s_TextDataPool.Release(_elements[index]);
+					_elements.RemoveAt(index);
+					_isDirty = true;
+				}
+			}
 		}
 
 		internal abstract class TextDataLists<T> where T : class, Shapes.IText, new()
@@ -153,7 +173,7 @@ namespace Vertx.Debugging
 				_isDirty = true;
 			}
 
-			public void RemoveByDeltaTime(float deltaTime)
+			public virtual void RemoveByDeltaTime(float deltaTime)
 			{
 				for (int index = _elements.Count - 1; index >= 0; index--)
 				{
@@ -162,7 +182,6 @@ namespace Vertx.Debugging
 					if (newDuration > 0)
 					{
 						_durations[index] = newDuration;
-						// ! Remember to change this when swapping between IJob and IJobFor
 						continue;
 					}
 
