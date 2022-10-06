@@ -6,7 +6,7 @@ Should support all render pipelines. Uses instanced rendering to efficiently bat
 > Unity 2019.4+  
 > Debugging from jobs and builds is not supported, I recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
 
-https://user-images.githubusercontent.com/21963717/153703387-cc55e3c6-26b6-4474-815a-0e65e27a73f0.mov
+https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-9316-78f7d4fbea1a.mp4
 
 ## Usage
 
