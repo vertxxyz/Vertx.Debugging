@@ -1,10 +1,13 @@
 #if UNITY_EDITOR
-using System;
 using UnityEditor;
 using UnityEngine;
 
 namespace Vertx.Debugging
 {
+	/// <summary>
+	/// Tracks whether Gizmos are being captured.<br/>
+	/// (we're expecting a call from OnDrawGizmos, OnDrawGizmosSelected, or DrawGizmo)
+	/// </summary>
 	[DefaultExecutionOrder(int.MinValue + 1)]
 	internal static class UpdateContext
 	{
@@ -50,13 +53,16 @@ namespace Vertx.Debugging
 
 		public static void OnGUI()
 		{
+			// This is handled better in render pipelines, so we only end up handling state and gizmo drawing in OnGUI from Built-in.
 			if (RenderPipelineUtility.PipelineCached != CurrentPipeline.BuiltIn)
 				return;
 			
 			if (Event.current.type != EventType.Repaint)
 				return;
+			
 			if (State == UpdateState.CapturingGizmos)
 				CommandBuilder.Instance.RenderGizmosGroup(false);
+			
 			State = UpdateState.Update;
 		}
 	}

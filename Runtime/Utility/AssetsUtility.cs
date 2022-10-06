@@ -24,6 +24,8 @@ namespace Vertx.Debugging
 				}
 			}
 
+			public static implicit operator T(Asset<T> asset) => asset.Value;
+
 			public Asset(string name, string extension = "asset") => _path = $"Packages/com.vertx.debugging/Editor/Assets/{name}.{extension}";
 		}
 
@@ -37,6 +39,7 @@ namespace Vertx.Debugging
 		public static readonly Asset<Material> BoxMaterial = new Asset<Material>("Box", "mat");
 		public static readonly Asset<Material> OutlineMaterial = new Asset<Material>("Outline", "mat");
 		public static readonly Asset<Material> CastMaterial = new Asset<Material>("Cast", "mat");
+		public static readonly Asset<Font> JetBrainsMono = new Asset<Font>("JetbrainsMono-Regular", "ttf");
 	}
 }
 #endif

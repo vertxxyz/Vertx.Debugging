@@ -26,11 +26,12 @@ namespace Vertx.Debugging
 
 		private float _timeThisFrame;
 
+		/// <summary>
+		/// Queues <see cref="EarlyUpdate"/> into the EarlyUpdate portion of the player loop.
+		/// </summary>
 		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void InitialiseUpdate()
 		{
-			// Queue RuntimeEarlyUpdate into the EarlyUpdate portion of the player loop.
-
 			PlayerLoopSystem playerLoop = UnityEngine.LowLevel.PlayerLoop.GetCurrentPlayerLoop();
 			PlayerLoopSystem[] subsystems = playerLoop.subSystemList.ToArray();
 			Type earlyUpdate = typeof(EarlyUpdate);

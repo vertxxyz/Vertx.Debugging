@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;
-using UnityEngine.Pool;
 
 namespace Vertx.Debugging
 {

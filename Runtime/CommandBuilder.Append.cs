@@ -119,6 +119,7 @@ namespace Vertx.Debugging
 		public void AppendText(in Shapes.Text text, Color backgroundColor, Color textColor, float duration)
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
+			// Gizmo.matrix repositioning is handled in Add.
 			group.Texts.Add(text, backgroundColor, textColor, duration);
 			// Force the runtime object to exist
 			_ = DrawRuntimeBehaviour.Instance;

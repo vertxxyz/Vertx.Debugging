@@ -21,17 +21,7 @@ namespace Vertx.Debugging
 	[InitializeOnLoad]
 	internal static class DrawText
 	{
-		private static Font Font
-		{
-			get
-			{
-				if (s_Font != null)
-					return s_Font;
-				return s_Font = AssetDatabase.LoadAssetAtPath<Font>("Packages/com.vertx.debugging/Editor/Assets/JetbrainsMono-Regular.ttf");
-			}
-		}
-
-		private static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = Font });
+		internal static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = AssetsUtility.JetBrainsMono });
 
 		private static Type GameViewType => s_GameViewType ?? (s_GameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
 
@@ -49,7 +39,6 @@ namespace Vertx.Debugging
 		}
 
 		private static readonly GUIContent s_SharedContent = new GUIContent();
-		private static Font s_Font;
 		private static GUIStyle textStyle;
 		private static Type s_GameViewType;
 		private static EditorWindow s_GameView;
@@ -213,9 +202,9 @@ namespace Vertx.Debugging
 #endif
 			}
 		}
-		
 
-		private static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor, Object context)
+
+		internal static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor, Object context)
 		{
 			bool hasContext = context != null;
 			if (hasContext && rect.Contains(Event.current.mousePosition))
@@ -246,7 +235,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private static GUIContent GetGUIContentFromObject(object text)
+		internal static GUIContent GetGUIContentFromObject(object text)
 		{
 			s_SharedContent.text = GetContentFromObject(text);
 			return s_SharedContent;

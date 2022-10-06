@@ -52,7 +52,6 @@ namespace Vertx.Debugging
 			RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
 #if HAS_CONTEXT_RENDERING
 			RenderPipelineManager.beginContextRendering += OnBeginContextRendering;
-			// RenderPipelineManager.endContextRendering += OnEndContextRendering;
 #else
 			RenderPipelineManager.beginFrameRendering += (context, cameras) =>
 			{
@@ -67,7 +66,6 @@ namespace Vertx.Debugging
 					OnBeginContextRendering(context, list);
 				}
 			};
-			// RenderPipelineManager.endFrameRendering += (context, cameras) => OnEndContextRendering(context, null);
 #endif
 			EditorApplication.update = OnUpdate + EditorApplication.update;
 			EditorApplication.playModeStateChanged += EditorApplicationOnplayModeStateChanged;
@@ -243,6 +241,8 @@ namespace Vertx.Debugging
 					if (shapeCount <= 0)
 						return false;
 
+					// Don't render this shape until it's compiled.
+					// (It looks very strange to the user when a cyan box appears for a millisecond at 0,0,0)
 					Material mat = material.Value;
 					int passCount = mat.passCount;
 					for (int i = 0; i < passCount; i++)
@@ -259,7 +259,6 @@ namespace Vertx.Debugging
 					// Synchronise the GraphicsBuffer with the data in the line buffer.
 					shape.Set(commandBuffer, propertyBlock);
 
-					// Render boxes
 					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, -1, shapeCount, propertyBlock);
 					return true;
 				}

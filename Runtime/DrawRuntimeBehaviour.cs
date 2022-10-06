@@ -31,11 +31,11 @@ namespace Vertx.Debugging.Internal
 			}
 		}
 
+#if VERTX_HDRP
 		private CurrentPipeline _currentConfiguration;
 
 		public void InitialiseRenderPipelineSetup()
 		{
-#if VERTX_HDRP
 			CurrentPipeline currentPipeline = RenderPipelineUtility.Pipeline;
 			if (_currentConfiguration == currentPipeline)
 				return;
@@ -55,8 +55,8 @@ namespace Vertx.Debugging.Internal
 			{
 				DestroyImmediate(volume);
 			}
-#endif
 		}
+#endif
 
 		private void Update()
 		{
