@@ -75,7 +75,7 @@ namespace Vertx.Debugging
 		{
 			var commandBuilder = CommandBuilder.Instance;
 			Draw3DText(commandBuilder);
-			
+
 #if UNITY_2021_1_OR_NEWER
 			if ((view & View.Scene) == 0)
 #endif
@@ -88,7 +88,7 @@ namespace Vertx.Debugging
 				return;
 			if (commandBuilder.DefaultTexts.Count == 0 && commandBuilder.GizmoTexts.Count == 0)
 				return;
-			
+
 			bool uses3DIcons = Uses3DIcons;
 			float size = IconSize;
 
@@ -109,14 +109,17 @@ namespace Vertx.Debugging
 						Color textColor = textData.TextColor;
 						backgroundColor.a *= textData.Alpha;
 						textColor.a *= textData.Alpha;
-
+						Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
+						
 						GUIContent content = GetGUIContentFromObject(textData.Value);
 						Rect rect = new Rect(textData.ScreenPosition, TextStyle.CalcSize(content));
+						if(!camera.pixelRect.Overlaps(rect))
+							continue;
 						DrawAtScreenPosition(rect, content, backgroundColor, textColor, null);
 					}
 				}
 			}
-			
+
 			void Gather3DText(CommandBuilder.TextDataLists list, List<TextData> text3D)
 			{
 				for (int i = 0; i < list.Count; i++)
@@ -124,14 +127,14 @@ namespace Vertx.Debugging
 					TextData textData = list.Elements[i];
 					Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
 					if (camera == null) continue;
-					if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) return;
+					if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) continue;
 					float alpha;
 					if (uses3DIcons)
 					{
 						float iconSize = size * 1000;
 						alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
 						if (alpha <= 0)
-							return;
+							continue;
 					}
 					else
 					{
@@ -145,7 +148,7 @@ namespace Vertx.Debugging
 				}
 			}
 		}
-		
+
 		private static void DrawScreenTexts(CommandBuilder commandBuilder, View view)
 		{
 			int height = Screen.height;
@@ -153,7 +156,7 @@ namespace Vertx.Debugging
 			bool isNotGameView = (view & View.Game) == 0;
 			DrawScreenText(commandBuilder.DefaultScreenTexts);
 			DrawScreenText(commandBuilder.GizmoScreenTexts);
-			
+
 			void DrawScreenText(CommandBuilder.ScreenTextDataLists list)
 			{
 				for (int i = 0; i < list.Count; i++)
@@ -161,7 +164,7 @@ namespace Vertx.Debugging
 					if (position.y > height)
 						return;
 					ScreenTextData textData = list.Elements[i];
-					if((textData.ActiveViews & view) == 0) continue;
+					if ((textData.ActiveViews & view) == 0) continue;
 					GUIContent content = GetGUIContentFromObject(textData.Value);
 					Rect rect = new Rect(position, TextStyle.CalcSize(content));
 					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor, isNotGameView ? textData.Context : null);
@@ -229,7 +232,7 @@ namespace Vertx.Debugging
 				case Vector3 vector3:
 					return vector3.ToString("F3");
 				case Vector2 vector2:
-					return  vector2.ToString("F3");
+					return vector2.ToString("F3");
 				default:
 					return text.ToString();
 			}

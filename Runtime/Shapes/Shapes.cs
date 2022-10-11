@@ -27,6 +27,15 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendLine(this, color, duration);
 #endif
+
+			public Line GetShortened(float shortenBy)
+			{
+				Vector3 dir = B - A;
+				dir.EnsureNormalized(out float length);
+				shortenBy = Mathf.Min(length, shortenBy);
+				float t = shortenBy * 0.5f / length;
+				return new Line(Vector3.Lerp(A, B, t), Vector3.Lerp(B, A, t));
+			}
 		}
 
 		public readonly struct LineStrip : IDrawable
@@ -100,6 +109,8 @@ namespace Vertx.Debugging
 		public readonly struct Arrow : IDrawable
 		{
 			public readonly Vector3 Origin, Direction;
+			internal const float HeadLength = 0.075f;
+			internal const float HeadWidth = 0.05f;
 
 			public Arrow(Vector3 origin, Vector3 direction)
 			{
@@ -118,12 +129,13 @@ namespace Vertx.Debugging
 
 			public static void DrawArrowHead(CommandBuilder commandBuilder, Vector3 point, Vector3 dir, Color color, float duration = 0)
 			{
-				float headLength = 0.075f;
-				float headWidth = 0.05f;
 				const int segments = 3;
 
 				Vector3 arrowPoint = point + dir;
 				dir.EnsureNormalized(out float length);
+
+				float headLength = HeadLength;
+				float headWidth = HeadWidth;
 
 				if (headLength > length * 0.5f)
 				{
@@ -180,6 +192,109 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
+		
+		/// <summary>
+		/// An arrow with only one side of its head.<br/>
+		/// Commonly used to represent the HalfEdge data structure.
+		/// </summary>
+		public readonly struct HalfArrow : IDrawable
+		{
+			public readonly Line Line;
+			public readonly Vector3 Perpendicular;
+
+			public HalfArrow(Line line, Vector3 perpendicular)
+			{
+				Line = line;
+				perpendicular.EnsureNormalized();
+				Perpendicular = perpendicular;
+			}
+
+			public HalfArrow(Vector3 origin, Vector3 direction, Vector3 perpendicular) : this(new Line(origin, origin + direction), perpendicular) { }
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				commandBuilder.AppendLine(Line, color, duration);
+				DrawHalfArrowHead(commandBuilder, color, duration);
+			}
+
+			private void DrawHalfArrowHead(CommandBuilder commandBuilder, Color color, float duration = 0)
+			{
+				Vector3 end = Line.B;
+				Vector3 dir = Line.A - Line.B;
+
+				dir.EnsureNormalized(out float length);
+				
+				float headLength = Arrow.HeadLength;
+				float headWidth = Arrow.HeadWidth;
+
+				if (headLength > length * 0.5f)
+				{
+					headLength *= length;
+					headWidth *= length;
+				}
+
+				Vector3 cross = Vector3.Cross(dir, Perpendicular);
+				Vector3 a = end + dir * headLength;
+				Vector3 b = a + cross * headWidth;
+				commandBuilder.AppendLine(new Line(end, b), color, duration);
+				commandBuilder.AppendLine(new Line(a, b), color, duration);
+			}
+#endif
+		}
+		
+		/// <summary>
+		/// An arrow that is curved between two points.<br/>
+		/// Useful when straight lines can overlap with other shapes.
+		/// </summary>
+		public readonly struct CurvedArrow : IDrawable
+		{
+			public readonly Vector3 Origin;
+			public readonly Vector3 Direction;
+			public readonly Vector3 Perpendicular;
+			public readonly Angle Angle;
+
+			public CurvedArrow(Vector3 origin, Vector3 direction, Vector3 perpendicular) : this(origin, direction, perpendicular, Angle.FromTurns(0.1f)) { }
+
+			public CurvedArrow(Vector3 origin, Vector3 direction, Vector3 perpendicular, Angle angle)
+			{
+				Origin = origin;
+				Direction = direction;
+				perpendicular.EnsureNormalized();
+				Perpendicular = perpendicular;
+				Angle = angle.Turns > 0.5f ? Angle.FromTurns(0.5f) : angle;
+			}
+			
+			public CurvedArrow(in Line line, Vector3 perpendicular) : this(line.A, line.B - line.A, perpendicular) { }
+
+			public CurvedArrow(in Line line, Vector3 perpendicular, Angle angle) : this(line.A, line.B - line.A, perpendicular, angle) { }
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				// All this could be improved, reducing complex and redundant calculations.
+				Vector3 end = Origin + Direction;
+				Vector3 center = Origin + Direction * 0.5f;
+				Vector3 dir = Direction;
+				dir.EnsureNormalized(out float length);
+				
+				float headLength = Arrow.HeadLength;
+				if (headLength > length * 0.5f)
+					headLength *= length;
+				
+				Vector3 cross = Vector3.Cross(dir, Perpendicular);
+				float radius = Arc.GetRadius(Angle, length);
+				float offset = radius * Mathf.Cos(0.5f * Angle.Radians);
+				commandBuilder.AppendArc(new Arc(center - cross * offset, Perpendicular, cross, radius, Angle), color, duration);
+				
+				const float arrowHeadAngle = 30f;
+				Quaternion arrowheadRotation = Quaternion.LookRotation(cross, Perpendicular) * Quaternion.AngleAxis(Angle.Degrees * 0.5f - 90 + arrowHeadAngle, Perpendicular);
+				Vector3 arrowRay = new Vector3(0, 0, headLength);
+				commandBuilder.AppendLine(new Line(end, end + arrowheadRotation * arrowRay), color, duration);
+				commandBuilder.AppendLine(new Line(end, end + arrowheadRotation * Quaternion.AngleAxis(-arrowHeadAngle * 2, Perpendicular) * arrowRay), color, duration);
+			}
+#endif
+		}
 
 		public readonly struct Axis : IDrawable
 		{
@@ -193,6 +308,15 @@ namespace Vertx.Debugging
 			{
 				Origin = origin;
 				Rotation = rotation;
+				ShowArrowHeads = showArrowHeads;
+				VisibleAxes = visibleAxes;
+				Scale = scale;
+			}
+
+			public Axis(Transform transform, bool showArrowHeads = true, Axes visibleAxes = Axes.All, float scale = 1)
+			{
+				Origin = transform.position;
+				Rotation = transform.rotation;
 				ShowArrowHeads = showArrowHeads;
 				VisibleAxes = visibleAxes;
 				Scale = scale;
@@ -327,6 +451,9 @@ namespace Vertx.Debugging
 			/// It's cheaper to use the <see cref="Arc(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
 			/// </summary>
 			public Arc(Vector3 origin, Vector3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius, Angle.FromTurns(1)) { }
+
+			public static float GetRadius(in Angle angle, float chordLength) => chordLength / (2 * Mathf.Sin(0.5f * angle.Radians));
+			public static Angle GetAngle(float radius, float chordLength) => Angle.FromRadians(Mathf.Asin(chordLength / (2f * radius)) * 2);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendArc(this, color, duration);

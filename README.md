@@ -46,21 +46,22 @@ using static Vertx.Debugging.Shapes;
 
 ### 3D
 #### Shapes
-| Name                                                       | Description                                                  |
-|------------------------------------------------------------|--------------------------------------------------------------|
-| `Sphere`<br>`Hemisphere`<br>`Box`<br>`Capsule`<br>`Bounds` | 3D shapes.                                                   |
-| `Arc`                                                      | An arc (using `Angle`[^1] to define its length).             |
-| `SurfacePoint`                                             | A ray with a circle to indicate the surface.                 |
-| `Point`                                                    | A point without a specified direction.                       |
-| `Axis`                                                     | An XYZ direction gizmo.                                      |
-| `Arrow`<br>`ArrowStrip`                                    | An arrow vector, or a collection of points forming an arrow. |
-| `Line`<br>`LineStrip`                                      | A line, or a collection of points that make up a line.       |
-| `MeshNormals`                                              | The normals of a mesh.                                       |
-| `Ray`                                                      | A line from a position and a direction vector.               |
-| `Ray` (Built-in)                                           | Fallback to `Ray`.                                           |
-| `Vector3` (Built-in)                                       | Fallback to `Point`.                                         |
-| `RaycastHit` (Built-in)                                    | Fallback to `SurfacePoint`.                                  |
-| `Bounds` (Built-in)                                        | Fallback to `Box`.                                           |
+| Name                                                       | Description                                                                                      |
+|------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| `Sphere`<br>`Hemisphere`<br>`Box`<br>`Capsule`<br>`Bounds` | 3D shapes.                                                                                       |
+| `Arc`                                                      | An arc (using `Angle`[^1] to define its length).                                                 |
+| `SurfacePoint`                                             | A ray with a circle to indicate the surface.                                                     |
+| `Point`                                                    | A point without a specified direction.                                                           |
+| `Axis`                                                     | An XYZ direction gizmo.                                                                          |
+| `Arrow`<br>`ArrowStrip`                                    | An arrow vector, or a collection of points forming an arrow.                                     |
+| `Line`<br>`LineStrip`                                      | A line, or a collection of points that make up a line.                                           |
+| `HalfArrow`                                                | An arrow with only one side of its head. Commonly used to represent the HalfEdge data structure. |
+| `MeshNormals`                                              | The normals of a mesh.                                                                           |
+| `Ray`                                                      | A line from a position and a direction vector.                                                   |
+| `Ray` (Built-in)                                           | Fallback to `Ray`.                                                                               |
+| `Vector3` (Built-in)                                       | Fallback to `Point`.                                                                             |
+| `RaycastHit` (Built-in)                                    | Fallback to `SurfacePoint`.                                                                      |
+| `Bounds` (Built-in)                                        | Fallback to `Box`.                                                                               |
 
 
 #### Casts
