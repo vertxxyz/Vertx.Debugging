@@ -234,7 +234,7 @@ namespace Vertx.Debugging
 
 				bool RenderShape<T>(
 					AssetsUtility.Asset<Mesh> mesh,
-					AssetsUtility.Asset<Material> material,
+					AssetsUtility.MaterialAsset material,
 					ShapeBuffersWithData<T> shape) where T : unmanaged
 				{
 					int shapeCount = shape.Count;

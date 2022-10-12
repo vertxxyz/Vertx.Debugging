@@ -28,13 +28,14 @@ namespace Vertx.Debugging
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendLine(this, color, duration);
 #endif
 
-			public Line GetShortened(float shortenBy)
+			public Line GetShortened(float shortenBy, float minShorteningNormalised = 0)
 			{
 				Vector3 dir = B - A;
 				dir.EnsureNormalized(out float length);
-				shortenBy = Mathf.Min(length, shortenBy);
-				float t = shortenBy * 0.5f / length;
-				return new Line(Vector3.Lerp(A, B, t), Vector3.Lerp(B, A, t));
+				float totalLength = length;
+				length = Mathf.Max(length - shortenBy, length * minShorteningNormalised);
+				length = totalLength - length;
+				return new Line(A + dir * length, B - dir * length);
 			}
 		}
 
@@ -261,6 +262,11 @@ namespace Vertx.Debugging
 				Origin = origin;
 				Direction = direction;
 				perpendicular.EnsureNormalized();
+				if (!Mathf.Approximately(Vector3.Dot(direction, perpendicular), 0))
+				{
+					direction.EnsureNormalized();
+					perpendicular = Vector3.Cross(direction, Vector3.Cross(direction, perpendicular).normalized);
+				}
 				Perpendicular = perpendicular;
 				Angle = angle.Turns > 0.5f ? Angle.FromTurns(0.5f) : angle;
 			}
@@ -270,6 +276,9 @@ namespace Vertx.Debugging
 			public CurvedArrow(in Line line, Vector3 perpendicular, Angle angle) : this(line.A, line.B - line.A, perpendicular, angle) { }
 
 #if UNITY_EDITOR
+			private const float ArrowHeadAngle = 30f;
+			private static readonly Quaternion ArrowheadRotation = Quaternion.AngleAxis(-ArrowHeadAngle * 2, Vector3.up);
+			
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
 				// All this could be improved, reducing complex and redundant calculations.
@@ -287,11 +296,10 @@ namespace Vertx.Debugging
 				float offset = radius * Mathf.Cos(0.5f * Angle.Radians);
 				commandBuilder.AppendArc(new Arc(center - cross * offset, Perpendicular, cross, radius, Angle), color, duration);
 				
-				const float arrowHeadAngle = 30f;
-				Quaternion arrowheadRotation = Quaternion.LookRotation(cross, Perpendicular) * Quaternion.AngleAxis(Angle.Degrees * 0.5f - 90 + arrowHeadAngle, Perpendicular);
+				Quaternion arrowheadRotation = Quaternion.LookRotation(cross, Perpendicular) * Quaternion.AngleAxis(Angle.Degrees * 0.5f - 90 + ArrowHeadAngle, Vector3.up);
 				Vector3 arrowRay = new Vector3(0, 0, headLength);
 				commandBuilder.AppendLine(new Line(end, end + arrowheadRotation * arrowRay), color, duration);
-				commandBuilder.AppendLine(new Line(end, end + arrowheadRotation * Quaternion.AngleAxis(-arrowHeadAngle * 2, Perpendicular) * arrowRay), color, duration);
+				commandBuilder.AppendLine(new Line(end, end + arrowheadRotation * ArrowheadRotation * arrowRay), color, duration);
 			}
 #endif
 		}
@@ -388,16 +396,27 @@ namespace Vertx.Debugging
 			public Circle(Vector3 origin, Quaternion rotation, float radius)
 				=> _arc = new Arc(Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius)));
 
+			/// <summary>
+			/// If <see cref="normal"/> or <see cref="direction"/> are zero, this will spam logs to the console. Please validate your own inputs if you expect them to be incorrect.
+			/// </summary>
+			/// <param name="origin">The center of the circle.</param>
+			/// <param name="normal">The normal facing outwards from the circle.</param>
+			/// <param name="direction">Any direction on the plane the circle lies.</param>
+			/// <param name="radius">The radius of the circle.</param>
 			public Circle(Vector3 origin, Vector3 normal, Vector3 direction, float radius)
 				: this(
 					origin,
-					Quaternion.LookRotation(direction, normal) * Arc.s_Base3DRotation,
+					Quaternion.LookRotation(Mathf.Abs(Vector3.Dot(direction, normal)) > 0.999f ? GetValidPerpendicular(normal) : direction, normal) * Arc.s_Base3DRotation,
 					radius
 				) { }
 
 			/// <summary>
-			/// It's cheaper to use the <see cref="Circle(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
+			/// It's cheaper to use the <see cref="Circle(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.<br/>
+			/// If <see cref="normal"/> is zero, this will spam logs to the console. Please validate your own inputs if you expect them to be incorrect.
 			/// </summary>
+			/// <param name="origin">The center of the circle.</param>
+			/// <param name="normal">The normal facing outwards from the circle.</param>
+			/// <param name="radius">The radius of the circle.</param>
 			public Circle(Vector3 origin, Vector3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius) { }
 
 #if UNITY_EDITOR
