@@ -1,4 +1,4 @@
-#include "UnityCG.cginc"
+// #include "UnityCG.cginc"
 #include "VertxDebuggingShared.cginc"
 
 struct Line
@@ -25,7 +25,7 @@ v2f vert(vertInput input)
 {
     v2f o;
     Line l = line_buffer[input.instanceID];
-    o.position = UnityObjectToClipPos(input.vertexID == 0 ? l.A : l.B);
+    o.position = world_to_clip_pos(input.vertexID == 0 ? l.A : l.B);
     o.color = color_buffer[input.instanceID];
     return o;
 }

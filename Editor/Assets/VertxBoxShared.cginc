@@ -34,13 +34,12 @@ v2f vert(vertInput input)
     int modifications = modifications_buffer[input.instanceID];
 
     float4 worldPos = mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0));
-
-    o.position = mul(UNITY_MATRIX_VP, worldPos);
+    float3 worldViewDir = camera_direction_variable(worldPos);
+    
+    o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(worldPos, worldViewDir));
 
     if (has_normal_fade(modifications))
     {
-        float3 worldViewDir = is_orthographic() ? camera_direction() : _WorldSpaceCameraPos.xyz - worldPos;
-
         float3 normalA = UnityObjectToWorldNormal(input.normal * float3(1, 0, 0));
         float3 normalB = UnityObjectToWorldNormal(input.normal * float3(0, 1, 0));
         float3 normalC = UnityObjectToWorldNormal(input.normal * float3(0, 0, 1));

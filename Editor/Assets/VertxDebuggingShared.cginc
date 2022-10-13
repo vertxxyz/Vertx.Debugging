@@ -34,6 +34,26 @@ float3 camera_direction_variable(float3 originWorld)
     return normalize(_WorldSpaceCameraPos.xyz - originWorld);
 }
 
+float3 offset_world_towards_camera(float3 originWorld)
+{
+    return originWorld + camera_direction_variable(originWorld) * 0.001;
+}
+
+float4 offset_world_towards_camera(float4 originWorld)
+{
+    return float4(originWorld.xyz + camera_direction_variable(originWorld.xyz) * 0.001, originWorld.w);
+}
+
+float4 offset_world_towards_camera(float4 originWorld, float3 cameraDirection)
+{
+    return float4(originWorld.xyz + cameraDirection * 0.001, originWorld.w);
+}
+
+float4 world_to_clip_pos(float3 pos)
+{
+    return mul(UNITY_MATRIX_VP, float4(offset_world_towards_camera(pos), 1.0));
+}
+
 float4 billboard(float3 vertex)
 {
     // Get the origin (it's not affected by rotation or scale)

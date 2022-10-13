@@ -59,7 +59,7 @@ v2f vert(vertInput input)
                 // If this is not a smoothstep, it doesn't seem to properly interpolate.
                 a.Turns = smoothstep(-0.05, 0.05, dot(localPos, worldFacing));
 
-                o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
+                o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(worldPos, 1.0)));
             }
             else
             {
@@ -95,7 +95,7 @@ v2f vert(vertInput input)
                 // If this is not a smoothstep, it doesn't seem to properly interpolate.
                 a.Turns = smoothstep(-0.05, 0.05, dot(localPos, worldFacing));
 
-                o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
+                o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(worldPos, 1.0)));
             }
             else
             {
@@ -109,7 +109,7 @@ v2f vert(vertInput input)
                     + up * v.y
                     - n * v.z;
 
-                o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
+                o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(worldPos, 1.0)));
             }
         }
     }
@@ -120,25 +120,34 @@ v2f vert(vertInput input)
         input.vertex.xyz *= max(0, lerp(a.Turns, 1, (input.uv.y + 1) * 0.5));
         float4 worldPos = mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0));
 
-        o.position = mul(UNITY_MATRIX_VP, worldPos);
+        o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(worldPos));
         o.uvAndTurns = float4(input.uv, 1, 0);
         return o;
     }
     else if (has_face_camera(modifications))
     {
+        float angle = input.uv.y * 3.14159265359;
+        angle *= a.Turns;
+        input.vertex.xy = float2(cos(angle), sin(angle));
+        a.Turns = 1;
         o.position = billboard(input.vertex.xyz);
     }
     else
     {
         // return mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, float4(pos, 1.0)));
+        float angle = input.uv.y * 3.14159265359;
+        angle *= a.Turns;
+        input.vertex.xy = float2(cos(angle), sin(angle));
+        a.Turns = 1;
+        
         float4 worldPos = mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0));
 
-        o.position = mul(UNITY_MATRIX_VP, worldPos);
+        o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(worldPos));
 
         if (has_normal_fade(modifications))
         {
             float3 worldViewDir = _WorldSpaceCameraPos.xyz - worldPos;
-            float d = dot(worldViewDir, UnityObjectToWorldNormal(input.normal));
+            float d = dot(worldViewDir, UnityObjectToWorldNormal(input.vertex));
             d = saturate(
                 smoothstep(0, 0.1, d) // front face
             );

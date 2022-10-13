@@ -221,7 +221,8 @@ namespace Vertx.Debugging
 			{
 				RenderShapes();
 			}
-
+			
+			// commandBuffer.SetGlobalDepthBias(-1, -1);
 
 			void RenderShapes()
 			{
@@ -256,7 +257,7 @@ namespace Vertx.Debugging
 
 					MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
 					// Set the buffers to be used by the property block
-					// Synchronise the GraphicsBuffer with the data in the line buffer.
+					// Synchronise the GraphicsBuffer with the data in the shape buffer.
 					shape.Set(commandBuffer, propertyBlock);
 
 					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, -1, shapeCount, propertyBlock);

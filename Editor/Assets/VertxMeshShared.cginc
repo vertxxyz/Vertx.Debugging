@@ -1,4 +1,4 @@
-#include "UnityCG.cginc"
+// #include "UnityCG.cginc"
 #include "VertxDebuggingShared.cginc"
 
 StructuredBuffer<float4x4> mesh_buffer;
@@ -20,6 +20,6 @@ v2f vert(vertInput input)
     v2f o;
     unity_ObjectToWorld = mesh_buffer[input.instanceID];
     o.color = color_buffer[input.instanceID];
-    o.position = mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0)));
+    o.position = world_to_clip_pos(mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0)));
     return o;
 }
