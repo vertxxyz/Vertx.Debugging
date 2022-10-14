@@ -12,15 +12,15 @@ https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-
 
 ```csharp
 // Draw a sphere with the specified color.
-D.raw(new Shapes.Sphere(position, radius), color, duration);
+D.raw(new Shape.Sphere(position, radius), color, duration);
 
 // Draw green sphere if nothing was hit,
 // or draw a red sphere if something was.
-D.raw(new Shapes.Sphere(position, radius), hit, duration);
+D.raw(new Shape.Sphere(position, radius), hit, duration);
 
 // Casts draw in green, with red where hits were detected if no color is provided.
 // Cast color and hit color can be overrided manually.
-D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10), duration);
+D.raw(new Shape.SphereCastAll(position, direction, radius, hits, hitCount, 10), duration);
 ```
 
 > **Note**  
@@ -31,10 +31,10 @@ You can call these methods from most places, `Update`, `LateUpdate`, `FixedUpdat
 If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.matrix` works, `Gizmos.color` is unsupported. Gizmos are not pickable.
 
 ## Shapes
-All new shapes are contained within the Shapes class. I recommend statically importing the class if you are using them often:
+All new shapes are contained within the `Shape` class. I recommend statically importing the class if you are using them often:
 
 ```csharp
-using static Vertx.Debugging.Shapes;
+using static Vertx.Debugging.Shape;
 ```
 
 ### General
@@ -104,7 +104,7 @@ using static Vertx.Debugging.Shapes;
 
 ## Extensions
 
-The `Shapes` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
 Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
 
 ---

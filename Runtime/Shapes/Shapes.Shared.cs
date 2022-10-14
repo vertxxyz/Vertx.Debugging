@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	public static partial class Shapes
+	public static partial class Shape
 	{
 		private static CircleCache CircleCache => s_circleCache ?? (s_circleCache = new CircleCache());
 		private static CircleCache s_circleCache;

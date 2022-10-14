@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	public static partial class Shapes
+	public static partial class Shape
 	{
 		public readonly struct Point2D : IDrawable
 		{
@@ -406,7 +406,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
-				Angle fullCircle = Shapes.Angle.FromTurns(1);
+				Angle fullCircle = Shape.Angle.FromTurns(1);
 				commandBuilder.AppendArc(new Arc(Origin, Quaternion.identity, Radius, fullCircle), color, duration);
 				if (Revolutions == 0)
 				{
@@ -424,7 +424,7 @@ namespace Vertx.Debugging
 				{
 					float innerR = (currentRevolutions - 1) / currentRevolutions;
 					commandBuilder.AppendArc(
-						new Arc(Origin, normal, direction, radiusSigned * (currentRevolutions / absRevolutions), Shapes.Angle.FromTurns(innerR)),
+						new Arc(Origin, normal, direction, radiusSigned * (currentRevolutions / absRevolutions), Shape.Angle.FromTurns(innerR)),
 						color,
 						duration,
 						DrawModifications.Custom2

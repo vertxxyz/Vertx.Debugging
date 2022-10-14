@@ -99,7 +99,7 @@ namespace Vertx.Debugging
 			void Configure(
 				NativeList<T> elements,
 				NativeList<float> durations,
-				NativeList<Shapes.DrawModifications> modifications,
+				NativeList<Shape.DrawModifications> modifications,
 				NativeList<Color> colors,
 				float deltaTime
 			);
@@ -112,11 +112,11 @@ namespace Vertx.Debugging
 		{
 			public NativeList<T> Elements;
 			public NativeList<float> Durations;
-			public NativeList<Shapes.DrawModifications> Modifications;
+			public NativeList<Shape.DrawModifications> Modifications;
 			public NativeList<Color> Colors;
 			public float DeltaTime;
 
-			public void Configure(NativeList<T> elements, NativeList<float> durations, NativeList<Shapes.DrawModifications> modifications, NativeList<Color> colors, float deltaTime)
+			public void Configure(NativeList<T> elements, NativeList<float> durations, NativeList<Shape.DrawModifications> modifications, NativeList<Color> colors, float deltaTime)
 			{
 				Elements = elements;
 				Durations = durations;

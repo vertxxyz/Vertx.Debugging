@@ -79,11 +79,11 @@ namespace Vertx.Debugging
 			}
 		}
 
-		internal sealed class TextDataLists : TextDataLists<Shapes.TextData>
+		internal sealed class TextDataLists : TextDataLists<Shape.TextData>
 		{
-			public void Add(in Shapes.Text text, Color backgroundColor, Color textColor, float duration)
+			public void Add(in Shape.Text text, Color backgroundColor, Color textColor, float duration)
 			{
-				Shapes.TextData element = s_TextDataPool.Get();
+				Shape.TextData element = s_TextDataPool.Get();
 				_elements.Add(element);
 				_durations.Add(duration);
 				_isDirty = true;
@@ -95,11 +95,11 @@ namespace Vertx.Debugging
 			}
 		}
 		
-		internal sealed class ScreenTextDataLists : TextDataLists<Shapes.ScreenTextData>
+		internal sealed class ScreenTextDataLists : TextDataLists<Shape.ScreenTextData>
 		{
-			public void Add(in Shapes.ScreenText text, Color backgroundColor, Color textColor, float duration)
+			public void Add(in Shape.ScreenText text, Color backgroundColor, Color textColor, float duration)
 			{
-				Shapes.ScreenTextData element = s_TextDataPool.Get();
+				Shape.ScreenTextData element = s_TextDataPool.Get();
 				_elements.Add(element);
 				_durations.Add(duration);
 				_isDirty = true;
@@ -131,7 +131,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		internal abstract class TextDataLists<T> where T : class, Shapes.IText, new()
+		internal abstract class TextDataLists<T> where T : class, Shape.IText, new()
 		{
 			protected sealed class TextDataPool :
 #if !UNITY_2021_1_OR_NEWER
@@ -206,7 +206,7 @@ namespace Vertx.Debugging
 			private readonly ListWrapper<float> _durations;
 			private readonly ListAndBuffer<T> _elements;
 			private readonly ListAndBuffer<Color> _colors = new ListAndBuffer<Color>("color_buffer");
-			private readonly ListAndBuffer<Shapes.DrawModifications> _modifications = new ListAndBuffer<Shapes.DrawModifications>("modifications_buffer");
+			private readonly ListAndBuffer<Shape.DrawModifications> _modifications = new ListAndBuffer<Shape.DrawModifications>("modifications_buffer");
 
 			private MaterialPropertyBlock _propertyBlock;
 
@@ -216,7 +216,7 @@ namespace Vertx.Debugging
 
 			public NativeList<T> InternalList => _elements.List;
 			public NativeList<float> DurationsInternalList => _durations.List;
-			public NativeList<Shapes.DrawModifications> ModificationsInternalList => _modifications.List;
+			public NativeList<Shape.DrawModifications> ModificationsInternalList => _modifications.List;
 			public NativeList<Color> ColorsInternalList => _colors.List;
 			
 			public ShapeBuffersWithData(string bufferName, bool usesDurations = true)
@@ -254,7 +254,7 @@ namespace Vertx.Debugging
 				_dirty = true;
 			}
 
-			public void Add(in T element, Color color, Shapes.DrawModifications modifications, float duration)
+			public void Add(in T element, Color color, Shape.DrawModifications modifications, float duration)
 			{
 				EnsureCreated();
 				_elements.List.Add(element);

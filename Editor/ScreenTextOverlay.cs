@@ -29,8 +29,8 @@ namespace Vertx.Debugging
 			get
 			{
 				var commandBuilder = CommandBuilder.Instance;
-				return commandBuilder.DefaultScreenTexts.Elements.Any(e => (e.ActiveViews & Shapes.View.Scene) != 0)
-				       || commandBuilder.GizmoScreenTexts.Elements.Any(e => (e.ActiveViews & Shapes.View.Scene) != 0);
+				return commandBuilder.DefaultScreenTexts.Elements.Any(e => (e.ActiveViews & Shape.View.Scene) != 0)
+				       || commandBuilder.GizmoScreenTexts.Elements.Any(e => (e.ActiveViews & Shape.View.Scene) != 0);
 			}
 		}
 
@@ -96,8 +96,8 @@ namespace Vertx.Debugging
 		{
 			for (int i = 0; i < list.Count; i++)
 			{
-				Shapes.ScreenTextData textData = list.Elements[i];
-				if ((textData.ActiveViews & Shapes.View.Scene) == 0) continue;
+				Shape.ScreenTextData textData = list.Elements[i];
+				if ((textData.ActiveViews & Shape.View.Scene) == 0) continue;
 				GUIContent content = DrawText.GetGUIContentFromObject(textData.Value);
 				Vector2 size = DrawText.TextStyle.CalcSize(content);
 				layout.Add((new Rect(0, bounds.yMax, size.x, size.y), content.text));
@@ -113,8 +113,8 @@ namespace Vertx.Debugging
 			int c = startIndex;
 			for (int i = 0; i < list.Count; i++)
 			{
-				Shapes.ScreenTextData textData = list.Elements[i];
-				if ((textData.ActiveViews & Shapes.View.Scene) == 0) continue;
+				Shape.ScreenTextData textData = list.Elements[i];
+				if ((textData.ActiveViews & Shape.View.Scene) == 0) continue;
 				(Rect rect, string text) = layout[c++];
 				s_SharedContent.text = text;
 				DrawText.DrawAtScreenPosition(rect, s_SharedContent, textData.BackgroundColor, textData.TextColor, textData.Context);

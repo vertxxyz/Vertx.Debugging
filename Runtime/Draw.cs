@@ -31,7 +31,7 @@ namespace Vertx.Debugging
 		public static void raw<T>(T shape, bool hit, float duration = 0) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
-			shape.Draw(s_Builder, hit ? Shapes.HitColor : Shapes.CastColor, duration);
+			shape.Draw(s_Builder, hit ? Shape.HitColor : Shape.CastColor, duration);
 #endif
 		}
 
@@ -46,44 +46,44 @@ namespace Vertx.Debugging
 		// ------ Conversion for Unity types ------
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Ray ray, Color color, float duration = 0) => raw(new Shapes.Ray(ray.origin, ray.direction), color, duration);
+		public static void raw(Ray ray, Color color, float duration = 0) => raw(new Shape.Ray(ray.origin, ray.direction), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Ray ray, bool hit, float duration = 0) => raw(ray, hit ? Shapes.HitColor : Shapes.CastColor, duration);
+		public static void raw(Ray ray, bool hit, float duration = 0) => raw(ray, hit ? Shape.HitColor : Shape.CastColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray ray, float duration = 0) => raw(ray, Color.white, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Vector3 position, Color color, float duration = 0) => raw(new Shapes.Point(position), color, duration);
+		public static void raw(Vector3 position, Color color, float duration = 0) => raw(new Shape.Point(position), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Vector3 position, float duration = 0) => raw(position, Color.white, duration);
 		
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Vector2 position, Color color, float duration = 0) => raw(new Shapes.Point2D(position), color, duration);
+		public static void raw(Vector2 position, Color color, float duration = 0) => raw(new Shape.Point2D(position), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Vector2 position, float duration = 0) => raw(position, Color.white, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Bounds bounds, Color color, float duration = 0) => raw(new Shapes.Box(bounds), color, duration);
+		public static void raw(Bounds bounds, Color color, float duration = 0) => raw(new Shape.Box(bounds), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Bounds bounds, float duration = 0) => raw(bounds, Color.white, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit hit, Color color, float duration = 0) => raw(new Shapes.SurfacePoint(hit.point, hit.normal), color, duration);
+		public static void raw(RaycastHit hit, Color color, float duration = 0) => raw(new Shape.SurfacePoint(hit.point, hit.normal), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit hit, float duration = 0) => raw(hit, Shapes.HitColor, duration);
+		public static void raw(RaycastHit hit, float duration = 0) => raw(hit, Shape.HitColor, duration);
 		
 #if VERTX_PHYSICS_2D
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit2D hit, Color color, float duration = 0) => raw(new Shapes.Ray(hit.point, hit.normal), color, duration);
+		public static void raw(RaycastHit2D hit, Color color, float duration = 0) => raw(new Shape.Ray(hit.point, hit.normal), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit2D hit, float duration = 0) => raw(hit, Shapes.HitColor, duration);
+		public static void raw(RaycastHit2D hit, float duration = 0) => raw(hit, Shape.HitColor, duration);
 #endif
 	}
 

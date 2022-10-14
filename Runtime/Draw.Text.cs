@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using static Vertx.Debugging.Shapes;
+using static Vertx.Debugging.Shape;
 using UnityEditor;
 #if !UNITY_2022_1_OR_NEWER
 using System.Reflection;

@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 namespace Vertx.Debugging
 {
-	public static partial class Shapes
+	public static partial class Shape
 	{
 		/// <summary>
 		/// Text drawn at a 3D position in the scene.

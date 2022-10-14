@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	public static partial class Shapes
+	public static partial class Shape
 	{
 		public readonly struct Raycast : IDrawableCast
 		{
