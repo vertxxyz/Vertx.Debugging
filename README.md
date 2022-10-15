@@ -83,6 +83,7 @@ using static Vertx.Debugging.Shape;
 | `Spiral2D`                                                 | A spiral, useful for visualising rotation on wheels.         |
 | `Vector2` (Built-in)                                       | Fallback to `Point2D`.                                       |
 | `RaycastHit2D` (Built-in)                                  | Fallback to `Ray`.                                           |
+| `Rect` (Built-in)                                          | Fallback to `Box2D`.                                         |
 
 #### Casts
 | Name                                                                            | Description                                                                                                                                                               |

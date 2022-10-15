@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added, changed, improved
 - **Complete API overhaul**, nothing is as it was previously! See README for more information.
   - The core drawing function is `D.raw(shape, color = Color.white, duration = 0)`
-  - All drawable shapes are structs inside the `Shapes` class.
+  - All drawable shapes are structs inside the `Shape` class.
 - Greatly improved drawing performance.
   - Drawing no longer uses Debug.DrawLine or Gizmos.DrawLine internally.
   - Everything except text is now using instanced rendering.

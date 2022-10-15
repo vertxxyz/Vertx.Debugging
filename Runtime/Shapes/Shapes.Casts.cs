@@ -1,3 +1,4 @@
+#if VERTX_PHYSICS
 using UnityEngine;
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
@@ -386,3 +387,4 @@ namespace Vertx.Debugging
 		}
 	}
 }
+#endif

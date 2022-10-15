@@ -8,7 +8,6 @@ Shader "Hidden/Vertx/Box"
 			"RenderType"="Transparent"
 		}
 
-		ZWrite Off
 		Blend SrcAlpha OneMinusSrcAlpha
 		Offset -1, -1
 		Cull Off
@@ -16,6 +15,7 @@ Shader "Hidden/Vertx/Box"
 		Pass // 0
 		{
 			ZTest Greater
+			ZWrite Off
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -35,6 +35,7 @@ Shader "Hidden/Vertx/Box"
 		Pass // 1
 		{
 			ZTest LEqual
+			ZWrite On
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag

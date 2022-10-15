@@ -8,7 +8,6 @@ Shader "Hidden/Vertx/Cast"
 			"RenderType"="Transparent"
 		}
 
-		ZWrite Off
 		Blend SrcAlpha OneMinusSrcAlpha
 		Offset -1, -1
 		Cull Off
@@ -16,6 +15,7 @@ Shader "Hidden/Vertx/Cast"
 		Pass // 0
 		{
 			ZTest Greater
+			ZWrite Off
 			CGPROGRAM
 			#pragma require geometry
 			#pragma vertex vert
@@ -37,6 +37,7 @@ Shader "Hidden/Vertx/Cast"
 		Pass // 1
 		{
 			ZTest LEqual
+			ZWrite On
 			CGPROGRAM
 			#pragma require geometry
 			#pragma vertex vert
