@@ -19,6 +19,8 @@ namespace Vertx.Debugging
 	// ReSharper disable once ClassCannotBeInstantiated
 	public sealed partial class CommandBuilder
 	{
+		private static readonly int s_InstanceCountKey = Shader.PropertyToID("_InstanceCount");
+		
 		private class ListWrapper<T> : IDisposable where T : unmanaged
 		{
 			private const int InitialListCapacity = 32;
@@ -203,6 +205,7 @@ namespace Vertx.Debugging
 		{
 			// Avoids redundantly setting internal GraphicsBuffer data.
 			private bool _dirty = true;
+			// Optimises removal calls
 			private readonly ListWrapper<float> _durations;
 			private readonly ListAndBuffer<T> _elements;
 			private readonly ListAndBuffer<Color> _colors = new ListAndBuffer<Color>("color_buffer");
@@ -213,6 +216,8 @@ namespace Vertx.Debugging
 			public MaterialPropertyBlock PropertyBlock => _propertyBlock ?? (_propertyBlock = new MaterialPropertyBlock());
 
 			public int Count => _elements.Count;
+
+			public bool HasNonZeroDuration { get; set; }
 
 			public NativeList<T> InternalList => _elements.List;
 			public NativeList<float> DurationsInternalList => _durations.List;
@@ -239,6 +244,7 @@ namespace Vertx.Debugging
 				_elements.SetBufferToPropertyBlock(propertyBlock);
 				_colors.SetBufferToPropertyBlock(propertyBlock);
 				_modifications.SetBufferToPropertyBlock(propertyBlock);
+				propertyBlock.SetInt(s_InstanceCountKey, _elements.Count);
 			}
 
 			public void SetDirty() => _dirty = true;
@@ -262,6 +268,8 @@ namespace Vertx.Debugging
 				_modifications.List.Add(modifications);
 				_durations?.List.Add(duration);
 				_dirty = true;
+				if (duration > 0)
+					HasNonZeroDuration = true;
 			}
 
 			public void Clear()

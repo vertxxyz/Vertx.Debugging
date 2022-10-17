@@ -226,17 +226,17 @@ namespace Vertx.Debugging
 
 			void RenderShapes()
 			{
-				render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, group.Lines);
-				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, group.Arcs);
-				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes);
-				render |= RenderShape(AssetsUtility.Box2D, AssetsUtility.DefaultMaterial, group.Box2Ds);
-				render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, group.Outlines);
-				render |= RenderShape(AssetsUtility.Line, AssetsUtility.CastMaterial, group.Casts);
+				render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, group.Lines, 128); // 256 vert target, 2 verts per line. 128 lines.
+				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, group.Arcs, 4); // 256 vert target, 64 verts per circle. 4 circles.
+				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes, 11); // 256 vert target, 12 edges, 2 verts each. 11 boxes.
+				render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, group.Outlines, 128);
+				render |= RenderShape(AssetsUtility.Line, AssetsUtility.CastMaterial, group.Casts, 128);
 
 				bool RenderShape<T>(
 					AssetsUtility.Asset<Mesh> mesh,
 					AssetsUtility.MaterialAsset material,
-					ShapeBuffersWithData<T> shape) where T : unmanaged
+					ShapeBuffersWithData<T> shape,
+					int groupCount = 1) where T : unmanaged
 				{
 					int shapeCount = shape.Count;
 					if (shapeCount <= 0)
@@ -259,8 +259,7 @@ namespace Vertx.Debugging
 					// Set the buffers to be used by the property block
 					// Synchronise the GraphicsBuffer with the data in the shape buffer.
 					shape.Set(commandBuffer, propertyBlock);
-
-					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, -1, shapeCount, propertyBlock);
+					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, -1, Mathf.CeilToInt(shapeCount / (float)groupCount), propertyBlock);
 					return true;
 				}
 			}

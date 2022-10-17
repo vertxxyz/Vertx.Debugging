@@ -29,12 +29,21 @@ v2f vert(vertInput input)
 {
     v2f o;
 
-    Arc a = arc_buffer[input.instanceID];
+    int index = input.instanceID * 4 + input.vertexID / 64; // 64 vert circle.
+    if (index >= _InstanceCount)
+    {
+        o.position = 0;
+        o.color = 0;
+        o.uvAndTurns = 0;
+        return o;
+    }
+    
+    Arc a = arc_buffer[index];
     unity_ObjectToWorld = a.Matrix;
     UNITY_MATRIX_MV = mul(unity_MatrixV, unity_ObjectToWorld);
 
-    o.color = color_buffer[input.instanceID];
-    int modifications = modifications_buffer[input.instanceID];
+    o.color = color_buffer[index];
+    int modifications = modifications_buffer[index];
 
     if (has_custom(modifications))
     {
@@ -57,7 +66,7 @@ v2f vert(vertInput input)
                 float3 worldPos = originWorld + localPos;
 
                 // If this is not a smoothstep, it doesn't seem to properly interpolate.
-                a.Turns = smoothstep(-0.05, 0.05, dot(localPos, worldFacing));
+                a.Turns = smoothstep(-0.01, 0.01, dot(localPos, worldFacing));
 
                 o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(worldPos, 1.0)));
             }
@@ -93,7 +102,7 @@ v2f vert(vertInput input)
                 float3 worldPos = originWorld + localPos;
 
                 // If this is not a smoothstep, it doesn't seem to properly interpolate.
-                a.Turns = smoothstep(-0.05, 0.05, dot(localPos, worldFacing));
+                a.Turns = smoothstep(-0.01, 0.01, dot(localPos, worldFacing));
 
                 o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(worldPos, 1.0)));
             }
@@ -149,7 +158,7 @@ v2f vert(vertInput input)
             float3 worldViewDir = _WorldSpaceCameraPos.xyz - worldPos;
             float d = dot(worldViewDir, UnityObjectToWorldNormal(input.vertex));
             d = saturate(
-                smoothstep(0, 0.1, d) // front face
+                smoothstep(0, 0.01, d) // front face
             );
 
             o.color.a *= max(0.3, d);

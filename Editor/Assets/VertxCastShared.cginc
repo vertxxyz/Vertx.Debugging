@@ -32,9 +32,14 @@ struct fragInput
 geoInput vert(vertInput input)
 {
     geoInput o;
-    o.color = color_buffer[input.instanceID];
-    o.instanceID = input.instanceID;
-    // o.vertexID = input.vertexID;
+    uint index = input.instanceID * 128 + input.vertexID / 2;
+    o.instanceID = index;
+    if (index >= _InstanceCount)
+    {
+        o.color = 0;
+        return o;
+    }
+    o.color = color_buffer[index];
     return o;
 }
 
@@ -53,10 +58,13 @@ void geo(line geoInput input[2], inout LineStream<fragInput> outputStream)
         float3(1, 1, 1)
     };
 
-    Cast c = cast_buffer[input[0].instanceID];
+    int instance = input[0].instanceID;
+    if (instance >= _InstanceCount)
+        return;
+    Cast c = cast_buffer[instance];
     float3 center = mul(c.Matrix, float4(0, 0, 0, 1)).xyz;
     float3 v = normalize(c.Vector);
-    
+
     float highest = -10000;
     float lowest = 10000;
     float3 h, l;
@@ -67,7 +75,7 @@ void geo(line geoInput input[2], inout LineStream<fragInput> outputStream)
 
         float3 direction = camera_direction_variable(p);
         float3 perpendicular = normalize(cross(direction, v));
-        
+
         float3 pl = p - center;
         float d = dot(pl, perpendicular);
         float vd = dot(v, normalize(pl));
@@ -96,7 +104,7 @@ void geo(line geoInput input[2], inout LineStream<fragInput> outputStream)
     outputStream.Append(f1b);
 
     outputStream.RestartStrip();
-    
+
     fragInput f2;
     f2.color = input[0].color;
     f2.position = UnityObjectToClipPos(l);

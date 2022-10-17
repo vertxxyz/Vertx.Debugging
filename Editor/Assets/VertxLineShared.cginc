@@ -24,8 +24,16 @@ struct v2f
 v2f vert(vertInput input)
 {
     v2f o;
-    Line l = line_buffer[input.instanceID];
-    o.position = world_to_clip_pos(input.vertexID == 0 ? l.A : l.B);
-    o.color = color_buffer[input.instanceID];
+    int index = input.instanceID * 128 + input.vertexID / 2;
+    if (index >= _InstanceCount)
+    {
+        o.position = 0;
+        o.color = 0;
+        return o;
+    }
+    
+    Line l = line_buffer[index];
+    o.position = world_to_clip_pos(input.vertexID % 2 == 0 ? l.A : l.B);
+    o.color = color_buffer[index];
     return o;
 }

@@ -5,6 +5,8 @@
 #define CUSTOM2 1 << 4
 #define Z_GREATER_FADE 0.2
 
+int _InstanceCount;
+
 bool has_alpha_fade(int value) { return (value & ALPHA_FADE) != 0; }
 bool has_normal_fade(int value) { return (value & NORMAL_FADE) != 0; }
 bool has_face_camera(int value) { return (value & FACE_CAMERA) != 0; }
@@ -84,6 +86,20 @@ void get_circle_info(
     float r1Sqrd = radius * radius;
     offsetToNewCircle = r1Sqrd / d1; // Distance from sphere to place circle
     newRadius = sqrt(r1Sqrd - offsetToNewCircle * offsetToNewCircle); // Radius of circle
+}
+
+void get_circle_info_basic(
+    float3 originWorld,
+    float radius,
+    out float offsetToNewCircle,
+    out float3 offsetNormal
+)
+{
+    offsetNormal = _WorldSpaceCameraPos.xyz - originWorld; // Normal
+    float d1 = length(offsetNormal); // Distance to camera
+    offsetNormal = offsetNormal / d1; // Normalise n
+    float r1Sqrd = radius * radius;
+    offsetToNewCircle = r1Sqrd / d1; // Distance from sphere to place circle
 }
 
 float4 axis_angle(float3 axis, float angle)

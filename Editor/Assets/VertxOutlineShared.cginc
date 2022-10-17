@@ -138,12 +138,20 @@ bool closest_plane_circle_intersection(
 v2f vert(vertInput input)
 {
     v2f o;
-    Outine outline = outline_buffer[input.instanceID];
-    int modifications = modifications_buffer[input.instanceID];
-    o.color = color_buffer[input.instanceID];
+    int index = input.instanceID * 128 + input.vertexID / 2;
+    if (index >= _InstanceCount)
+    {
+        o.position = 0;
+        o.color = 0;
+        return o;
+    }
+    
+    Outine outline = outline_buffer[index];
+    int modifications = modifications_buffer[index];
+    o.color = color_buffer[index];
     if (has_normal_fade(modifications))
     {
-        float3 originWorld = input.vertexID == 0 ? outline.A : outline.B;
+        float3 originWorld = input.vertexID % 2 == 0 ? outline.A : outline.B;
         float3 cameraDirection = camera_direction_variable(originWorld);
         float d = dot(cameraDirection, outline.C);
         d = saturate(
@@ -151,7 +159,7 @@ v2f vert(vertInput input)
         );
 
         o.color.a *= max(0.3, d);
-        o.position = mul(UNITY_MATRIX_VP, float4(originWorld, 1.0));
+        o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(originWorld, 1), cameraDirection));
         return o;
     }
 
@@ -159,26 +167,27 @@ v2f vert(vertInput input)
     {
         // Custom1 - A, B: line positions
         // C: Box line normal. (see BoxShared's NormalFade)
-        float3 originWorld = input.vertexID == 0 ? outline.A : outline.B;
-        float3 worldViewDir = is_orthographic() ? camera_direction() : _WorldSpaceCameraPos.xyz - originWorld;
+        float3 originWorld = input.vertexID % 2 == 0 ? outline.A : outline.B;
+        float3 cameraDirection = camera_direction_variable(originWorld);
 
         float4 rot = axis_angle(outline.A - outline.B, 3.14159265359 * 0.25);
         float3 normalA = rotate(rot, outline.C);
         float3 normalB = rotate(quaternion_inverse(rot), outline.C);
         
-        o.color.a *= max(0.3, step(0, max(dot(worldViewDir, normalA), dot(worldViewDir, normalB))));
-        o.position = mul(UNITY_MATRIX_VP, float4(originWorld, 1.0));
+        o.color.a *= max(0.3, step(0, max(dot(cameraDirection, normalA), dot(cameraDirection, normalB))));
+        o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(originWorld, 1), cameraDirection));
         return o;
     }
     
     float radius = length(outline.C);
 
-    float3 originWorld = input.vertexID == 0 ? outline.A : outline.B;
+    float3 originWorld = input.vertexID % 2 == 0 ? outline.A : outline.B;
     float3 direction = normalize(outline.B - outline.A);
 
     if (is_orthographic())
     {
-        float3 right = normalize(cross(-camera_direction(), direction));
+        float3 cameraDirection = camera_direction();
+        float3 right = normalize(cross(-cameraDirection, direction));
 
         float3 worldPos = originWorld
             + right * radius;
@@ -188,10 +197,11 @@ v2f vert(vertInput input)
             if (dot(outline.C, right) < 0)
             {
                 o.color.a = 0;
-                worldPos = float3(0, 0, 0);
+                o.position = 0;
+                return o;
             }
         }
-        o.position = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
+        o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(worldPos, 1), cameraDirection));
         return o;
     }
     else
@@ -199,9 +209,9 @@ v2f vert(vertInput input)
         float3 normal = normalize(_WorldSpaceCameraPos.xyz - originWorld);
         float3 right = normalize(cross(normal, direction));
 
-        float newRadius, offset;
+        float offset;
         float3 oNormal;
-        get_circle_info(originWorld, radius, newRadius, offset, oNormal);
+        get_circle_info_basic(originWorld, radius, offset, oNormal);
 
         // Find the intersection between this new plane (the one created by get_circle_info)
         // and the circle that is at originWorld, facing in direction, and of radius;
@@ -220,17 +230,22 @@ v2f vert(vertInput input)
                 intersection
             ))
         {
-            intersection = float3(0, 0, 0);
             o.color.a = 0;
+            o.position = 0;
+            return o;
         }
 
         if (has_custom(modifications))
         {
             // Clip against the hemisphere that makes up a capsule.
             if (dot(outline.C, intersection - originWorld) < 0)
+            {
                 o.color.a = 0;
+                o.position = 0;
+                return o;
+            }
         }
-        o.position = mul(UNITY_MATRIX_VP, float4(intersection, 1.0));
+        o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(intersection, 1.0)));
         return o;
     }
 }

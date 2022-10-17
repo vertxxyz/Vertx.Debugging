@@ -4,6 +4,7 @@
 #endif
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
@@ -131,6 +132,8 @@ namespace Vertx.Debugging
 			/// </summary>
 			public void Execute()
 			{
+				int endIndex = Durations.Length;
+				int totalRemoved = 0;
 				for (int index = Elements.Length - 1; index >= 0; index--)
 				{
 					float oldDuration = Durations[index];
@@ -143,20 +146,17 @@ namespace Vertx.Debugging
 					}
 
 					// RemoveUnorderedAt, shared logic:
-					int endIndex = Durations.Length - 1;
-
+					endIndex--;
 					Durations[index] = Durations[endIndex];
-					Durations.RemoveAt(endIndex);
-
 					Elements[index] = Elements[endIndex];
-					Elements.RemoveAt(endIndex);
-
 					Modifications[index] = Modifications[endIndex];
-					Modifications.RemoveAt(endIndex);
-
 					Colors[index] = Colors[endIndex];
-					Colors.RemoveAt(endIndex);
+					totalRemoved++;
 				}
+				Durations.RemoveRange(endIndex, totalRemoved);
+				Elements.RemoveRange(endIndex, totalRemoved);
+				Modifications.RemoveRange(endIndex, totalRemoved);
+				Colors.RemoveRange(endIndex, totalRemoved);
 			}
 		}
 
@@ -168,6 +168,7 @@ namespace Vertx.Debugging
 			// TODO cleanup if things aren't running and stuff is getting out of hand...
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static bool IsInFixedUpdate()
 #if UNITY_2020_3_OR_NEWER
 			=> Time.inFixedTimeStep;

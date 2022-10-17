@@ -81,17 +81,6 @@ namespace Vertx.Debugging
 			);
 		}
 
-		public void AppendBox2D(in Shape.Box2D box, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
-		{
-			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
-			group.Box2Ds.Add(
-				UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Box2D(Gizmos.matrix * box.Matrix) : box,
-				color,
-				modifications,
-				duration
-			);
-		}
-
 		internal void AppendOutline(in Shape.Outline outline, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
@@ -124,7 +113,7 @@ namespace Vertx.Debugging
 			// Force the runtime object to exist
 			_ = DrawRuntimeBehaviour.Instance;
 		}
-		
+
 		public void AppendScreenText(in Shape.ScreenText text, Color backgroundColor, Color textColor, float duration)
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
