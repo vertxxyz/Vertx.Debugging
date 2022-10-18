@@ -1,6 +1,9 @@
 Shader "Hidden/Vertx/Outline"
 {
-	Properties {}
+	Properties
+	{
+		[HideInInspector] _ZWrite("__zw", Float) = 1.0
+	}
 	SubShader
 	{
 		Tags
@@ -11,7 +14,7 @@ Shader "Hidden/Vertx/Outline"
 		Blend SrcAlpha OneMinusSrcAlpha
 		Offset -1, -1
 		Cull Off
-		
+
 		Pass // 0
 		{
 			ZTest Greater
@@ -23,7 +26,7 @@ Shader "Hidden/Vertx/Outline"
 			#include "VertxOutlineShared.cginc"
 			#pragma instancing_options assumeuniformscaling nolightmap nolightprobe nolodfade
 			#pragma target 4.5
-			
+
 			fixed4 frag(v2f i) : SV_Target
 			{
 				i.color.a *= Z_GREATER_FADE;
@@ -31,11 +34,11 @@ Shader "Hidden/Vertx/Outline"
 			}
 			ENDCG
 		}
-		
+
 		Pass // 1
 		{
 			ZTest LEqual
-			ZWrite On
+			ZWrite [_ZWrite]
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -43,7 +46,7 @@ Shader "Hidden/Vertx/Outline"
 			#include "VertxOutlineShared.cginc"
 			#pragma instancing_options assumeuniformscaling nolightmap nolightprobe nolodfade
 			#pragma target 4.5
-			
+
 			fixed4 frag(v2f i) : SV_Target
 			{
 				return i.color;

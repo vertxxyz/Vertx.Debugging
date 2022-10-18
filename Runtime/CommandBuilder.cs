@@ -184,6 +184,7 @@ namespace Vertx.Debugging
 
 		private bool SharedRenderingDetails(Camera camera, BufferGroup group, ref CommandBuffer commandBuffer, RenderingType renderingType)
 		{
+			_pauseCapture.CommitCurrentPausedFrame();
 			_lastRenderingCamera = camera;
 			UpdateContext.ForceStateToUpdate();
 
@@ -256,6 +257,7 @@ namespace Vertx.Debugging
 					// (It looks very strange to the user when a cyan box appears for a millisecond at 0,0,0)
 					Material mat = material.Value;
 					int passCount = mat.passCount;
+					bool isCompiling = false;
 					for (int i = 0; i < passCount; i++)
 					{
 						if (ShaderUtil.IsPassCompiled(mat, i))
@@ -263,7 +265,11 @@ namespace Vertx.Debugging
 						if (ShaderUtil.anythingCompiling)
 							return false;
 						ShaderUtil.CompilePass(mat, i);
+						isCompiling = true;
 					}
+
+					if (isCompiling)
+						return false;
 
 					MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
 					// Set the buffers to be used by the property block

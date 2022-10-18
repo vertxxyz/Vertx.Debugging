@@ -25,6 +25,7 @@ namespace Vertx.Debugging
 		private const string RemoveShapesByDurationProfilerName = Name + " " + nameof(RemoveShapesByDuration);
 
 		private float _timeThisFrame;
+		private float _deltaTimeThisFrame;
 
 		/// <summary>
 		/// Queues <see cref="EarlyUpdate"/> into the EarlyUpdate portion of the player loop.
@@ -72,13 +73,14 @@ namespace Vertx.Debugging
 		{
 			UpdateContext.ForceStateToUpdate();
 			// ReSharper disable once CompareOfFloatsByEqualityOperator
-			if (Time.deltaTime == 0)
+			_deltaTimeThisFrame = Time.deltaTime;
+			if (_deltaTimeThisFrame == 0)
 			{
 				// The game is paused, we don't need to clean up or transfer any data.
 			}
 			else
 			{
-				RemoveShapesByDuration(Time.deltaTime, null);
+				RemoveShapesByDuration(_deltaTimeThisFrame, null);
 			}
 
 			_timeThisFrame = Time.time;
@@ -110,6 +112,7 @@ namespace Vertx.Debugging
 		{
 			public NativeList<float> Durations;
 			public NativeList<T> Elements;
+			[ReadOnly]
 			public float DeltaTime;
 
 			public void Configure(NativeList<T> elements, NativeList<float> durations, float deltaTime)
@@ -128,8 +131,7 @@ namespace Vertx.Debugging
 				int endIndex = Durations.Length;
 				for (int index = Elements.Length - 1; index >= 0; index--)
 				{
-					float oldDuration = Durations[index];
-					float newDuration = oldDuration - DeltaTime;
+					float newDuration = Durations[index] - DeltaTime;
 					if (newDuration > 0)
 					{
 						Durations[index] = newDuration;
@@ -143,9 +145,23 @@ namespace Vertx.Debugging
 					Elements[index] = Elements[endIndex];
 				}
 
+#if VERTX_COLLECTIONS_1_0_0_PRE_4_OR_NEWER
 				int totalRemoved = Durations.Length - endIndex;
+				
+				// This check is required for earlier versions of collections.
+				if (totalRemoved == 0)
+					return;
+				
 				Durations.RemoveRange(endIndex, totalRemoved);
 				Elements.RemoveRange(endIndex, totalRemoved);
+#else
+				if (Durations.Length == endIndex)
+					return;
+
+				int last = Durations.Length;
+				Durations.RemoveRange(endIndex, last);
+				Elements.RemoveRange(endIndex, last);
+#endif
 			}
 		}
 

@@ -1,6 +1,9 @@
 Shader "Hidden/Vertx/Arc"
 {
-	Properties {}
+	Properties
+	{
+		[HideInInspector] _ZWrite("__zw", Float) = 1.0
+	}
 	SubShader
 	{
 		Tags
@@ -30,16 +33,16 @@ Shader "Hidden/Vertx/Arc"
 				clip(i.uvAndTurns.z - i.uvAndTurns.y);
 
 				i.color.a *= Z_GREATER_FADE;
-				
+
 				return i.color;
 			}
 			ENDCG
 		}
-		
+
 		Pass // 1
 		{
 			ZTest LEqual
-			ZWrite On
+			ZWrite [_ZWrite]
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag

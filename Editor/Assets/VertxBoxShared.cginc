@@ -1,14 +1,9 @@
 #include "UnityCG.cginc"
 #include "VertxDebuggingShared.cginc"
 
-struct Box
-{
-    float4x4 Matrix;
-};
-
 struct BoxGroup
 {
-    Box A;
+    float4x4 Matrix;
     float4 Color;
     int Modifications;
 };
@@ -42,12 +37,11 @@ v2f vert(vertInput input)
         return o;
     }
 
-    BoxGroup ag = box_buffer[index];
-    Box a = ag.A;
-    unity_ObjectToWorld = a.Matrix;
+    BoxGroup group = box_buffer[index];
+    unity_ObjectToWorld = group.Matrix;
 
-    o.color = ag.Color;
-    int modifications = ag.Modifications;
+    o.color = group.Color;
+    int modifications = group.Modifications;
 
     float4 worldPos = mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0));
     float3 cameraDirection = camera_direction_variable(worldPos);

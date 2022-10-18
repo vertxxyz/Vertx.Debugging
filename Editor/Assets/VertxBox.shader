@@ -1,6 +1,9 @@
 Shader "Hidden/Vertx/Box"
 {
-	Properties {}
+	Properties
+	{
+		[HideInInspector] _ZWrite("__zw", Float) = 1.0
+	}
 	SubShader
 	{
 		Tags
@@ -31,11 +34,11 @@ Shader "Hidden/Vertx/Box"
 			}
 			ENDCG
 		}
-		
+
 		Pass // 1
 		{
 			ZTest LEqual
-			ZWrite On
+			ZWrite [_ZWrite]
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag

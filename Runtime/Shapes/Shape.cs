@@ -566,20 +566,29 @@ namespace Vertx.Debugging
 		public readonly struct Box : IDrawable
 		{
 			public readonly Matrix4x4 Matrix;
+			public readonly bool Shade3D;
 
-			internal Box(Matrix4x4 matrix) => Matrix = matrix;
+			internal Box(Matrix4x4 matrix, bool shade3D = true)
+			{
+				Matrix = matrix;
+				Shade3D = shade3D;
+			}
 
-			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation) : this(Matrix4x4.TRS(position, orientation, halfExtents)) { }
+			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation, bool shade3D = true) : this(Matrix4x4.TRS(position, orientation, halfExtents), shade3D) { }
 
-			public Box(Transform transform) => Matrix = transform.localToWorldMatrix;
+			public Box(Transform transform, bool shade3D = true)
+			{
+				Shade3D = shade3D;
+				Matrix = transform.localToWorldMatrix;
+			}
 
-			public Box(Bounds bounds) : this(bounds.center, bounds.extents, Quaternion.identity) { }
+			public Box(Bounds bounds, bool shade3D = true) : this(bounds.center, bounds.extents, Quaternion.identity, shade3D) { }
 
 			public Box GetTranslated(Vector3 translation) => new Box(Matrix4x4.Translate(translation) * Matrix);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
-				=> commandBuilder.AppendBox(this, color, duration, DrawModifications.NormalFade);
+				=> commandBuilder.AppendBox(this, color, duration, Shade3D ? DrawModifications.NormalFade : DrawModifications.None);
 #endif
 		}
 

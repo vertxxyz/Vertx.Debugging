@@ -48,13 +48,13 @@ namespace Vertx.Debugging
 		
 		private readonly struct BoxGroup
 		{
-			[UsedImplicitly] public readonly Shape.Box Box;
+			[UsedImplicitly] public readonly Matrix4x4 Box;
 			[UsedImplicitly] public readonly Color Color;
 			[UsedImplicitly] public readonly Shape.DrawModifications Modifications;
 
 			public BoxGroup(in Shape.Box box, Color color, Shape.DrawModifications modifications)
 			{
-				Box = box;
+				Box = box.Matrix;
 				Color = color;
 				Modifications = modifications;
 			}

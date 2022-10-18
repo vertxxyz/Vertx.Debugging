@@ -16,6 +16,24 @@ namespace Vertx.Debugging
 #else
 			=> Time.deltaTime == Time.fixedDeltaTime;
 #endif
+
+		private class PauseCapture
+		{
+			private float _lastPausedTime;
+			private float _lastCommittedPauseTime;
+
+			public bool IsSamePausedFrame(float timeThisFrame)
+			{
+				if (_lastCommittedPauseTime == timeThisFrame)
+					return true;
+				_lastPausedTime = timeThisFrame;
+				return false;
+			}
+
+			public void CommitCurrentPausedFrame() => _lastCommittedPauseTime = _lastPausedTime;
+		}
+
+		private readonly PauseCapture _pauseCapture = new PauseCapture();
 		
 		private bool InitialiseAndGetGroup(ref float duration, out BufferGroup group)
 		{
@@ -23,7 +41,7 @@ namespace Vertx.Debugging
 			{
 				case UpdateContext.UpdateState.Update:
 					// Don't append while we're paused.
-					if (_isPlaying && _isPaused)
+					if (_isPlaying && _isPaused && _pauseCapture.IsSamePausedFrame(_timeThisFrame))
 					{
 						group = null;
 						return false;
