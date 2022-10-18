@@ -7,6 +7,7 @@
 #endif
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
@@ -21,23 +22,21 @@ namespace Vertx.Debugging
 	{
 		private readonly struct LineGroup
 		{
-			public readonly Shape.Line Line;
-			public readonly Color Color;
-			public readonly Shape.DrawModifications Modifications;
+			[UsedImplicitly] public readonly Shape.Line Line;
+			[UsedImplicitly] public readonly Color Color;
 
-			public LineGroup(in Shape.Line line, Color color, Shape.DrawModifications modifications)
+			public LineGroup(in Shape.Line line, Color color)
 			{
 				Line = line;
 				Color = color;
-				Modifications = modifications;
 			}
 		}
 		
 		private readonly struct ArcGroup
 		{
-			public readonly Shape.Arc Arc;
-			public readonly Color Color;
-			public readonly Shape.DrawModifications Modifications;
+			[UsedImplicitly] public readonly Shape.Arc Arc;
+			[UsedImplicitly] public readonly Color Color;
+			[UsedImplicitly] public readonly Shape.DrawModifications Modifications;
 
 			public ArcGroup(in Shape.Arc arc, Color color, Shape.DrawModifications modifications)
 			{
@@ -49,9 +48,9 @@ namespace Vertx.Debugging
 		
 		private readonly struct BoxGroup
 		{
-			public readonly Shape.Box Box;
-			public readonly Color Color;
-			public readonly Shape.DrawModifications Modifications;
+			[UsedImplicitly] public readonly Shape.Box Box;
+			[UsedImplicitly] public readonly Color Color;
+			[UsedImplicitly] public readonly Shape.DrawModifications Modifications;
 
 			public BoxGroup(in Shape.Box box, Color color, Shape.DrawModifications modifications)
 			{
@@ -63,9 +62,9 @@ namespace Vertx.Debugging
 		
 		private readonly struct OutlineGroup
 		{
-			public readonly Shape.Outline Outline;
-			public readonly Color Color;
-			public readonly Shape.DrawModifications Modifications;
+			[UsedImplicitly] public readonly Shape.Outline Outline;
+			[UsedImplicitly] public readonly Color Color;
+			[UsedImplicitly] public readonly Shape.DrawModifications Modifications;
 
 			public OutlineGroup(in Shape.Outline outline, Color color, Shape.DrawModifications modifications)
 			{
@@ -77,26 +76,16 @@ namespace Vertx.Debugging
 		
 		private readonly struct CastGroup
 		{
-			public readonly Shape.Cast Cast;
-			public readonly Color Color;
-			public readonly Shape.DrawModifications Modifications;
+			[UsedImplicitly] public readonly Shape.Cast Cast;
+			[UsedImplicitly] public readonly Color Color;
 
-			public CastGroup(in Shape.Cast cast, Color color, Shape.DrawModifications modifications)
+			public CastGroup(in Shape.Cast cast, Color color)
 			{
 				Cast = cast;
 				Color = color;
-				Modifications = modifications;
 			}
 		}
-		
-		
-		// Shape.Line
-		// Shape.Arc
-		// Shape.Box
-		// Shape.Outline
-		// Shape.Cast
-		
-		
+
 		private static readonly int s_InstanceCountKey = Shader.PropertyToID("_InstanceCount");
 		
 		private class ListWrapper<T> : IDisposable where T : unmanaged
@@ -283,7 +272,6 @@ namespace Vertx.Debugging
 		{
 			// Avoids redundantly setting internal GraphicsBuffer data.
 			private bool _dirty = true;
-			// Optimises removal calls
 			private readonly ListWrapper<float> _durations;
 			private readonly ListAndBuffer<T> _elements;
 
@@ -293,6 +281,7 @@ namespace Vertx.Debugging
 
 			public int Count => _elements.Count;
 
+			// Optimises removal calls, avoiding running the removal job if not necessary.
 			public bool HasNonZeroDuration { get; set; }
 
 			public NativeList<T> InternalList => _elements.List;

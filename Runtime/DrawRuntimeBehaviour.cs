@@ -18,7 +18,7 @@ namespace Vertx.Debugging.Internal
 		{
 			get
 			{
-				if (s_Instance != null)
+				if (!ReferenceEquals(s_Instance, null))
 					return s_Instance;
 				GameObject gameObject = new GameObject(nameof(DrawRuntimeBehaviour), typeof(DrawRuntimeBehaviour))
 				{
@@ -27,8 +27,15 @@ namespace Vertx.Debugging.Internal
 				if (Application.isPlaying)
 					DontDestroyOnLoad(gameObject);
 				s_Instance = gameObject.GetComponent<DrawRuntimeBehaviour>();
+				AssemblyReloadEvents.beforeAssemblyReload += SetNull;
 				return s_Instance;
 			}
+		}
+
+		private static void SetNull()
+		{
+			AssemblyReloadEvents.beforeAssemblyReload -= SetNull;
+			s_Instance = null;
 		}
 
 #if VERTX_HDRP

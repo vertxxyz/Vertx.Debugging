@@ -38,6 +38,8 @@ namespace Vertx.Debugging
 #endif
 		private Camera _lastRenderingCamera;
 		private bool _disposeIsQueued;
+		// Application.isPlaying, but without the native code transition.
+		private bool _isPlaying;
 
 		internal TextDataLists DefaultTexts => _defaultGroup.Texts;
 		internal ScreenTextDataLists DefaultScreenTexts => _defaultGroup.ScreenTexts;
@@ -73,6 +75,7 @@ namespace Vertx.Debugging
 
 		private void EditorApplicationOnplayModeStateChanged(PlayModeStateChange obj)
 		{
+			_isPlaying = obj == PlayModeStateChange.EnteredPlayMode;
 			if (obj != PlayModeStateChange.EnteredPlayMode && obj != PlayModeStateChange.EnteredEditMode)
 				return;
 			_defaultGroup.Clear();

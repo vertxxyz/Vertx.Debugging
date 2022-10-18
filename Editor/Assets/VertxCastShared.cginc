@@ -11,7 +11,6 @@ struct CastGroup
 {
     Cast A;
     float4 Color;
-    int Modifications;
 };
 
 StructuredBuffer<CastGroup> cast_buffer;

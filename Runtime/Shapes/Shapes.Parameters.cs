@@ -66,7 +66,6 @@ namespace Vertx.Debugging
 			/// A custom modification that can be implemented by a shape.<br/>
 			/// - Arc: Will align the circle as if it's the outline of a sphere.
 			/// - Outline: Swaps sides appropriately for a capsulecast.
-			/// - Text: ScreenText
 			/// </summary>
 			Custom = 1 << 3,
 			/// <summary>

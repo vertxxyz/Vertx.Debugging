@@ -14,7 +14,7 @@ namespace Vertx.Debugging
 			{
 				case UpdateContext.UpdateState.Update:
 					// Don't append while we're paused.
-					if (Application.isPlaying && Time.deltaTime == 0)
+					if (_isPlaying && Time.deltaTime == 0)
 					{
 						group = null;
 						return false;
@@ -46,7 +46,7 @@ namespace Vertx.Debugging
 
 		public void AppendRay(in Shape.Ray ray, Color color, float duration) => AppendLine(new Shape.Line(ray), color, duration);
 
-		public void AppendLine(in Shape.Line line, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
+		public void AppendLine(in Shape.Line line, Color color, float duration)
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Lines.Add(
@@ -54,8 +54,7 @@ namespace Vertx.Debugging
 					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
 						? new Shape.Line(Gizmos.matrix.MultiplyPoint3x4(line.A), Gizmos.matrix.MultiplyPoint3x4(line.B))
 						: line,
-					color,
-					modifications
+					color
 				),
 				duration
 			);
@@ -102,14 +101,13 @@ namespace Vertx.Debugging
 			);
 		}
 
-		internal void AppendCast(in Shape.Cast cast, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
+		internal void AppendCast(in Shape.Cast cast, Color color, float duration)
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Casts.Add(
 				new CastGroup(
 					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Cast(Gizmos.matrix * cast.Matrix, Gizmos.matrix.MultiplyPoint3x4(cast.Vector)) : cast,
-					color,
-					modifications
+					color
 				),
 				duration
 			);

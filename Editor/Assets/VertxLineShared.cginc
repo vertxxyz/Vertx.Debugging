@@ -10,7 +10,6 @@ struct LineGroup
 {
     Line A;
     float4 Color;
-    int Modifications;
 };
 
 StructuredBuffer<LineGroup> line_buffer;
