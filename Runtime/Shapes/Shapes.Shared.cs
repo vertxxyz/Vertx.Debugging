@@ -9,8 +9,10 @@ namespace Vertx.Debugging
 {
 	public static partial class Shape
 	{
+#if UNITY_EDITOR
 		private static CircleCache CircleCache => s_circleCache ?? (s_circleCache = new CircleCache());
 		private static CircleCache s_circleCache;
+#endif
 
 		// Axis
 		public static readonly Color XColor = new Color(1, 0.1f, 0.2f);

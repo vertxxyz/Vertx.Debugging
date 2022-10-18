@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using Vertx.Debugging.Internal;
 
@@ -8,19 +9,38 @@ namespace Vertx.Debugging
 	// ReSharper disable once ClassCannotBeInstantiated
 	public sealed partial class CommandBuilder
 	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static bool IsInFixedUpdate()
+#if UNITY_2020_3_OR_NEWER
+			=> Time.inFixedTimeStep;
+#else
+			=> Time.deltaTime == Time.fixedDeltaTime;
+#endif
+		
 		private bool InitialiseAndGetGroup(ref float duration, out BufferGroup group)
 		{
 			switch (UpdateContext.State)
 			{
 				case UpdateContext.UpdateState.Update:
 					// Don't append while we're paused.
-					if (_isPlaying && Time.deltaTime == 0)
+					if (_isPlaying && _isPaused)
 					{
 						group = null;
 						return false;
 					}
 
-					duration = GetDuration(duration);
+					// Calls from FixedUpdate should hang around until the next FixedUpdate, at minimum.
+					if (IsInFixedUpdate())
+					{
+						float fixedDeltaTime = Time.fixedDeltaTime;
+						if (duration < fixedDeltaTime)
+						{
+							// Time from the last 
+							// ReSharper disable once ArrangeRedundantParentheses
+							duration += (Time.fixedTime + fixedDeltaTime) - _timeThisFrame;
+						}
+					}
+					
 					if (duration < 0)
 					{
 						group = null;

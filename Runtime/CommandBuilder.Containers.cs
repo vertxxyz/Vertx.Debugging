@@ -267,8 +267,15 @@ namespace Vertx.Debugging
 				}
 			}
 		}
+		
+		private interface IShape
+		{
+			int Count { get; }
 
-		private sealed class ShapeBuffersWithData<T> : IDisposable where T : unmanaged
+			void ChangedAfterRemoval();
+		}
+
+		private sealed class ShapeBuffersWithData<T> : IShape, IDisposable where T : unmanaged
 		{
 			// Avoids redundantly setting internal GraphicsBuffer data.
 			private bool _dirty = true;
@@ -282,7 +289,7 @@ namespace Vertx.Debugging
 			public int Count => _elements.Count;
 
 			// Optimises removal calls, avoiding running the removal job if not necessary.
-			public bool HasNonZeroDuration { get; set; }
+			public bool HasNonZeroDuration { get; private set; }
 
 			public NativeList<T> InternalList => _elements.List;
 			public NativeList<float> DurationsInternalList => _durations.List;
@@ -307,6 +314,13 @@ namespace Vertx.Debugging
 			}
 
 			public void SetDirty() => _dirty = true;
+			
+			public void ChangedAfterRemoval()
+			{
+				SetDirty();
+				if (Count == 0)
+					HasNonZeroDuration = false;
+			}
 
 			private void EnsureCreated()
 			{

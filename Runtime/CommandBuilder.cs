@@ -40,6 +40,8 @@ namespace Vertx.Debugging
 		private bool _disposeIsQueued;
 		// Application.isPlaying, but without the native code transition.
 		private bool _isPlaying;
+		// UnityEditor.EditorApplication.isPaused, but without the native code transition.
+		private bool _isPaused;
 
 		internal TextDataLists DefaultTexts => _defaultGroup.Texts;
 		internal ScreenTextDataLists DefaultScreenTexts => _defaultGroup.ScreenTexts;
@@ -70,10 +72,15 @@ namespace Vertx.Debugging
 			};
 #endif
 			EditorApplication.update = OnUpdate + EditorApplication.update;
-			EditorApplication.playModeStateChanged += EditorApplicationOnplayModeStateChanged;
+			EditorApplication.playModeStateChanged -= EditorApplicationOnPlayModeStateChanged;
+			EditorApplication.playModeStateChanged += EditorApplicationOnPlayModeStateChanged;
+			EditorApplication.pauseStateChanged -= EditorApplicationOnPauseStateChanged;
+			EditorApplication.pauseStateChanged += EditorApplicationOnPauseStateChanged;
 		}
 
-		private void EditorApplicationOnplayModeStateChanged(PlayModeStateChange obj)
+		private void EditorApplicationOnPauseStateChanged(PauseState obj) => _isPaused = obj == PauseState.Paused;
+
+		private void EditorApplicationOnPlayModeStateChanged(PlayModeStateChange obj)
 		{
 			_isPlaying = obj == PlayModeStateChange.EnteredPlayMode;
 			if (obj != PlayModeStateChange.EnteredPlayMode && obj != PlayModeStateChange.EnteredEditMode)

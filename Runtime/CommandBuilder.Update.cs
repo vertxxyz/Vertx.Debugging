@@ -4,7 +4,6 @@
 #endif
 using System;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
@@ -156,27 +155,6 @@ namespace Vertx.Debugging
 			DrawRuntimeBehaviour.Instance.InitialiseRenderPipelineSetup();
 #endif
 			// TODO cleanup if things aren't running and stuff is getting out of hand...
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static bool IsInFixedUpdate()
-#if UNITY_2020_3_OR_NEWER
-			=> Time.inFixedTimeStep;
-#else
-			=> Time.deltaTime == Time.fixedDeltaTime;
-#endif
-
-		private float GetDuration(float duration)
-		{
-			// Calls from FixedUpdate should hang around until the next FixedUpdate, at minimum.
-			if (IsInFixedUpdate() && duration < Time.fixedDeltaTime)
-			{
-				// Time from the last 
-				// ReSharper disable once ArrangeRedundantParentheses
-				duration += (Time.fixedTime + Time.fixedDeltaTime) - _timeThisFrame;
-			}
-
-			return duration;
 		}
 	}
 }
