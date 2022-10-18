@@ -7,7 +7,14 @@ struct Arc
     float Turns;
 };
 
-StructuredBuffer<Arc> arc_buffer;
+struct ArcGroup
+{
+    Arc A;
+    float4 Color;
+    int Modifications;
+};
+
+StructuredBuffer<ArcGroup> arc_buffer;
 
 struct vertInput
 {
@@ -38,12 +45,13 @@ v2f vert(vertInput input)
         return o;
     }
     
-    Arc a = arc_buffer[index];
+    ArcGroup ag = arc_buffer[index];
+    Arc a = ag.A;
     unity_ObjectToWorld = a.Matrix;
     UNITY_MATRIX_MV = mul(unity_MatrixV, unity_ObjectToWorld);
 
-    o.color = color_buffer[index];
-    int modifications = modifications_buffer[index];
+    o.color = ag.Color;
+    int modifications = ag.Modifications;
 
     if (has_custom(modifications))
     {

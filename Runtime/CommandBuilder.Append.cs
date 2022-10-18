@@ -50,11 +50,13 @@ namespace Vertx.Debugging
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Lines.Add(
-				UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
-					? new Shape.Line(Gizmos.matrix.MultiplyPoint3x4(line.A), Gizmos.matrix.MultiplyPoint3x4(line.B))
-					: line,
-				color,
-				modifications,
+				new LineGroup(
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
+						? new Shape.Line(Gizmos.matrix.MultiplyPoint3x4(line.A), Gizmos.matrix.MultiplyPoint3x4(line.B))
+						: line,
+					color,
+					modifications
+				),
 				duration
 			);
 		}
@@ -63,9 +65,11 @@ namespace Vertx.Debugging
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Arcs.Add(
-				UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Arc(Gizmos.matrix * arc.Matrix, arc.Angle) : arc,
-				color,
-				modifications,
+				new ArcGroup(
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Arc(Gizmos.matrix * arc.Matrix, arc.Angle) : arc,
+					color,
+					modifications
+				),
 				duration
 			);
 		}
@@ -74,9 +78,11 @@ namespace Vertx.Debugging
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Boxes.Add(
-				UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Box(Gizmos.matrix * box.Matrix) : box,
-				color,
-				modifications,
+				new BoxGroup(
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Box(Gizmos.matrix * box.Matrix) : box,
+					color,
+					modifications
+				),
 				duration
 			);
 		}
@@ -85,11 +91,13 @@ namespace Vertx.Debugging
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Outlines.Add(
-				UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
-					? new Shape.Outline(Gizmos.matrix.MultiplyPoint3x4(outline.A), Gizmos.matrix.MultiplyPoint3x4(outline.B), Gizmos.matrix.MultiplyPoint3x4(outline.C))
-					: outline,
-				color,
-				modifications,
+				new OutlineGroup(
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
+						? new Shape.Outline(Gizmos.matrix.MultiplyPoint3x4(outline.A), Gizmos.matrix.MultiplyPoint3x4(outline.B), Gizmos.matrix.MultiplyPoint3x4(outline.C))
+						: outline,
+					color,
+					modifications
+				),
 				duration
 			);
 		}
@@ -98,9 +106,11 @@ namespace Vertx.Debugging
 		{
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Casts.Add(
-				UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Cast(Gizmos.matrix * cast.Matrix, Gizmos.matrix.MultiplyPoint3x4(cast.Vector)) : cast,
-				color,
-				modifications,
+				new CastGroup(
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Cast(Gizmos.matrix * cast.Matrix, Gizmos.matrix.MultiplyPoint3x4(cast.Vector)) : cast,
+					color,
+					modifications
+				),
 				duration
 			);
 		}

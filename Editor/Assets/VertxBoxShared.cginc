@@ -6,7 +6,14 @@ struct Box
     float4x4 Matrix;
 };
 
-StructuredBuffer<Box> box_buffer;
+struct BoxGroup
+{
+    Box A;
+    float4 Color;
+    int Modifications;
+};
+
+StructuredBuffer<BoxGroup> box_buffer;
 
 struct vertInput
 {
@@ -35,11 +42,12 @@ v2f vert(vertInput input)
         return o;
     }
 
-    Box a = box_buffer[index];
+    BoxGroup ag = box_buffer[index];
+    Box a = ag.A;
     unity_ObjectToWorld = a.Matrix;
 
-    o.color = color_buffer[index];
-    int modifications = modifications_buffer[index];
+    o.color = ag.Color;
+    int modifications = ag.Modifications;
 
     float4 worldPos = mul(unity_ObjectToWorld, float4(input.vertex.xyz, 1.0));
     float3 cameraDirection = camera_direction_variable(worldPos);

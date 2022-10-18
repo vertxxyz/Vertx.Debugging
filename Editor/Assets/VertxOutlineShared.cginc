@@ -1,4 +1,4 @@
-#include "UnityCG.cginc"
+// #include "UnityCG.cginc"
 #include "VertxDebuggingShared.cginc"
 
 struct Outine
@@ -10,7 +10,14 @@ struct Outine
     float3 C;
 };
 
-StructuredBuffer<Outine> outline_buffer;
+struct OutineGroup
+{
+    Outine A;
+    float4 Color;
+    int Modifications;
+};
+
+StructuredBuffer<OutineGroup> outline_buffer;
 
 struct vertInput
 {
@@ -146,9 +153,10 @@ v2f vert(vertInput input)
         return o;
     }
     
-    Outine outline = outline_buffer[index];
-    int modifications = modifications_buffer[index];
-    o.color = color_buffer[index];
+    OutineGroup og = outline_buffer[index];
+    Outine outline = og.A;
+    int modifications = og.Modifications;
+    o.color = og.Color;
     if (has_normal_fade(modifications))
     {
         float3 originWorld = input.vertexID % 2 == 0 ? outline.A : outline.B;

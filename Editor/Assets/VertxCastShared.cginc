@@ -1,4 +1,4 @@
-#include "UnityCG.cginc"
+// #include "UnityCG.cginc"
 #include "VertxDebuggingShared.cginc"
 
 struct Cast
@@ -7,7 +7,14 @@ struct Cast
     float3 Vector;
 };
 
-StructuredBuffer<Cast> cast_buffer;
+struct CastGroup
+{
+    Cast A;
+    float4 Color;
+    int Modifications;
+};
+
+StructuredBuffer<CastGroup> cast_buffer;
 
 struct vertInput
 {
@@ -39,7 +46,7 @@ geoInput vert(vertInput input)
         o.color = 0;
         return o;
     }
-    o.color = color_buffer[index];
+    o.color = cast_buffer[index].Color;
     return o;
 }
 
@@ -61,7 +68,7 @@ void geo(line geoInput input[2], inout LineStream<fragInput> outputStream)
     int instance = input[0].instanceID;
     if (instance >= _InstanceCount)
         return;
-    Cast c = cast_buffer[instance];
+    Cast c = cast_buffer[instance].A;
     float3 center = mul(c.Matrix, float4(0, 0, 0, 1)).xyz;
     float3 v = normalize(c.Vector);
 
@@ -95,23 +102,23 @@ void geo(line geoInput input[2], inout LineStream<fragInput> outputStream)
 
     fragInput f1;
     f1.color = input[0].color;
-    f1.position = UnityObjectToClipPos(h);
+    f1.position = world_to_clip_pos(h);
     outputStream.Append(f1);
 
     fragInput f1b;
     f1b.color = f1.color;
-    f1b.position = UnityObjectToClipPos(h + c.Vector);
+    f1b.position = world_to_clip_pos(h + c.Vector);
     outputStream.Append(f1b);
 
     outputStream.RestartStrip();
 
     fragInput f2;
     f2.color = input[0].color;
-    f2.position = UnityObjectToClipPos(l);
+    f2.position = world_to_clip_pos(l);
     outputStream.Append(f2);
 
     fragInput f2b;
     f2b.color = f2.color;
-    f2b.position = UnityObjectToClipPos(l + c.Vector);
+    f2b.position = world_to_clip_pos(l + c.Vector);
     outputStream.Append(f2b);
 }

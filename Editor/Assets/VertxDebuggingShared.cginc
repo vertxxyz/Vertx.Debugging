@@ -15,9 +15,6 @@ bool has_custom2(int value) { return (value & CUSTOM2) != 0; }
 
 bool is_orthographic() { return unity_OrthoParams.w == 1; }
 
-StructuredBuffer<int> modifications_buffer;
-StructuredBuffer<float4> color_buffer;
-
 float get_scale()
 {
     return length(float3(

@@ -13,11 +13,11 @@ namespace Vertx.Debugging
 		private sealed class BufferGroup : IDisposable
 		{
 			private readonly string _commandBufferName;
-			public readonly ShapeBuffersWithData<Shape.Line> Lines;
-			public readonly ShapeBuffersWithData<Shape.Arc> Arcs;
-			public readonly ShapeBuffersWithData<Shape.Box> Boxes;
-			public readonly ShapeBuffersWithData<Shape.Outline> Outlines;
-			public readonly ShapeBuffersWithData<Shape.Cast> Casts;
+			public readonly ShapeBuffersWithData<LineGroup> Lines;
+			public readonly ShapeBuffersWithData<ArcGroup> Arcs;
+			public readonly ShapeBuffersWithData<BoxGroup> Boxes;
+			public readonly ShapeBuffersWithData<OutlineGroup> Outlines;
+			public readonly ShapeBuffersWithData<CastGroup> Casts;
 			public readonly TextDataLists Texts = new TextDataLists();
 			public readonly ScreenTextDataLists ScreenTexts = new ScreenTextDataLists();
 
@@ -27,11 +27,11 @@ namespace Vertx.Debugging
 			public BufferGroup(bool usesDurations, string commandBufferName)
 			{
 				_commandBufferName = commandBufferName;
-				Lines = new ShapeBuffersWithData<Shape.Line>("line_buffer", usesDurations);
-				Arcs = new ShapeBuffersWithData<Shape.Arc>("arc_buffer", usesDurations);
-				Boxes = new ShapeBuffersWithData<Shape.Box>("box_buffer", usesDurations);
-				Outlines = new ShapeBuffersWithData<Shape.Outline>("outline_buffer", usesDurations);
-				Casts = new ShapeBuffersWithData<Shape.Cast>("cast_buffer", usesDurations);
+				Lines = new ShapeBuffersWithData<LineGroup>("line_buffer", usesDurations);
+				Arcs = new ShapeBuffersWithData<ArcGroup>("arc_buffer", usesDurations);
+				Boxes = new ShapeBuffersWithData<BoxGroup>("box_buffer", usesDurations);
+				Outlines = new ShapeBuffersWithData<OutlineGroup>("outline_buffer", usesDurations);
+				Casts = new ShapeBuffersWithData<CastGroup>("cast_buffer", usesDurations);
 			}
 
 			/// <summary>
@@ -76,11 +76,11 @@ namespace Vertx.Debugging
 				ScreenTexts.RemoveByDeltaTime(deltaTime);
 
 				JobHandle? coreHandle = null;
-				int oldLineCount = QueueRemovalJob<Shape.Line, RemovalJob<Shape.Line>>(Lines, dependency, ref coreHandle);
-				int oldArcCount = QueueRemovalJob<Shape.Arc, RemovalJob<Shape.Arc>>(Arcs, dependency, ref coreHandle);
-				int oldBoxCount = QueueRemovalJob<Shape.Box, RemovalJob<Shape.Box>>(Boxes, dependency, ref coreHandle);
-				int oldOutlineCount = QueueRemovalJob<Shape.Outline, RemovalJob<Shape.Outline>>(Outlines, dependency, ref coreHandle);
-				int oldMatrixAndVectorsCount = QueueRemovalJob<Shape.Cast, RemovalJob<Shape.Cast>>(Casts, dependency, ref coreHandle);
+				int oldLineCount = QueueRemovalJob<LineGroup, RemovalJob<LineGroup>>(Lines, dependency, ref coreHandle);
+				int oldArcCount = QueueRemovalJob<ArcGroup, RemovalJob<ArcGroup>>(Arcs, dependency, ref coreHandle);
+				int oldBoxCount = QueueRemovalJob<BoxGroup, RemovalJob<BoxGroup>>(Boxes, dependency, ref coreHandle);
+				int oldOutlineCount = QueueRemovalJob<OutlineGroup, RemovalJob<OutlineGroup>>(Outlines, dependency, ref coreHandle);
+				int oldMatrixAndVectorsCount = QueueRemovalJob<CastGroup, RemovalJob<CastGroup>>(Casts, dependency, ref coreHandle);
 
 				if (!coreHandle.HasValue)
 					coreHandle = dependency;
@@ -120,8 +120,6 @@ namespace Vertx.Debugging
 						removalJob.Configure(
 							data.InternalList,
 							data.DurationsInternalList,
-							data.ModificationsInternalList,
-							data.ColorsInternalList,
 							deltaTime
 						);
 						handleOut = !handleOut.HasValue

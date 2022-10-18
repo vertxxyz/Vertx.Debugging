@@ -19,6 +19,84 @@ namespace Vertx.Debugging
 	// ReSharper disable once ClassCannotBeInstantiated
 	public sealed partial class CommandBuilder
 	{
+		private readonly struct LineGroup
+		{
+			public readonly Shape.Line Line;
+			public readonly Color Color;
+			public readonly Shape.DrawModifications Modifications;
+
+			public LineGroup(in Shape.Line line, Color color, Shape.DrawModifications modifications)
+			{
+				Line = line;
+				Color = color;
+				Modifications = modifications;
+			}
+		}
+		
+		private readonly struct ArcGroup
+		{
+			public readonly Shape.Arc Arc;
+			public readonly Color Color;
+			public readonly Shape.DrawModifications Modifications;
+
+			public ArcGroup(in Shape.Arc arc, Color color, Shape.DrawModifications modifications)
+			{
+				Arc = arc;
+				Color = color;
+				Modifications = modifications;
+			}
+		}
+		
+		private readonly struct BoxGroup
+		{
+			public readonly Shape.Box Box;
+			public readonly Color Color;
+			public readonly Shape.DrawModifications Modifications;
+
+			public BoxGroup(in Shape.Box box, Color color, Shape.DrawModifications modifications)
+			{
+				Box = box;
+				Color = color;
+				Modifications = modifications;
+			}
+		}
+		
+		private readonly struct OutlineGroup
+		{
+			public readonly Shape.Outline Outline;
+			public readonly Color Color;
+			public readonly Shape.DrawModifications Modifications;
+
+			public OutlineGroup(in Shape.Outline outline, Color color, Shape.DrawModifications modifications)
+			{
+				Outline = outline;
+				Color = color;
+				Modifications = modifications;
+			}
+		}
+		
+		private readonly struct CastGroup
+		{
+			public readonly Shape.Cast Cast;
+			public readonly Color Color;
+			public readonly Shape.DrawModifications Modifications;
+
+			public CastGroup(in Shape.Cast cast, Color color, Shape.DrawModifications modifications)
+			{
+				Cast = cast;
+				Color = color;
+				Modifications = modifications;
+			}
+		}
+		
+		
+		// Shape.Line
+		// Shape.Arc
+		// Shape.Box
+		// Shape.Outline
+		// Shape.Cast
+		
+		
 		private static readonly int s_InstanceCountKey = Shader.PropertyToID("_InstanceCount");
 		
 		private class ListWrapper<T> : IDisposable where T : unmanaged
@@ -208,8 +286,6 @@ namespace Vertx.Debugging
 			// Optimises removal calls
 			private readonly ListWrapper<float> _durations;
 			private readonly ListAndBuffer<T> _elements;
-			private readonly ListAndBuffer<Color> _colors = new ListAndBuffer<Color>("color_buffer");
-			private readonly ListAndBuffer<Shape.DrawModifications> _modifications = new ListAndBuffer<Shape.DrawModifications>("modifications_buffer");
 
 			private MaterialPropertyBlock _propertyBlock;
 
@@ -221,8 +297,6 @@ namespace Vertx.Debugging
 
 			public NativeList<T> InternalList => _elements.List;
 			public NativeList<float> DurationsInternalList => _durations.List;
-			public NativeList<Shape.DrawModifications> ModificationsInternalList => _modifications.List;
-			public NativeList<Color> ColorsInternalList => _colors.List;
 			
 			public ShapeBuffersWithData(string bufferName, bool usesDurations = true)
 			{
@@ -236,14 +310,10 @@ namespace Vertx.Debugging
 				if (_dirty)
 				{
 					_elements.SetBufferData(commandBuffer);
-					_colors.SetBufferData(commandBuffer);
-					_modifications.SetBufferData(commandBuffer);
 					_dirty = false;
 				}
 
 				_elements.SetBufferToPropertyBlock(propertyBlock);
-				_colors.SetBufferToPropertyBlock(propertyBlock);
-				_modifications.SetBufferToPropertyBlock(propertyBlock);
 				propertyBlock.SetInt(s_InstanceCountKey, _elements.Count);
 			}
 
@@ -254,18 +324,14 @@ namespace Vertx.Debugging
 				if (_elements.List.IsCreated)
 					return;
 				_elements.Create();
-				_colors.Create();
-				_modifications.Create();
 				_durations?.Create();
 				_dirty = true;
 			}
 
-			public void Add(in T element, Color color, Shape.DrawModifications modifications, float duration)
+			public void Add(in T element, float duration)
 			{
 				EnsureCreated();
 				_elements.List.Add(element);
-				_colors.List.Add(color);
-				_modifications.List.Add(modifications);
 				_durations?.List.Add(duration);
 				_dirty = true;
 				if (duration > 0)
@@ -277,8 +343,6 @@ namespace Vertx.Debugging
 				if (_elements.Count == 0)
 					return;
 				_elements.List.Clear();
-				_colors.List.Clear();
-				_modifications.List.Clear();
 				_durations?.List.Clear();
 				_dirty = true;
 			}
@@ -288,8 +352,6 @@ namespace Vertx.Debugging
 				if (!_elements.List.IsCreated)
 					return;
 				_elements.Dispose();
-				_colors.Dispose();
-				_modifications.Dispose();
 				_durations?.Dispose();
 			}
 		}

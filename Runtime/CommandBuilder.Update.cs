@@ -100,8 +100,6 @@ namespace Vertx.Debugging
 			void Configure(
 				NativeList<T> elements,
 				NativeList<float> durations,
-				NativeList<Shape.DrawModifications> modifications,
-				NativeList<Color> colors,
 				float deltaTime
 			);
 		}
@@ -111,18 +109,14 @@ namespace Vertx.Debugging
 #endif
 		private struct RemovalJob<T> : IRemovalJob<T> where T : unmanaged
 		{
-			public NativeList<T> Elements;
 			public NativeList<float> Durations;
-			public NativeList<Shape.DrawModifications> Modifications;
-			public NativeList<Color> Colors;
+			public NativeList<T> Elements;
 			public float DeltaTime;
 
-			public void Configure(NativeList<T> elements, NativeList<float> durations, NativeList<Shape.DrawModifications> modifications, NativeList<Color> colors, float deltaTime)
+			public void Configure(NativeList<T> elements, NativeList<float> durations, float deltaTime)
 			{
 				Elements = elements;
 				Durations = durations;
-				Modifications = modifications;
-				Colors = colors;
 				DeltaTime = deltaTime;
 			}
 
@@ -133,7 +127,6 @@ namespace Vertx.Debugging
 			public void Execute()
 			{
 				int endIndex = Durations.Length;
-				int totalRemoved = 0;
 				for (int index = Elements.Length - 1; index >= 0; index--)
 				{
 					float oldDuration = Durations[index];
@@ -149,14 +142,11 @@ namespace Vertx.Debugging
 					endIndex--;
 					Durations[index] = Durations[endIndex];
 					Elements[index] = Elements[endIndex];
-					Modifications[index] = Modifications[endIndex];
-					Colors[index] = Colors[endIndex];
-					totalRemoved++;
 				}
+
+				int totalRemoved = Durations.Length - endIndex;
 				Durations.RemoveRange(endIndex, totalRemoved);
 				Elements.RemoveRange(endIndex, totalRemoved);
-				Modifications.RemoveRange(endIndex, totalRemoved);
-				Colors.RemoveRange(endIndex, totalRemoved);
 			}
 		}
 

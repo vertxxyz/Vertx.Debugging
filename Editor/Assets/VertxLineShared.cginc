@@ -6,7 +6,14 @@ struct Line
     float3 A, B;
 };
 
-StructuredBuffer<Line> line_buffer;
+struct LineGroup
+{
+    Line A;
+    float4 Color;
+    int Modifications;
+};
+
+StructuredBuffer<LineGroup> line_buffer;
 
 struct vertInput
 {
@@ -32,8 +39,9 @@ v2f vert(vertInput input)
         return o;
     }
     
-    Line l = line_buffer[index];
+    LineGroup lg = line_buffer[index];
+    Line l = lg.A;
     o.position = world_to_clip_pos(input.vertexID % 2 == 0 ? l.A : l.B);
-    o.color = color_buffer[index];
+    o.color = lg.Color;
     return o;
 }
