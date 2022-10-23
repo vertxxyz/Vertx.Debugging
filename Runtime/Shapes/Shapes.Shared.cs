@@ -14,17 +14,31 @@ namespace Vertx.Debugging
 		private static CircleCache s_circleCache;
 #endif
 
+#if UNITY_EDITOR
 		// Axis
-		public static readonly Color XColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color YColor = new Color(0.3f, 1, 0.1f);
-		public static readonly Color ZColor = new Color(0.1f, 0.4f, 1);
+		public static readonly Color XColor = DebuggingSettings.instance.Colors.XColor;
+		public static readonly Color YColor = DebuggingSettings.instance.Colors.YColor;
+		public static readonly Color ZColor = DebuggingSettings.instance.Colors.ZColor;
 		// Casts
-		public static readonly Color HitColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color CastColor = new Color(0.4f, 1f, 0.3f);
+		public static readonly Color HitColor = DebuggingSettings.instance.Colors.HitColor;
+		public static readonly Color CastColor = DebuggingSettings.instance.Colors.CastColor;
 		// Physics Events
-		public static readonly Color EnterColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color StayColor = new Color(1f, 0.4f, 0.3f);
-		public static readonly Color ExitColor = new Color(0.4f, 1f, 0.3f);
+		public static readonly Color EnterColor = DebuggingSettings.instance.Colors.EnterColor;
+		public static readonly Color StayColor = DebuggingSettings.instance.Colors.StayColor;
+		public static readonly Color ExitColor = DebuggingSettings.instance.Colors.ExitColor;
+#else
+		// Axis
+		public static readonly Color XColor = Constants.XColor;
+		public static readonly Color YColor = Constants.YColor;
+		public static readonly Color ZColor = Constants.ZColor;
+		// Casts
+		public static readonly Color HitColor = Constants.HitColor;
+		public static readonly Color CastColor = Constants.CastColor;
+		// Physics Events
+		public static readonly Color EnterColor = Constants.EnterColor;
+		public static readonly Color StayColor = Constants.StayColor;
+		public static readonly Color ExitColor = Constants.ExitColor;
+#endif
 
 		[Flags]
 		public enum Axes : byte
