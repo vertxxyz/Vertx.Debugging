@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using static Vertx.Debugging.Shapes;
+using static Vertx.Debugging.Shape;
 using UnityEditor;
 #if !UNITY_2022_1_OR_NEWER
 using System.Reflection;
@@ -21,17 +21,7 @@ namespace Vertx.Debugging
 	[InitializeOnLoad]
 	internal static class DrawText
 	{
-		private static Font Font
-		{
-			get
-			{
-				if (s_Font != null)
-					return s_Font;
-				return s_Font = AssetDatabase.LoadAssetAtPath<Font>("Packages/com.vertx.debugging/Editor/Assets/JetbrainsMono-Regular.ttf");
-			}
-		}
-
-		private static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = Font });
+		internal static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = AssetsUtility.JetBrainsMono });
 
 		private static Type GameViewType => s_GameViewType ?? (s_GameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
 
@@ -49,7 +39,6 @@ namespace Vertx.Debugging
 		}
 
 		private static readonly GUIContent s_SharedContent = new GUIContent();
-		private static Font s_Font;
 		private static GUIStyle textStyle;
 		private static Type s_GameViewType;
 		private static EditorWindow s_GameView;
@@ -65,11 +54,12 @@ namespace Vertx.Debugging
 			if (!obj.drawGizmos)
 				return;
 
-			if (Event.current.type != EventType.Repaint)
+			EventType eventType = Event.current.type;
+			if (eventType != EventType.Repaint && eventType != EventType.MouseDown)
 				return;
 
 			Handles.BeginGUI();
-			DoOnGUI();
+			DoOnGUI(View.Scene);
 			Handles.EndGUI();
 		}
 
@@ -78,23 +68,34 @@ namespace Vertx.Debugging
 			if (Event.current.type != EventType.Repaint)
 				return;
 
-			DoOnGUI();
+			DoOnGUI(View.Game);
 		}
 
-		private static void DoOnGUI()
+		private static void DoOnGUI(View view)
 		{
 			var commandBuilder = CommandBuilder.Instance;
+			Draw3DText(commandBuilder);
+
+#if UNITY_2021_1_OR_NEWER
+			if ((view & View.Scene) == 0)
+#endif
+				DrawScreenTexts(commandBuilder, view);
+		}
+
+		private static void Draw3DText(CommandBuilder commandBuilder)
+		{
+			if (Event.current.type != EventType.Repaint)
+				return;
 			if (commandBuilder.DefaultTexts.Count == 0 && commandBuilder.GizmoTexts.Count == 0)
 				return;
 
-			Vector2 position = new Vector2(10, 10);
 			bool uses3DIcons = Uses3DIcons;
 			float size = IconSize;
 
 			using (ListPool<TextData>.Get(out List<TextData> text3D))
 			{
-				DrawTexts(commandBuilder.DefaultTexts, text3D);
-				DrawTexts(commandBuilder.GizmoTexts, text3D);
+				Gather3DText(commandBuilder.DefaultTexts, text3D);
+				Gather3DText(commandBuilder.GizmoTexts, text3D);
 
 				// 3D text is collected and sorted by distance before being displayed.
 				if (text3D.Count > 0)
@@ -108,49 +109,66 @@ namespace Vertx.Debugging
 						Color textColor = textData.TextColor;
 						backgroundColor.a *= textData.Alpha;
 						textColor.a *= textData.Alpha;
-
+						Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
+						
 						GUIContent content = GetGUIContentFromObject(textData.Value);
 						Rect rect = new Rect(textData.ScreenPosition, TextStyle.CalcSize(content));
-						DrawAtScreenPosition(rect, content, backgroundColor, textColor);
+						if(!camera.pixelRect.Overlaps(rect))
+							continue;
+						DrawAtScreenPosition(rect, content, backgroundColor, textColor, null);
 					}
 				}
 			}
 
-			void DrawTexts(CommandBuilder.TextDataLists textDataLists, List<TextData> text3D)
+			void Gather3DText(CommandBuilder.TextDataLists list, List<TextData> text3D)
 			{
-				for (int i = 0; i < textDataLists.Count; i++)
+				for (int i = 0; i < list.Count; i++)
 				{
-					TextData textData = textDataLists.InternalList[i];
-					if ((textData.Modifications & DrawModifications.Custom) != 0)
+					TextData textData = list.Elements[i];
+					Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
+					if (camera == null) continue;
+					if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) continue;
+					float alpha;
+					if (uses3DIcons)
 					{
-						GUIContent content = GetGUIContentFromObject(textData.Value);
-						Rect rect = new Rect(position, TextStyle.CalcSize(content));
-						DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor);
-						position.y = rect.yMax + 1;
+						float iconSize = size * 1000;
+						alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
+						if (alpha <= 0)
+							continue;
 					}
 					else
 					{
-						Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
-						if (camera == null) continue;
-						if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) return;
-						float alpha;
-						if (uses3DIcons)
-						{
-							float iconSize = size * 1000;
-							alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
-							if (alpha <= 0)
-								return;
-						}
-						else
-						{
-							alpha = 1;
-						}
-
-						textData.ScreenPosition = screenPos;
-						textData.Distance = distance;
-						textData.Alpha = alpha;
-						text3D.Add(textData);
+						alpha = 1;
 					}
+
+					textData.ScreenPosition = screenPos;
+					textData.Distance = distance;
+					textData.Alpha = alpha;
+					text3D.Add(textData);
+				}
+			}
+		}
+
+		private static void DrawScreenTexts(CommandBuilder commandBuilder, View view)
+		{
+			int height = Screen.height;
+			Vector2 position = new Vector2(10, 10);
+			bool isNotGameView = (view & View.Game) == 0;
+			DrawScreenText(commandBuilder.DefaultScreenTexts);
+			DrawScreenText(commandBuilder.GizmoScreenTexts);
+
+			void DrawScreenText(CommandBuilder.ScreenTextDataLists list)
+			{
+				for (int i = 0; i < list.Count; i++)
+				{
+					if (position.y > height)
+						return;
+					ScreenTextData textData = list.Elements[i];
+					if ((textData.ActiveViews & view) == 0) continue;
+					GUIContent content = GetGUIContentFromObject(textData.Value);
+					Rect rect = new Rect(position, TextStyle.CalcSize(content));
+					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor, isNotGameView ? textData.Context : null);
+					position.y = rect.yMax + 1;
 				}
 			}
 		}
@@ -188,39 +206,41 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor)
+
+		internal static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor, Object context)
 		{
-			DrawGUIRect();
+			bool hasContext = context != null;
+			if (hasContext && rect.Contains(Event.current.mousePosition))
+			{
+				if (Event.current.type == EventType.MouseDown)
+					EditorGUIUtility.PingObject(context);
+				textColor = Color.white;
+			}
+			else
+			{
+				EditorGUI.DrawRect(rect, GUI.color * backgroundColor);
+			}
+
 			TextStyle.normal.textColor = textColor;
 			GUI.Label(rect, content, TextStyle);
-			//-----------------
-
-			void DrawGUIRect()
-			{
-				Color color1 = GUI.color;
-				GUI.color *= backgroundColor;
-				GUI.DrawTexture(rect, EditorGUIUtility.whiteTexture);
-				GUI.color = color1;
-			}
 		}
 
-		private static GUIContent GetGUIContentFromObject(object text)
+		private static string GetContentFromObject(object text)
 		{
-			string value;
 			switch (text)
 			{
 				case Vector3 vector3:
-					value = vector3.ToString("F3");
-					break;
+					return vector3.ToString("F3");
 				case Vector2 vector2:
-					value = vector2.ToString("F3");
-					break;
+					return vector2.ToString("F3");
 				default:
-					value = text.ToString();
-					break;
+					return text.ToString();
 			}
+		}
 
-			s_SharedContent.text = value;
+		internal static GUIContent GetGUIContentFromObject(object text)
+		{
+			s_SharedContent.text = GetContentFromObject(text);
 			return s_SharedContent;
 		}
 

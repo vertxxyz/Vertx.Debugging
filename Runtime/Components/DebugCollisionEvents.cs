@@ -23,15 +23,15 @@ namespace Vertx.Debugging
         [PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Enter)]
         [SerializeField]
         private DebugComponentBase.ColorDurationPair _enter =
-            new DebugComponentBase.ColorDurationPair(Shapes.EnterColor, 0.1f);
+            new DebugComponentBase.ColorDurationPair(Shape.EnterColor, 0.1f);
         [PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Stay)]
         [SerializeField]
         private DebugComponentBase.ColorDurationPair _stay =
-            new DebugComponentBase.ColorDurationPair(Shapes.StayColor);
+            new DebugComponentBase.ColorDurationPair(Shape.StayColor);
         [PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Exit)]
         [SerializeField]
         private DebugComponentBase.ColorDurationPair _exit =
-            new DebugComponentBase.ColorDurationPair(Shapes.ExitColor, 0.1f);
+            new DebugComponentBase.ColorDurationPair(Shape.ExitColor, 0.1f);
 
         [Flags]
         private enum Type : byte
@@ -49,7 +49,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint contact = collision.GetContact(i);
-                D.raw(new Shapes.SurfacePoint(contact.point, contact.normal), _enter.Color, _enter.Duration);
+                D.raw(new Shape.SurfacePoint(contact.point, contact.normal), _enter.Color, _enter.Duration);
             }
         }
 
@@ -59,7 +59,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint contact = collision.GetContact(i);
-                D.raw(new Shapes.SurfacePoint(contact.point, contact.normal), _stay.Color, _stay.Duration);
+                D.raw(new Shape.SurfacePoint(contact.point, contact.normal), _stay.Color, _stay.Duration);
             }
         }
 
@@ -69,7 +69,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint contact = collision.GetContact(i);
-                D.raw(new Shapes.SurfacePoint(contact.point, contact.normal), _exit.Color, _exit.Duration);
+                D.raw(new Shape.SurfacePoint(contact.point, contact.normal), _exit.Color, _exit.Duration);
             }
         }
 
@@ -80,7 +80,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint2D contact = collision.GetContact(i);
-                D.raw(new Shapes.Arrow2D(contact.point, contact.normal), _enter.Color, _enter.Duration);
+                D.raw(new Shape.Arrow2D(contact.point, contact.normal), _enter.Color, _enter.Duration);
             }
         }
 
@@ -90,7 +90,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint2D contact = collision.GetContact(i);
-                D.raw(new Shapes.Arrow2D(contact.point, contact.normal), _stay.Color, _stay.Duration);
+                D.raw(new Shape.Arrow2D(contact.point, contact.normal), _stay.Color, _stay.Duration);
             }
         }
 
@@ -100,7 +100,7 @@ namespace Vertx.Debugging
             for (int i = 0; i < collision.contactCount; i++)
             {
                 ContactPoint2D contact = collision.GetContact(i);
-                D.raw(new Shapes.Arrow2D(contact.point, contact.normal), _exit.Color, _exit.Duration);
+                D.raw(new Shape.Arrow2D(contact.point, contact.normal), _exit.Color, _exit.Duration);
             }
         }
 #endif

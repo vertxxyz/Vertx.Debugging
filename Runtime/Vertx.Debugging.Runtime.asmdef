@@ -22,6 +22,11 @@
             "define": "VERTX_PHYSICS_2D"
         },
         {
+            "name": "com.unity.modules.physics",
+            "expression": "",
+            "define": "VERTX_PHYSICS"
+        },
+        {
             "name": "com.unity.render-pipelines.universal",
             "expression": "",
             "define": "VERTX_URP"
@@ -45,6 +50,11 @@
             "name": "com.unity.burst",
             "expression": "",
             "define": "VERTX_BURST"
+        },
+        {
+            "name": "com.unity.collections",
+            "expression": "1.0.0-pre.4",
+            "define": "VERTX_COLLECTIONS_1_0_0_PRE_4_OR_NEWER"
         }
     ],
     "noEngineReferences": false

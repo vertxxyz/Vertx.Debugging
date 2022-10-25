@@ -1,3 +1,4 @@
+#if VERTX_PHYSICS
 using UnityEngine;
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
@@ -5,7 +6,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	public static partial class Shapes
+	public static partial class Shape
 	{
 		public readonly struct Raycast : IDrawableCast
 		{
@@ -386,3 +387,4 @@ namespace Vertx.Debugging
 		}
 	}
 }
+#endif

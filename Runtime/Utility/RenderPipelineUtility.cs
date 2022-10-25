@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -47,3 +48,4 @@ namespace Vertx.Debugging
 		}
 	}
 }
+#endif

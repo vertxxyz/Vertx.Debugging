@@ -6,21 +6,21 @@ Should support all render pipelines. Uses instanced rendering to efficiently bat
 > Unity 2019.4+  
 > Debugging from jobs and builds is not supported, I recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
 
-https://user-images.githubusercontent.com/21963717/153703387-cc55e3c6-26b6-4474-815a-0e65e27a73f0.mov
+https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-9316-78f7d4fbea1a.mp4
 
 ## Usage
 
 ```csharp
 // Draw a sphere with the specified color.
-D.raw(new Shapes.Sphere(position, radius), color, duration);
+D.raw(new Shape.Sphere(position, radius), color, duration);
 
 // Draw green sphere if nothing was hit,
 // or draw a red sphere if something was.
-D.raw(new Shapes.Sphere(position, radius), hit, duration);
+D.raw(new Shape.Sphere(position, radius), hit, duration);
 
 // Casts draw in green, with red where hits were detected if no color is provided.
 // Cast color and hit color can be overrided manually.
-D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10), duration);
+D.raw(new Shape.SphereCastAll(position, direction, radius, hits, hitCount, 10), duration);
 ```
 
 > **Note**  
@@ -30,37 +30,43 @@ D.raw(new Shapes.SphereCastAll(position, direction, radius, hits, hitCount, 10),
 You can call these methods from most places, `Update`, `LateUpdate`, `FixedUpdate`, `OnDrawGizmos`, and with `ExecuteAlways`/`ExecuteInEditMode`.  
 If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.matrix` works, `Gizmos.color` is unsupported. Gizmos are not pickable.
 
+> **Warning**  
+> If you find you have rendering issues like upside-down depth testing, or artifacts in the game view window:  
+> You can disable Depth Write and Depth Test for the window causing issues using the settings in **Project Settings > Vertx > Debugging**.  
+> If you're on a version of Unity where this UI doesn't work, it's a bug, wow thanks Unity!
+
 ## Shapes
-All new shapes are contained within the Shapes class. I recommend statically importing the class if you are using them often:
+All new shapes are contained within the `Shape` class. I recommend statically importing the class if you are using them often:
 
 ```csharp
-using static Vertx.Debugging.Shapes;
+using static Vertx.Debugging.Shape;
 ```
 
 ### General
-| Name         | Description                                                                                              |
-|--------------|----------------------------------------------------------------------------------------------------------|
-| `Text`       | A label in the scene at the provided position. (Text respects 3D gizmo fade distance)                    |
-| `ScreenText` | A label in the top left of the view.<br>(Order is not maintained when mixing durations with other text). |
+| Name         | Description                                                                                                                                       |
+|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Text`       | A label in the scene at the provided position. (Text respects 3D gizmo fade distance)                                                             |
+| `ScreenText` | A label in the top left of the view.<br>Draws using an [Overlay](https://docs.unity3d.com/Manual/overlays.html) in the Scene view when available. |
 
 
 ### 3D
 #### Shapes
-| Name                                                       | Description                                                  |
-|------------------------------------------------------------|--------------------------------------------------------------|
-| `Sphere`<br>`Hemisphere`<br>`Box`<br>`Capsule`<br>`Bounds` | 3D shapes.                                                   |
-| `Arc`                                                      | An arc (using `Angle`[^1] to define its length).             |
-| `SurfacePoint`                                             | A ray with a circle to indicate the surface.                 |
-| `Point`                                                    | A point without a specified direction.                       |
-| `Axis`                                                     | An XYZ direction gizmo.                                      |
-| `Arrow`<br>`ArrowStrip`                                    | An arrow vector, or a collection of points forming an arrow. |
-| `Line`<br>`LineStrip`                                      | A line, or a collection of points that make up a line.       |
-| `MeshNormals`                                              | The normals of a mesh.                                       |
-| `Ray`                                                      | A line from a position and a direction vector.               |
-| `Ray` (Built-in)                                           | Fallback to `Ray`.                                           |
-| `Vector3` (Built-in)                                       | Fallback to `Point`.                                         |
-| `RaycastHit` (Built-in)                                    | Fallback to `SurfacePoint`.                                  |
-| `Bounds` (Built-in)                                        | Fallback to `Box`.                                           |
+| Name                                                       | Description                                                                                      |
+|------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| `Sphere`<br>`Hemisphere`<br>`Box`<br>`Capsule`<br>`Bounds` | 3D shapes.                                                                                       |
+| `Arc`                                                      | An arc (using `Angle`[^1] to define its length).                                                 |
+| `SurfacePoint`                                             | A ray with a circle to indicate the surface.                                                     |
+| `Point`                                                    | A point without a specified direction.                                                           |
+| `Axis`                                                     | An XYZ direction gizmo.                                                                          |
+| `Arrow`<br>`ArrowStrip`                                    | An arrow vector, or a collection of points forming an arrow.                                     |
+| `Line`<br>`LineStrip`                                      | A line, or a collection of points that make up a line.                                           |
+| `HalfArrow`                                                | An arrow with only one side of its head. Commonly used to represent the HalfEdge data structure. |
+| `MeshNormals`                                              | The normals of a mesh.                                                                           |
+| `Ray`                                                      | A line from a position and a direction vector.                                                   |
+| `Ray` (Built-in)                                           | Fallback to `Ray`.                                                                               |
+| `Vector3` (Built-in)                                       | Fallback to `Point`.                                                                             |
+| `RaycastHit` (Built-in)                                    | Fallback to `SurfacePoint`.                                                                      |
+| `Bounds` (Built-in)                                        | Fallback to `Box`.                                                                               |
 
 
 #### Casts
@@ -82,6 +88,7 @@ using static Vertx.Debugging.Shapes;
 | `Spiral2D`                                                 | A spiral, useful for visualising rotation on wheels.         |
 | `Vector2` (Built-in)                                       | Fallback to `Point2D`.                                       |
 | `RaycastHit2D` (Built-in)                                  | Fallback to `Ray`.                                           |
+| `Rect` (Built-in)                                          | Fallback to `Box2D`.                                         |
 
 #### Casts
 | Name                                                                            | Description                                                                                                                                                               |
@@ -103,7 +110,7 @@ using static Vertx.Debugging.Shapes;
 
 ## Extensions
 
-The `Shapes` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
 Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
 
 ---

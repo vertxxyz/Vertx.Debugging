@@ -1,28 +1,74 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Vertx.Debugging
 {
-	public static partial class Shapes
+	public static partial class Shape
 	{
+#if UNITY_EDITOR
 		private static CircleCache CircleCache => s_circleCache ?? (s_circleCache = new CircleCache());
 		private static CircleCache s_circleCache;
+#endif
 
+		static Shape()
+		{
+#if UNITY_EDITOR
+			SyncColors();
+#endif
+		}
+
+#if UNITY_EDITOR
 		// Axis
-		public static readonly Color XColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color YColor = new Color(0.3f, 1, 0.1f);
-		public static readonly Color ZColor = new Color(0.1f, 0.4f, 1);
+		public static Color XColor { get; private set; }
+		public static Color YColor { get; private set; }
+		public static Color ZColor { get; private set; }
+
 		// Casts
-		public static readonly Color HitColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color CastColor = new Color(0.4f, 1f, 0.3f);
+		public static Color HitColor { get; private set; }
+		public static Color CastColor { get; private set; }
+
 		// Physics Events
-		public static readonly Color EnterColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color StayColor = new Color(1f, 0.4f, 0.3f);
-		public static readonly Color ExitColor = new Color(0.4f, 1f, 0.3f);
+		public static Color EnterColor { get; private set; }
+		public static Color StayColor { get; private set; }
+		public static Color ExitColor { get; private set; }
+
+		internal static void SyncColors()
+		{
+			var settings = DebuggingSettings.instance;
+			DebuggingSettings.ColorGroup colors = settings.Colors;
+			if (colors == null)
+			{
+				colors = new DebuggingSettings.ColorGroup();
+				settings.Colors = colors;
+			}
+
+			XColor = colors.XColor;
+			YColor = colors.YColor;
+			ZColor = colors.ZColor;
+			HitColor = colors.HitColor;
+			CastColor = colors.CastColor;
+			EnterColor = colors.EnterColor;
+			StayColor = colors.StayColor;
+			ExitColor = colors.ExitColor;
+		}
+#else
+		// Axis
+		public static readonly Color XColor = Constants.XColor;
+		public static readonly Color YColor = Constants.YColor;
+		public static readonly Color ZColor = Constants.ZColor;
+		// Casts
+		public static readonly Color HitColor = Constants.HitColor;
+		public static readonly Color CastColor = Constants.CastColor;
+		// Physics Events
+		public static readonly Color EnterColor = Constants.EnterColor;
+		public static readonly Color StayColor = Constants.StayColor;
+		public static readonly Color ExitColor = Constants.ExitColor;
+#endif
 
 		[Flags]
 		public enum Axes : byte

@@ -24,19 +24,59 @@ namespace Vertx.Debugging
 				}
 			}
 
+			public static implicit operator T(Asset<T> asset) => asset.Value;
+
 			public Asset(string name, string extension = "asset") => _path = $"Packages/com.vertx.debugging/Editor/Assets/{name}.{extension}";
 		}
+		
+		public sealed class MaterialAsset
+		{
+			private readonly string _path;
+			private readonly bool _enableInstancing;
+			private bool _initialised;
+			private Material _value;
 
-		public static readonly Asset<Mesh> Line = new Asset<Mesh>("Line");
-		public static readonly Asset<Mesh> Circle = new Asset<Mesh>("Circle");
-		public static readonly Asset<Mesh> Box = new Asset<Mesh>("Box");
-		public static readonly Asset<Mesh> Box2D = new Asset<Mesh>("Box2D");
-		public static readonly Asset<Material> DefaultMaterial = new Asset<Material>("Default", "mat");
-		public static readonly Asset<Material> LineMaterial = new Asset<Material>("Line", "mat");
-		public static readonly Asset<Material> ArcMaterial = new Asset<Material>("Arc", "mat");
-		public static readonly Asset<Material> BoxMaterial = new Asset<Material>("Box", "mat");
-		public static readonly Asset<Material> OutlineMaterial = new Asset<Material>("Outline", "mat");
-		public static readonly Asset<Material> CastMaterial = new Asset<Material>("Cast", "mat");
+			public Material Value
+			{
+				get
+				{
+					if (_initialised)
+						return _value;
+					_initialised = true;
+					_value = new Material(AssetDatabase.LoadAssetAtPath<Shader>(_path))
+					{
+						enableInstancing = _enableInstancing,
+						hideFlags = HideFlags.HideAndDontSave
+					};
+					AssemblyReloadEvents.beforeAssemblyReload += Dispose;
+					return _value;
+				}
+			}
+
+			private void Dispose()
+			{
+				AssemblyReloadEvents.beforeAssemblyReload -= Dispose;
+				Object.DestroyImmediate(_value, true);
+			}
+
+			public static implicit operator Material(MaterialAsset asset) => asset.Value;
+
+			public MaterialAsset(string name, bool enableInstancing = true)
+			{
+				_enableInstancing = enableInstancing;
+				_path = $"Packages/com.vertx.debugging/Editor/Assets/{name}.shader";
+			}
+		}
+
+		public static readonly Asset<Mesh> Line = new Asset<Mesh>("VertxLine");
+		public static readonly Asset<Mesh> Circle = new Asset<Mesh>("VertxCircle");
+		public static readonly Asset<Mesh> Box = new Asset<Mesh>("VertxBox");
+		public static readonly MaterialAsset LineMaterial = new MaterialAsset("VertxLine");
+		public static readonly MaterialAsset ArcMaterial = new MaterialAsset("VertxArc");
+		public static readonly MaterialAsset BoxMaterial = new MaterialAsset("VertxBox");
+		public static readonly MaterialAsset OutlineMaterial = new MaterialAsset("VertxOutline");
+		public static readonly MaterialAsset CastMaterial = new MaterialAsset("VertxCast");
+		public static readonly Asset<Font> JetBrainsMono = new Asset<Font>("JetbrainsMono-Regular", "ttf");
 	}
 }
 #endif

@@ -23,15 +23,15 @@ namespace Vertx.Debugging
 		[PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Enter)]
 		[SerializeField]
 		private DebugComponentBase.ColorDurationPair _enter =
-			new DebugComponentBase.ColorDurationPair(Shapes.EnterColor, 0.1f);
+			new DebugComponentBase.ColorDurationPair(Shape.EnterColor, 0.1f);
 		[PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Stay)]
 		[SerializeField]
 		private DebugComponentBase.ColorDurationPair _stay =
-			new DebugComponentBase.ColorDurationPair(Shapes.StayColor);
+			new DebugComponentBase.ColorDurationPair(Shape.StayColor);
 		[PairWithEnabler(null, "Duration", nameof(_type), (int)Type.Exit)]
 		[SerializeField]
 		private DebugComponentBase.ColorDurationPair _exit =
-			new DebugComponentBase.ColorDurationPair(Shapes.ExitColor, 0.1f);
+			new DebugComponentBase.ColorDurationPair(Shape.ExitColor, 0.1f);
 
 		[Flags]
 		private enum Type : byte

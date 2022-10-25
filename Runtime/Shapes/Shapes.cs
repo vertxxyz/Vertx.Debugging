@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
-	public static partial class Shapes
+	public static partial class Shape
 	{
 		public readonly struct Line : IDrawable
 		{
@@ -27,6 +27,16 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendLine(this, color, duration);
 #endif
+
+			public Line GetShortened(float shortenBy, float minShorteningNormalised = 0)
+			{
+				Vector3 dir = B - A;
+				dir.EnsureNormalized(out float length);
+				float totalLength = length;
+				length = Mathf.Max(length - shortenBy, length * minShorteningNormalised);
+				length = totalLength - length;
+				return new Line(A + dir * length, B - dir * length);
+			}
 		}
 
 		public readonly struct LineStrip : IDrawable
@@ -100,6 +110,8 @@ namespace Vertx.Debugging
 		public readonly struct Arrow : IDrawable
 		{
 			public readonly Vector3 Origin, Direction;
+			internal const float HeadLength = 0.075f;
+			internal const float HeadWidth = 0.05f;
 
 			public Arrow(Vector3 origin, Vector3 direction)
 			{
@@ -118,12 +130,13 @@ namespace Vertx.Debugging
 
 			public static void DrawArrowHead(CommandBuilder commandBuilder, Vector3 point, Vector3 dir, Color color, float duration = 0)
 			{
-				float headLength = 0.075f;
-				float headWidth = 0.05f;
 				const int segments = 3;
 
 				Vector3 arrowPoint = point + dir;
 				dir.EnsureNormalized(out float length);
+
+				float headLength = HeadLength;
+				float headWidth = HeadWidth;
 
 				if (headLength > length * 0.5f)
 				{
@@ -180,6 +193,116 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
+		
+		/// <summary>
+		/// An arrow with only one side of its head.<br/>
+		/// Commonly used to represent the HalfEdge data structure.
+		/// </summary>
+		public readonly struct HalfArrow : IDrawable
+		{
+			public readonly Line Line;
+			public readonly Vector3 Perpendicular;
+
+			public HalfArrow(Line line, Vector3 perpendicular)
+			{
+				Line = line;
+				perpendicular.EnsureNormalized();
+				Perpendicular = perpendicular;
+			}
+
+			public HalfArrow(Vector3 origin, Vector3 direction, Vector3 perpendicular) : this(new Line(origin, origin + direction), perpendicular) { }
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				commandBuilder.AppendLine(Line, color, duration);
+				DrawHalfArrowHead(commandBuilder, color, duration);
+			}
+
+			private void DrawHalfArrowHead(CommandBuilder commandBuilder, Color color, float duration = 0)
+			{
+				Vector3 end = Line.B;
+				Vector3 dir = Line.A - Line.B;
+
+				dir.EnsureNormalized(out float length);
+				
+				float headLength = Arrow.HeadLength;
+				float headWidth = Arrow.HeadWidth;
+
+				if (headLength > length * 0.5f)
+				{
+					headLength *= length;
+					headWidth *= length;
+				}
+
+				Vector3 cross = Vector3.Cross(dir, Perpendicular);
+				Vector3 a = end + dir * headLength;
+				Vector3 b = a + cross * headWidth;
+				commandBuilder.AppendLine(new Line(end, b), color, duration);
+				commandBuilder.AppendLine(new Line(a, b), color, duration);
+			}
+#endif
+		}
+		
+		/// <summary>
+		/// An arrow that is curved between two points.<br/>
+		/// Useful when straight lines can overlap with other shapes.
+		/// </summary>
+		public readonly struct CurvedArrow : IDrawable
+		{
+			public readonly Vector3 Origin;
+			public readonly Vector3 Direction;
+			public readonly Vector3 Perpendicular;
+			public readonly Angle Angle;
+
+			public CurvedArrow(Vector3 origin, Vector3 direction, Vector3 perpendicular) : this(origin, direction, perpendicular, Angle.FromTurns(0.1f)) { }
+
+			public CurvedArrow(Vector3 origin, Vector3 direction, Vector3 perpendicular, Angle angle)
+			{
+				Origin = origin;
+				Direction = direction;
+				perpendicular.EnsureNormalized();
+				if (!Mathf.Approximately(Vector3.Dot(direction, perpendicular), 0))
+				{
+					direction.EnsureNormalized();
+					perpendicular = Vector3.Cross(direction, Vector3.Cross(direction, perpendicular).normalized);
+				}
+				Perpendicular = perpendicular;
+				Angle = angle.Turns > 0.5f ? Angle.FromTurns(0.5f) : angle;
+			}
+			
+			public CurvedArrow(in Line line, Vector3 perpendicular) : this(line.A, line.B - line.A, perpendicular) { }
+
+			public CurvedArrow(in Line line, Vector3 perpendicular, Angle angle) : this(line.A, line.B - line.A, perpendicular, angle) { }
+
+#if UNITY_EDITOR
+			private const float ArrowHeadAngle = 30f;
+			private static readonly Quaternion ArrowheadRotation = Quaternion.AngleAxis(-ArrowHeadAngle * 2, Vector3.up);
+			
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				// All this could be improved, reducing complex and redundant calculations.
+				Vector3 end = Origin + Direction;
+				Vector3 center = Origin + Direction * 0.5f;
+				Vector3 dir = Direction;
+				dir.EnsureNormalized(out float length);
+				
+				float headLength = Arrow.HeadLength;
+				if (headLength > length * 0.5f)
+					headLength *= length;
+				
+				Vector3 cross = Vector3.Cross(dir, Perpendicular);
+				float radius = Arc.GetRadius(Angle, length);
+				float offset = radius * Mathf.Cos(0.5f * Angle.Radians);
+				commandBuilder.AppendArc(new Arc(center - cross * offset, Perpendicular, cross, radius, Angle), color, duration);
+				
+				Quaternion arrowheadRotation = Quaternion.LookRotation(cross, Perpendicular) * Quaternion.AngleAxis(Angle.Degrees * 0.5f - 90 + ArrowHeadAngle, Vector3.up);
+				Vector3 arrowRay = new Vector3(0, 0, headLength);
+				commandBuilder.AppendLine(new Line(end, end + arrowheadRotation * arrowRay), color, duration);
+				commandBuilder.AppendLine(new Line(end, end + arrowheadRotation * ArrowheadRotation * arrowRay), color, duration);
+			}
+#endif
+		}
 
 		public readonly struct Axis : IDrawable
 		{
@@ -193,6 +316,15 @@ namespace Vertx.Debugging
 			{
 				Origin = origin;
 				Rotation = rotation;
+				ShowArrowHeads = showArrowHeads;
+				VisibleAxes = visibleAxes;
+				Scale = scale;
+			}
+
+			public Axis(Transform transform, bool showArrowHeads = true, Axes visibleAxes = Axes.All, float scale = 1)
+			{
+				Origin = transform.position;
+				Rotation = transform.rotation;
 				ShowArrowHeads = showArrowHeads;
 				VisibleAxes = visibleAxes;
 				Scale = scale;
@@ -264,16 +396,27 @@ namespace Vertx.Debugging
 			public Circle(Vector3 origin, Quaternion rotation, float radius)
 				=> _arc = new Arc(Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius)));
 
+			/// <summary>
+			/// If <see cref="normal"/> or <see cref="direction"/> are zero, this will spam logs to the console. Please validate your own inputs if you expect them to be incorrect.
+			/// </summary>
+			/// <param name="origin">The center of the circle.</param>
+			/// <param name="normal">The normal facing outwards from the circle.</param>
+			/// <param name="direction">Any direction on the plane the circle lies.</param>
+			/// <param name="radius">The radius of the circle.</param>
 			public Circle(Vector3 origin, Vector3 normal, Vector3 direction, float radius)
 				: this(
 					origin,
-					Quaternion.LookRotation(direction, normal) * Arc.s_Base3DRotation,
+					Quaternion.LookRotation(Mathf.Abs(Vector3.Dot(direction, normal)) > 0.999f ? GetValidPerpendicular(normal) : direction, normal) * Arc.s_Base3DRotation,
 					radius
 				) { }
 
 			/// <summary>
-			/// It's cheaper to use the <see cref="Circle(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
+			/// It's cheaper to use the <see cref="Circle(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.<br/>
+			/// If <see cref="normal"/> is zero, this will spam logs to the console. Please validate your own inputs if you expect them to be incorrect.
 			/// </summary>
+			/// <param name="origin">The center of the circle.</param>
+			/// <param name="normal">The normal facing outwards from the circle.</param>
+			/// <param name="radius">The radius of the circle.</param>
 			public Circle(Vector3 origin, Vector3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius) { }
 
 #if UNITY_EDITOR
@@ -327,6 +470,9 @@ namespace Vertx.Debugging
 			/// It's cheaper to use the <see cref="Arc(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
 			/// </summary>
 			public Arc(Vector3 origin, Vector3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius, Angle.FromTurns(1)) { }
+
+			public static float GetRadius(in Angle angle, float chordLength) => chordLength / (2 * Mathf.Sin(0.5f * angle.Radians));
+			public static Angle GetAngle(float radius, float chordLength) => Angle.FromRadians(Mathf.Asin(chordLength / (2f * radius)) * 2);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendArc(this, color, duration);
@@ -420,20 +566,29 @@ namespace Vertx.Debugging
 		public readonly struct Box : IDrawable
 		{
 			public readonly Matrix4x4 Matrix;
+			public readonly bool Shade3D;
 
-			internal Box(Matrix4x4 matrix) => Matrix = matrix;
+			internal Box(Matrix4x4 matrix, bool shade3D = true)
+			{
+				Matrix = matrix;
+				Shade3D = shade3D;
+			}
 
-			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation) : this(Matrix4x4.TRS(position, orientation, halfExtents)) { }
+			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation, bool shade3D = true) : this(Matrix4x4.TRS(position, orientation, halfExtents), shade3D) { }
 
-			public Box(Transform transform) => Matrix = transform.localToWorldMatrix;
+			public Box(Transform transform, bool shade3D = true)
+			{
+				Shade3D = shade3D;
+				Matrix = transform.localToWorldMatrix;
+			}
 
-			public Box(Bounds bounds) : this(bounds.center, bounds.extents, Quaternion.identity) { }
+			public Box(Bounds bounds, bool shade3D = true) : this(bounds.center, bounds.extents, Quaternion.identity, shade3D) { }
 
 			public Box GetTranslated(Vector3 translation) => new Box(Matrix4x4.Translate(translation) * Matrix);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
-				=> commandBuilder.AppendBox(this, color, duration, DrawModifications.NormalFade);
+				=> commandBuilder.AppendBox(this, color, duration, Shade3D ? DrawModifications.NormalFade : DrawModifications.None);
 #endif
 		}
 

@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace Vertx.Debugging
 {
-	public static partial class Shapes
+	public static partial class Shape
 	{
 		public readonly struct Point2D : IDrawable
 		{
@@ -103,7 +105,7 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
-		
+
 		public readonly struct ArrowStrip2D : IDrawable
 		{
 			public readonly IEnumerable<Vector2> Points;
@@ -172,7 +174,7 @@ namespace Vertx.Debugging
 
 			public Matrix4x4 Matrix => _circle.Matrix;
 			// set => _circle = new Circle(value);
-			
+
 			public Circle2D(Matrix4x4 matrix) => _circle = new Circle(matrix);
 
 			public Circle2D(Vector2 origin, float radius, float z = 0)
@@ -182,7 +184,7 @@ namespace Vertx.Debugging
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => _circle.Draw(commandBuilder, color, duration);
 #endif
 		}
-		
+
 		/// <summary>
 		/// This is 2D, the rotation or matrix used will align the arc facing right, aligned with XY.<br/>
 		/// Use the helper constructors to create an Arc aligned how you require.
@@ -191,7 +193,7 @@ namespace Vertx.Debugging
 		{
 			public readonly Arc Arc;
 
-			public Arc2D(Vector2 origin, float rotationDegrees, float radius, Angle angle, float z = 0) 
+			public Arc2D(Vector2 origin, float rotationDegrees, float radius, Angle angle, float z = 0)
 				=> Arc = new Arc(new Vector3(origin.x, origin.y, z), Quaternion.AngleAxis(rotationDegrees, Vector3.forward), radius, angle);
 
 			public Arc2D(Vector2 origin, float rotationDegrees, float radius, float z = 0) : this(origin, rotationDegrees, radius, Angle.FromTurns(1), z) { }
@@ -210,7 +212,7 @@ namespace Vertx.Debugging
 			public Box2D(Vector2 origin, Vector2 size, float angle = 0, float z = 0) => Matrix = Matrix4x4.TRS(new Vector3(origin.x, origin.y, z), Quaternion.AngleAxis(angle, Vector3.forward), size);
 
 			public Box2D(Vector3 origin, Vector2 size, float angle = 0) => Matrix = Matrix4x4.TRS(origin, Quaternion.AngleAxis(angle, Vector3.forward), size);
-			
+
 			public Box2D(Vector3 origin, Quaternion rotation, Vector2 size) => Matrix = Matrix4x4.TRS(origin, rotation, size);
 
 			public Box2D GetTranslated(Vector3 translation) => new Box2D(Matrix4x4.Translate(translation) * Matrix);
@@ -239,7 +241,37 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox2D(this, color, duration);
+			private static readonly Vector3[] s_Vertices =
+			{
+				new Vector3(-0.5f, -0.5f, 0), // 0
+				new Vector3(-0.5f, +0.5f, 0), // 1
+				new Vector3(+0.5f, +0.5f, 0), // 2
+				new Vector3(+0.5f, -0.5f, 0) //  3
+			};
+
+			private static readonly int[] s_Indices =
+			{
+				0, 1,
+				1, 2,
+				2, 3,
+				3, 0
+			};
+
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Matrix4x4 m = Matrix;
+				for (int i = 0; i < s_Indices.Length; i += 2)
+				{
+					commandBuilder.AppendLine(
+						new Line(
+							m.MultiplyPoint3x4(s_Vertices[s_Indices[i]]),
+							m.MultiplyPoint3x4(s_Vertices[s_Indices[i + 1]])
+						),
+						color,
+						duration
+					);
+				}
+			}
 #endif
 		}
 
@@ -274,7 +306,7 @@ namespace Vertx.Debugging
 				Vector2 rectMax = rect.max;
 				PointA = new Vector3(rectMin.x, rectMin.y, z);
 				PointB = new Vector3(rectMax.x, rectMax.y, z);
-			} 
+			}
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -406,7 +438,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
-				Angle fullCircle = Shapes.Angle.FromTurns(1);
+				Angle fullCircle = Shape.Angle.FromTurns(1);
 				commandBuilder.AppendArc(new Arc(Origin, Quaternion.identity, Radius, fullCircle), color, duration);
 				if (Revolutions == 0)
 				{
@@ -424,7 +456,7 @@ namespace Vertx.Debugging
 				{
 					float innerR = (currentRevolutions - 1) / currentRevolutions;
 					commandBuilder.AppendArc(
-						new Arc(Origin, normal, direction, radiusSigned * (currentRevolutions / absRevolutions), Shapes.Angle.FromTurns(innerR)),
+						new Arc(Origin, normal, direction, radiusSigned * (currentRevolutions / absRevolutions), Shape.Angle.FromTurns(innerR)),
 						color,
 						duration,
 						DrawModifications.Custom2

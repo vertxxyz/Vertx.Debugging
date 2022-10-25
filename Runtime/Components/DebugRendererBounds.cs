@@ -5,7 +5,7 @@ namespace Vertx.Debugging
 	[AddComponentMenu("Debugging/Debug Renderer Bounds")]
 	public sealed class DebugRendererBounds : DebugComponentBase
 	{
-		[SerializeField] private Color _color = Shapes.CastColor;
+		[SerializeField] private Color _color = Shape.CastColor;
 		[SerializeField] private Renderer _renderer;
 
 		private void Reset() => _renderer = GetComponent<Renderer>();
