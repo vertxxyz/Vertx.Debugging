@@ -30,6 +30,11 @@ D.raw(new Shape.SphereCastAll(position, direction, radius, hits, hitCount, 10), 
 You can call these methods from most places, `Update`, `LateUpdate`, `FixedUpdate`, `OnDrawGizmos`, and with `ExecuteAlways`/`ExecuteInEditMode`.  
 If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.matrix` works, `Gizmos.color` is unsupported. Gizmos are not pickable.
 
+> **Warning**  
+> If you find you have rendering issues like upside-down depth testing, or artifacts in the game view window:  
+> You can disable Depth Write and Depth Test for the window causing issues using the settings in **Project Settings > Vertx > Debugging**.  
+> If you're on a version of Unity where this UI doesn't work, it's a bug, wow thanks Unity!
+
 ## Shapes
 All new shapes are contained within the `Shape` class. I recommend statically importing the class if you are using them often:
 

@@ -30,7 +30,10 @@ namespace Vertx.Debugging
 
 		internal static CommandBuilder Instance { get; }
 
-		private readonly int _unityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
+		private static readonly int _unityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
+		private static readonly int _zWriteKey = Shader.PropertyToID("_ZWrite");
+		private static readonly int _zTestKey = Shader.PropertyToID("_ZTest");
+
 		private readonly BufferGroup _defaultGroup = new BufferGroup(true, Name);
 		private readonly BufferGroup _gizmosGroup = new BufferGroup(false, GizmosName);
 #if VERTX_URP
@@ -59,7 +62,6 @@ namespace Vertx.Debugging
 #else
 			RenderPipelineManager.beginFrameRendering += (context, cameras) =>
 			{
-				
 #if !UNITY_2021_1_OR_NEWER
 				using (Vertx.Debugging.Internal.ListPool<Camera>.Get(out var list))
 #else
@@ -168,16 +170,19 @@ namespace Vertx.Debugging
 
 		internal void ClearGizmoGroup() => _gizmosGroup.Clear();
 
+		/// <summary>
+		/// This must match <see cref="DebuggingSettings.Location"/>'s Scene and Game
+		/// </summary>
 		[Flags]
 		private enum RenderingType
 		{
 			Unset = 0,
-			// Call origin
-			Default = 1,
-			Gizmos = 1 << 1,
 			// Rendering view
-			Scene = 1 << 2,
-			Game = 1 << 3,
+			Scene = 1,
+			Game = 1 << 1,
+			// Call origin
+			Default = 1 << 2,
+			Gizmos = 1 << 3,
 			// -
 			GizmosAndGame = Gizmos | Game
 		}
@@ -232,11 +237,14 @@ namespace Vertx.Debugging
 			{
 				RenderShapes();
 			}
-			
+
 			// commandBuffer.SetGlobalDepthBias(-1, -1);
 
 			void RenderShapes()
 			{
+				DebuggingSettings settings = DebuggingSettings.instance;
+				bool depthTest = ((int)settings.DepthTest & (int)renderingType) != 0;
+				bool depthWrite = ((int)settings.DepthWrite & (int)renderingType) != 0;
 				render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, group.Lines, 128); // 256 vert target, 2 verts per line. 128 lines.
 				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, group.Arcs, 4); // 256 vert target, 64 verts per circle. 4 circles.
 				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes, 11); // 256 vert target, 12 edges, 2 verts each. 11 boxes.
@@ -275,7 +283,9 @@ namespace Vertx.Debugging
 					// Set the buffers to be used by the property block
 					// Synchronise the GraphicsBuffer with the data in the shape buffer.
 					shape.Set(commandBuffer, propertyBlock);
-					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, -1, Mathf.CeilToInt(shapeCount / (float)groupCount), propertyBlock);
+					mat.SetFloat(_zWriteKey, depthWrite ? 1f : 0f);
+					mat.SetFloat(_zTestKey, (float)(depthTest ? CompareFunction.LessEqual : CompareFunction.Always));
+					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, depthTest ? -1 : 1, Mathf.CeilToInt(shapeCount / (float)groupCount), propertyBlock);
 					return true;
 				}
 			}

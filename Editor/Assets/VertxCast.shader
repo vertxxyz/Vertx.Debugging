@@ -3,6 +3,7 @@ Shader "Hidden/Vertx/Cast"
 	Properties
 	{
 		[HideInInspector] _ZWrite("__zw", Float) = 1.0
+		[HideInInspector] _ZTest("__zt", Float) = 4.0
 	}
 	SubShader
 	{
@@ -39,7 +40,7 @@ Shader "Hidden/Vertx/Cast"
 
 		Pass // 1
 		{
-			ZTest LEqual
+			ZTest [_ZTest]
 			ZWrite [_ZWrite]
 			CGPROGRAM
 			#pragma require geometry

@@ -38,7 +38,7 @@ struct fragInput
 geoInput vert(vertInput input)
 {
     geoInput o;
-    uint index = input.instanceID * 128 + input.vertexID / 2;
+    int index = input.instanceID * 128 + input.vertexID / 2;
     o.instanceID = index;
     if (index >= _InstanceCount)
     {
