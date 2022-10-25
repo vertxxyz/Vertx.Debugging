@@ -120,6 +120,19 @@ namespace Vertx.Debugging
 			vector2 /= Mathf.Sqrt(sqrMag);
 		}
 
+		private static void EnsureNormalized(this ref Vector2 vector2, out float length)
+		{
+			float sqrMag = vector2.sqrMagnitude;
+			if (Mathf.Approximately(sqrMag, 1))
+			{
+				length = 1;
+				return;
+			}
+
+			length = Mathf.Sqrt(sqrMag);
+			vector2 /= length;
+		}
+
 		private static void EnsureNormalized(this ref Vector3 vector3)
 		{
 			float sqrMag = vector3.sqrMagnitude;

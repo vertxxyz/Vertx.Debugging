@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable MemberHidesStaticFromOuterClass
@@ -193,7 +194,7 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
-		
+
 		/// <summary>
 		/// An arrow with only one side of its head.<br/>
 		/// Commonly used to represent the HalfEdge data structure.
@@ -225,7 +226,7 @@ namespace Vertx.Debugging
 				Vector3 dir = Line.A - Line.B;
 
 				dir.EnsureNormalized(out float length);
-				
+
 				float headLength = Arrow.HeadLength;
 				float headWidth = Arrow.HeadWidth;
 
@@ -243,7 +244,7 @@ namespace Vertx.Debugging
 			}
 #endif
 		}
-		
+
 		/// <summary>
 		/// An arrow that is curved between two points.<br/>
 		/// Useful when straight lines can overlap with other shapes.
@@ -267,10 +268,11 @@ namespace Vertx.Debugging
 					direction.EnsureNormalized();
 					perpendicular = Vector3.Cross(direction, Vector3.Cross(direction, perpendicular).normalized);
 				}
+
 				Perpendicular = perpendicular;
 				Angle = angle.Turns > 0.5f ? Angle.FromTurns(0.5f) : angle;
 			}
-			
+
 			public CurvedArrow(in Line line, Vector3 perpendicular) : this(line.A, line.B - line.A, perpendicular) { }
 
 			public CurvedArrow(in Line line, Vector3 perpendicular, Angle angle) : this(line.A, line.B - line.A, perpendicular, angle) { }
@@ -278,7 +280,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			private const float ArrowHeadAngle = 30f;
 			private static readonly Quaternion ArrowheadRotation = Quaternion.AngleAxis(-ArrowHeadAngle * 2, Vector3.up);
-			
+
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
 				// All this could be improved, reducing complex and redundant calculations.
@@ -286,16 +288,16 @@ namespace Vertx.Debugging
 				Vector3 center = Origin + Direction * 0.5f;
 				Vector3 dir = Direction;
 				dir.EnsureNormalized(out float length);
-				
+
 				float headLength = Arrow.HeadLength;
 				if (headLength > length * 0.5f)
 					headLength *= length;
-				
+
 				Vector3 cross = Vector3.Cross(dir, Perpendicular);
 				float radius = Arc.GetRadius(Angle, length);
 				float offset = radius * Mathf.Cos(0.5f * Angle.Radians);
 				commandBuilder.AppendArc(new Arc(center - cross * offset, Perpendicular, cross, radius, Angle), color, duration);
-				
+
 				Quaternion arrowheadRotation = Quaternion.LookRotation(cross, Perpendicular) * Quaternion.AngleAxis(Angle.Degrees * 0.5f - 90 + ArrowHeadAngle, Vector3.up);
 				Vector3 arrowRay = new Vector3(0, 0, headLength);
 				commandBuilder.AppendLine(new Line(end, end + arrowheadRotation * arrowRay), color, duration);
@@ -434,7 +436,7 @@ namespace Vertx.Debugging
 			public readonly Angle Angle;
 
 			internal static readonly Quaternion s_Base3DRotation = Quaternion.Euler(90, -90, 0);
-			
+
 
 			public Arc(Matrix4x4 matrix, Angle angle)
 			{
@@ -620,12 +622,46 @@ namespace Vertx.Debugging
 				Radius = radius;
 			}
 
+#if VERTX_PHYSICS
+			public Capsule(CharacterController characterController)
+			{
+				Transform transform = characterController.transform;
+				Vector3 scale = transform.lossyScale;
+				float radiusScale = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+				Radius = characterController.radius * radiusScale;
+				float offset = Mathf.Max(characterController.height * 0.5f * Mathf.Abs(scale.y), Radius) - Radius;
+				Vector3 center = transform.TransformPoint(characterController.center);
+				SpherePosition1 = new Vector3(center.x, center.y - offset, center.z);
+				SpherePosition2 = new Vector3(center.x, center.y + offset, center.z);
+			}
+
+			public Capsule(CapsuleCollider collider)
+			{
+				Transform transform = collider.transform;
+				Vector3 scale = transform.lossyScale;
+				float radiusScale = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+				Radius = collider.radius * radiusScale;
+				Vector3 center = transform.TransformPoint(collider.center);
+				float offsetY = Mathf.Max(collider.height * 0.5f * Mathf.Abs(scale.y), Radius) - Radius;
+				Vector3 offset = transform.TransformDirection(new Vector3(0, offsetY, 0));
+				SpherePosition1 = center - offset;
+				SpherePosition2 = center + offset;
+			}
+#endif
+
 			public Capsule GetTranslated(Vector3 translation) => new Capsule(SpherePosition1 + translation, SpherePosition2 + translation, Radius);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
-				Vector3 up = (SpherePosition2 - SpherePosition1).normalized;
+				Vector3 up = SpherePosition2 - SpherePosition1;
+				up.EnsureNormalized(out float length);
+				if (length == 0)
+				{
+					new Sphere(SpherePosition1, Radius).Draw(commandBuilder, color, duration);
+					return;
+				}
+
 				Vector3 down = -up;
 
 				Vector3 perpendicular = GetValidPerpendicular(up);
@@ -675,7 +711,7 @@ namespace Vertx.Debugging
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendOutline(this, color, duration);
 #endif
 		}
-		
+
 		/// <summary>
 		/// Cast is a special structure:<br/>
 		/// - Used in combination with a geometry shader for the outlines of a box cast.

@@ -179,6 +179,9 @@ namespace Vertx.Debugging
 
 			public Circle2D(Vector2 origin, float radius, float z = 0)
 				=> _circle = new Circle(new Vector3(origin.x, origin.y, z), Quaternion.identity, radius);
+			
+			internal Circle2D(Vector3 origin, float radius)
+				=> _circle = new Circle(origin, Quaternion.identity, radius);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => _circle.Draw(commandBuilder, color, duration);
@@ -352,6 +355,34 @@ namespace Vertx.Debugging
 
 			public Capsule2D(Vector2 point, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, float z)
 				: this(point, size, (Direction)capsuleDirection, angle, z) { }
+
+			public Capsule2D(CapsuleCollider2D collider)
+			{
+				Vector2 size = collider.size * 0.5f;
+
+				Transform transform = collider.transform;
+				Vector3 origin = transform.TransformPoint(collider.offset);
+				
+				Vector2 radius2D = transform.TransformVector(
+					collider.direction == CapsuleDirection2D.Vertical
+						? new Vector3(size.x, 0, 0)
+						: new Vector3(0, size.x, 0)
+				);
+				_radius = radius2D.magnitude;
+				
+				Vector2 offset = transform.TransformVector(
+					collider.direction == CapsuleDirection2D.Vertical
+						? new Vector3(0, size.y, 0)
+						: new Vector3(size.y, 0, 0)
+				);
+				offset.EnsureNormalized(out float magnitude);
+				offset *= Mathf.Max(magnitude - _radius, 0);
+
+				_pointA = new Vector3(origin.x + offset.x, origin.y + offset.y, origin.z);
+				_pointB = new Vector3(origin.x - offset.x, origin.y - offset.y, origin.z);
+				_verticalDirection = (_pointA - _pointB).normalized;
+				_scaledLeft = PerpendicularCounterClockwise(_verticalDirection) * _radius;
+			}
 #endif
 
 			public Capsule2D(Vector2 point, Vector2 size, Direction capsuleDirection, float angle = 0)
@@ -411,6 +442,12 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
+				if (_verticalDirection.sqrMagnitude == 0)
+				{
+					new Circle2D(_pointA, _radius).Draw(commandBuilder, color, duration);
+					return;
+				}
+				
 				Angle halfCircle = Angle.FromTurns(0.5f);
 				commandBuilder.AppendArc(new Arc(_pointA, Vector3.forward, _verticalDirection, _radius, halfCircle), color, duration);
 				commandBuilder.AppendArc(new Arc(_pointB, Vector3.forward, -_verticalDirection, _radius, halfCircle), color, duration);
