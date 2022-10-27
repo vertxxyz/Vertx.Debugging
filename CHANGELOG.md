@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Removed GizmosScope. This should be automatically detected.
 
 ### Known Issues
+- Shape outlines become inaccurate at small sizes.
+
+The two issues below can be remedied by playing with the Depth settings in *Project Settings>Vertx>Debugging*:
 - 2022.2 URP versions may have a depth buffer flipped in Y in the Game view. This is a Unity bug that will also affect built-in gizmos.
 - Some versions of Unity will not depth test in the Game view. This seems to be consistent with built-in Debug and Gizmo drawing.
   Fixes welcome if anyone has them!

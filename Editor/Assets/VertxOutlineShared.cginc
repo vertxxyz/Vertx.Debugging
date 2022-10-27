@@ -66,10 +66,10 @@ int circle_line_intersection(float radius, float2 p, float2 n, out float2 inters
     float dy = n.y;
 
     float A = dx * dx + dy * dy;
-    float B = 2 * (dx * p.x + dy * p.x);
+    float B = 2.0 * (dx * p.x + dy * p.x);
     float C = p.x * p.x + p.y * p.y - radius * radius;
 
-    float det = B * B - 4 * A * C;
+    float det = B * B - 4.0 * A * C;
     if (A <= 0.0000001 || det < 0)
     {
         // No real solutions.
@@ -80,16 +80,16 @@ int circle_line_intersection(float radius, float2 p, float2 n, out float2 inters
     if (det == 0)
     {
         // One solution.
-        float t = -B / (2 * A);
+        float t = -B / (2.0 * A);
         intersection1 = float2(p.x + t * dx, p.y + t * dy);
         intersection2 = float2(0, 0);
         return 1;
     }
 
     // Two solutions.
-    float t = (-B + sqrt(det)) / (2 * A);
+    float t = (-B + sqrt(det)) / (2.0 * A);
     intersection1 = float2(p.x + t * dx, p.y + t * dy);
-    t = (-B - sqrt(det)) / (2 * A);
+    t = (-B - sqrt(det)) / (2.0 * A);
     intersection2 = float2(p.x + t * dx, p.y + t * dy);
     return 2;
 }
@@ -130,6 +130,9 @@ bool closest_plane_circle_intersection(
         intersection = circleCenter + circlePerpendicular * i1.x + circlePerpendicular2 * i1.y;
         return true;
     }
+    i1 = normalize(i1) * circleRadius;
+    i2 = normalize(i2) * circleRadius;
+    
     // Reproject back into 3D.
     float3 i13 = circleCenter + circlePerpendicular * i1.x + circlePerpendicular2 * i1.y;
     float3 i23 = circleCenter + circlePerpendicular * i2.x + circlePerpendicular2 * i2.y;

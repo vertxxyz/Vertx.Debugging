@@ -1,9 +1,11 @@
 #if UNITY_EDITOR
-using System;
-using System.Reflection;
-using UnityEditor;
 using UnityEngine;
+using System;
+#if !UNITY_2020_1_OR_NEWER
 using Object = UnityEngine.Object;
+#else
+using UnityEditor;
+#endif
 
 namespace Vertx.Debugging
 {
@@ -32,56 +34,6 @@ namespace Vertx.Debugging
 			public Color ZColor = Constants.ZColor;
 		}
 
-#if !UNITY_2020_1_OR_NEWER
-		// 2019 doesn't have the FilePath attribute, so we just override *everything* manually
-		private static DebuggingSettings _instance;
-
-		public new static DebuggingSettings instance
-		{
-			get
-			{
-				if (_instance == null)
-					CreateAndLoad();
-				return _instance;
-			}
-		}
-
-		private static void CreateAndLoad()
-		{
-			System.Diagnostics.Debug.Assert(_instance == null);
-
-			// Load
-			if (!string.IsNullOrEmpty(Path))
-			{
-				// If a file exists
-				ForceInternalInstanceToNull();
-				UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(Path);
-			}
-
-			if (_instance == null)
-			{
-				// Create
-				ForceInternalInstanceToNull();
-				DebuggingSettings t = CreateInstance<DebuggingSettings>();
-				t.hideFlags = HideFlags.HideAndDontSave;
-				_instance = t;
-			}
-
-			System.Diagnostics.Debug.Assert(_instance != null);
-		}
-		
-		private static void ForceInternalInstanceToNull() => typeof(ScriptableSingleton<DebuggingSettings>).GetField("s_Instance", BindingFlags.NonPublic | BindingFlags.Static).SetValue(null, null);
-
-		protected override void Save(bool saveAsText)
-		{
-			string folderPath = System.IO.Path.GetDirectoryName(Path);
-			if (!System.IO.Directory.Exists(folderPath))
-				System.IO.Directory.CreateDirectory(folderPath);
-
-			UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new Object[] { _instance }, Path, saveAsText);
-		}
-#endif
-
 		public ColorGroup Colors;
 
 		/// <summary>
@@ -105,22 +57,55 @@ namespace Vertx.Debugging
 
 		public void Save() => Save(true);
 	}
+	
+#if !UNITY_2020_1_OR_NEWER
+	// 2019 doesn't have the FilePath attribute, so we just override *everything* manually
+	public class ScriptableSingleton<T> : ScriptableObject where T : ScriptableSingleton<T>
+	{
+		private static T _instance;
+		
+		public static T instance
+		{
+			get
+			{
+				if (_instance == null)
+					CreateAndLoad();
+				return _instance;
+			}
+		}
+
+		private static void CreateAndLoad()
+		{
+			System.Diagnostics.Debug.Assert(_instance == null);
+
+			// Load
+			if (!string.IsNullOrEmpty(DebuggingSettings.Path))
+			{
+				// If a file exists
+				UnityEditorInternal.InternalEditorUtility.LoadSerializedFileAndForget(DebuggingSettings.Path);
+			}
+
+			if (_instance == null)
+			{
+				// Create
+				T t = CreateInstance<T>();
+				t.hideFlags = HideFlags.HideAndDontSave;
+				_instance = t;
+			}
+
+			System.Diagnostics.Debug.Assert(_instance != null);
+		}
+		
+
+		protected void Save(bool saveAsText)
+		{
+			string folderPath = System.IO.Path.GetDirectoryName(DebuggingSettings.Path);
+			if (!System.IO.Directory.Exists(folderPath))
+				System.IO.Directory.CreateDirectory(folderPath);
+
+			UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new Object[] { _instance }, DebuggingSettings.Path, saveAsText);
+		}
+	}
+#endif
 }
 #endif
-
-namespace Vertx.Debugging
-{
-	internal static class Constants
-	{
-		public static readonly Color HitColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color CastColor = new Color(0.4f, 1f, 0.3f);
-
-		public static readonly Color EnterColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color StayColor = new Color(1f, 0.4f, 0.3f);
-		public static readonly Color ExitColor = new Color(0.4f, 1f, 0.3f);
-
-		public static readonly Color XColor = new Color(1, 0.1f, 0.2f);
-		public static readonly Color YColor = new Color(0.3f, 1, 0.1f);
-		public static readonly Color ZColor = new Color(0.1f, 0.4f, 1);
-	}
-}

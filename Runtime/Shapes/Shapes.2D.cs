@@ -91,11 +91,16 @@ namespace Vertx.Debugging
 
 			public static void DrawArrowHead(CommandBuilder commandBuilder, Vector3 arrowPoint, Vector2 dir, Color color, float duration, float scale = 1)
 			{
-				const float headLength = 0.075f;
-				const float headWidth = 0.05f;
 				dir.EnsureNormalized();
 				Vector3 direction = dir;
-				Vector3 cross = PerpendicularClockwise(dir) * (headWidth * scale);
+				DrawArrowHead(commandBuilder, arrowPoint, direction, PerpendicularClockwise(dir), color, duration, scale);
+			}
+
+			public static void DrawArrowHead(CommandBuilder commandBuilder, Vector3 arrowPoint, Vector3 direction, Vector3 cross, Color color, float duration, float scale = 1)
+			{
+				const float headLength = 0.075f;
+				const float headWidth = 0.05f;
+				cross *= headWidth * scale;
 				Vector3 a = arrowPoint + cross;
 				Vector3 b = arrowPoint - cross;
 				Vector3 arrowEnd = arrowPoint + direction * (headLength * scale);

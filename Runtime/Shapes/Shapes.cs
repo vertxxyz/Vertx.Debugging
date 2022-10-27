@@ -306,6 +306,37 @@ namespace Vertx.Debugging
 #endif
 		}
 
+		public readonly struct Arrow2DFromNormal : IDrawable
+		{
+			public readonly Vector3 Origin, Direction, Normal;
+			internal const float HeadLength = 0.075f;
+			internal const float HeadWidth = 0.05f;
+
+			public Arrow2DFromNormal(Vector3 origin, Vector3 direction, Vector3 normal)
+			{
+				Origin = origin;
+				Direction = direction;
+				Normal = normal;
+				Normal.EnsureNormalized();
+			}
+
+			public Arrow2DFromNormal(Vector3 origin, Quaternion rotation, float length = 1)
+			{
+				Origin = origin;
+				Direction = rotation * Vector3.forward * length;
+				Normal = rotation * Vector3.right;
+				Normal.EnsureNormalized();
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
+				Arrow2D.DrawArrowHead(commandBuilder, Origin + Direction, Direction.normalized, Normal, color, duration);
+			}
+#endif
+		}
+
 		public readonly struct Axis : IDrawable
 		{
 			public readonly Vector3 Origin;
@@ -395,6 +426,12 @@ namespace Vertx.Debugging
 
 			public Circle(Matrix4x4 matrix) => _arc = new Arc(matrix);
 
+			/// <summary>
+			/// A circle oriented along XY
+			/// </summary>
+			/// <param name="origin">The center of the circle.</param>
+			/// <param name="rotation">The rotation of the circle, the circle will be oriented along XY</param>
+			/// <param name="radius">The radius of the circle.</param>
 			public Circle(Vector3 origin, Quaternion rotation, float radius)
 				=> _arc = new Arc(Matrix4x4.TRS(origin, rotation, new Vector3(radius, radius, radius)));
 
@@ -578,6 +615,8 @@ namespace Vertx.Debugging
 
 			public Box(Vector3 position, Vector3 halfExtents, Quaternion orientation, bool shade3D = true) : this(Matrix4x4.TRS(position, orientation, halfExtents), shade3D) { }
 
+			public Box(Vector3 position, Vector3 halfExtents, bool shade3D = true) : this(Matrix4x4.TRS(position, Quaternion.identity, halfExtents), shade3D) { }
+
 			public Box(Transform transform, bool shade3D = true)
 			{
 				Shade3D = shade3D;
@@ -679,6 +718,90 @@ namespace Vertx.Debugging
 
 				commandBuilder.AppendOutline(new Outline(SpherePosition1, SpherePosition2, Radius), color, duration);
 				commandBuilder.AppendOutline(new Outline(SpherePosition2, SpherePosition1, Radius), color, duration);
+			}
+#endif
+		}
+
+		public readonly struct Cylinder : IDrawable
+		{
+			public readonly Vector3 Center;
+			public readonly Quaternion Rotation;
+			public readonly float HalfHeight;
+			public readonly float Radius;
+
+			public Cylinder(Vector3 center, Quaternion rotation, float height, float radius)
+			{
+				Center = center;
+				Rotation = rotation;
+				HalfHeight = height * 0.5f;
+				Radius = radius;
+			}
+
+			public Cylinder(Vector3 point1, Vector3 point2, float radius)
+			{
+				Vector3 up = point2 - point1;
+				up.EnsureNormalized(out HalfHeight);
+				HalfHeight *= 0.5f;
+				Center = point1 + up * HalfHeight;
+				Radius = radius;
+				if (HalfHeight == 0)
+					Rotation = Quaternion.identity;
+				else
+				{
+					Vector3 perpendicular = GetValidPerpendicular(up);
+					Rotation = Quaternion.LookRotation(perpendicular, up);
+				}
+			}
+
+			public Cylinder(Vector3 lowestPosition, Vector3 direction, float height, float radius)
+			{
+				direction.EnsureNormalized();
+				HalfHeight = height * 0.5f;
+				Center = lowestPosition + direction * HalfHeight;
+				Radius = radius;
+				if (HalfHeight == 0)
+					Rotation = Quaternion.identity;
+				else
+				{
+					Vector3 perpendicular = GetValidPerpendicular(direction);
+					Rotation = Quaternion.LookRotation(perpendicular, direction);
+				}
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Quaternion circleRotation = Quaternion.LookRotation(Rotation * Vector3.up, Rotation * Vector3.right);
+				if (HalfHeight == 0)
+				{
+					new Circle(Center, circleRotation, Radius).Draw(commandBuilder, color, duration);
+					return;
+				}
+				
+				Vector3 up = Rotation * new Vector3(0, HalfHeight, 0);
+				Vector3 point1 = Center + up;
+				Vector3 point2 = Center - up;
+
+				if (Radius == 0)
+				{
+					commandBuilder.AppendLine(new Line(point1, point2), color, duration);
+					return;
+				}
+
+				Vector3 perpendicular = Rotation * new Vector3(Radius, 0, 0);
+				Vector3 perpendicular2 = Rotation * new Vector3(0, 0, Radius);
+
+				
+				new Circle(point1, circleRotation, Radius).Draw(commandBuilder, color, duration);
+				new Circle(point2, circleRotation, Radius).Draw(commandBuilder, color, duration);
+
+				commandBuilder.AppendOutline(new Outline(point1 + perpendicular, point2 + perpendicular, perpendicular), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(point1 - perpendicular, point2 - perpendicular, -perpendicular), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(point1 + perpendicular2, point2 + perpendicular2, perpendicular2), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(point1 - perpendicular2, point2 - perpendicular2, -perpendicular2), color, duration, DrawModifications.NormalFade);
+
+				commandBuilder.AppendOutline(new Outline(point1, point2, Radius), color, duration);
+				commandBuilder.AppendOutline(new Outline(point2, point1, Radius), color, duration);
 			}
 #endif
 		}
