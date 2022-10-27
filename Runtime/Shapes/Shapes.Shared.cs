@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable MemberHidesStaticFromOuterClass
