@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Vertx.Debugging.Editor
 {
 	[CustomEditor(typeof(DebugMeshNormals))]
-	public class DebugMeshNormalsInspector : UnityEditor.Editor
+	internal sealed class DebugMeshNormalsInspector : UnityEditor.Editor
 	{
 		public override void OnInspectorGUI()
 		{

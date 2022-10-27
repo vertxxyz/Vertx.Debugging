@@ -4,8 +4,9 @@ namespace Vertx.Debugging
 {
 	[RequireComponent(typeof(MeshFilter))]
 	[AddComponentMenu("Debugging/Debug Mesh Normals")]
-	public class DebugMeshNormals : DebugComponentBase
+	public sealed class DebugMeshNormals : DebugComponentBase
 	{
+		[SerializeField] private Color _color = Shape.CastColor;
 		[SerializeField] private MeshFilter _meshFilter;
 		[SerializeField] private float _rayLength = 0.1f;
 
@@ -20,8 +21,6 @@ namespace Vertx.Debugging
 		}
 
 		protected override void Draw()
-		{
-			DebugUtils.DrawMeshNormals(_meshFilter.sharedMesh, transform, _rayLength, _color);
-		}
+			=> D.raw(new Shape.MeshNormals(_meshFilter.sharedMesh, transform, _rayLength), _color);
 	}
 }

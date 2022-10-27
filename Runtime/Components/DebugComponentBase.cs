@@ -5,7 +5,6 @@ namespace Vertx.Debugging
 	public abstract class DebugComponentBase : MonoBehaviour
 	{
 		[SerializeField] private bool _drawOnlyWhenSelected = true;
-		[SerializeField] protected Color _color = DebugUtils.RayColor;
 
 		[System.Serializable]
 		public struct ColorDurationPair
@@ -25,14 +24,18 @@ namespace Vertx.Debugging
 				Duration = 0;
 			}
 		}
+		
+		protected abstract bool ShouldDraw();
 
+		protected abstract void Draw();
+		
+#if UNITY_EDITOR
 		private void OnDrawGizmos()
 		{
 			if (_drawOnlyWhenSelected || !enabled || !ShouldDraw())
 				return;
 
-			using (DebugUtils.DrawGizmosScope())
-				Draw();
+			Draw();
 		}
 
 		private void OnDrawGizmosSelected()
@@ -40,18 +43,14 @@ namespace Vertx.Debugging
 			if (!_drawOnlyWhenSelected || !enabled || !ShouldDraw())
 				return;
 
-			using (DebugUtils.DrawGizmosScope())
-				Draw();
+			Draw();
 		}
 
-		protected abstract bool ShouldDraw();
-
-		protected abstract void Draw();
-		
 		// ReSharper disable once Unity.RedundantEventFunction
-		protected virtual void OnDisable()
+		private void OnDisable()
 		{
 			// Only here to get the enabled tick-box.
 		}
+#endif
 	}
 }
