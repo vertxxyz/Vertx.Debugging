@@ -246,6 +246,7 @@ namespace Vertx.Debugging
 				bool depthTest = ((int)settings.DepthTest & (int)renderingType) != 0;
 				bool depthWrite = ((int)settings.DepthWrite & (int)renderingType) != 0;
 				render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, group.Lines, 128); // 256 vert target, 2 verts per line. 128 lines.
+				render = RenderShape(AssetsUtility.Line, AssetsUtility.DashedLineMaterial, group.DashedLines, 128); // 256 vert target, 2 verts per line. 128 lines.
 				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, group.Arcs, 4); // 256 vert target, 64 verts per circle. 4 circles.
 				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes, 11); // 256 vert target, 12 edges, 2 verts each. 11 boxes.
 				render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, group.Outlines, 128);

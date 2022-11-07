@@ -39,6 +39,37 @@ namespace Vertx.Debugging
 				return new Line(A + dir * length, B - dir * length);
 			}
 		}
+		
+		public readonly struct DashedLine : IDrawable
+		{
+			public readonly Vector3 A, B;
+
+			public DashedLine(Vector3 a, Vector3 b)
+			{
+				A = a;
+				B = b;
+			}
+
+			public DashedLine(Ray ray)
+			{
+				A = ray.Origin;
+				B = ray.Origin + ray.Direction;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendDashedLine(this, color, duration);
+#endif
+
+			public DashedLine GetShortened(float shortenBy, float minShorteningNormalised = 0)
+			{
+				Vector3 dir = B - A;
+				dir.EnsureNormalized(out float length);
+				float totalLength = length;
+				length = Mathf.Max(length - shortenBy, length * minShorteningNormalised);
+				length = totalLength - length;
+				return new DashedLine(A + dir * length, B - dir * length);
+			}
+		}
 
 		public readonly struct LineStrip : IDrawable
 		{
@@ -73,6 +104,14 @@ namespace Vertx.Debugging
 			public Ray(Vector3 origin, Vector3 direction, float distance)
 			{
 				Origin = origin;
+				direction.EnsureNormalized();
+				Direction = direction * GetClampedMaxDistance(distance);
+			}
+
+			public Ray(UnityEngine.Ray ray, float distance = Mathf.Infinity)
+			{
+				Origin = ray.origin;
+				Vector3 direction = ray.direction;
 				direction.EnsureNormalized();
 				Direction = direction * GetClampedMaxDistance(distance);
 			}
@@ -121,6 +160,7 @@ namespace Vertx.Debugging
 			}
 
 			public Arrow(Vector3 origin, Quaternion rotation, float length = 1) : this(origin, rotation * Vector3.forward * length) { }
+			public Arrow(Line line) : this(line.A, line.B - line.A) { }
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)

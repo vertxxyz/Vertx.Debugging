@@ -60,6 +60,7 @@ using static Vertx.Debugging.Shape;
 | `Axis`                                                       | An XYZ direction gizmo.                                                                          |
 | `Arrow`<br>`ArrowStrip`                                      | An arrow vector, or a collection of points forming an arrow.                                     |
 | `Line`<br>`LineStrip`                                        | A line, or a collection of points that make up a line.                                           |
+| `DashedLine`                                                 | A dashed line.                                                                                   |
 | `HalfArrow`                                                  | An arrow with only one side of its head. Commonly used to represent the HalfEdge data structure. |
 | `Arrow2DFromNormal`                                          | An 2D arrow aligned in 3D space using a normal vector perpendicular to the direction.            |
 | `MeshNormals`                                                | The normals of a mesh.                                                                           |
@@ -71,10 +72,10 @@ using static Vertx.Debugging.Shape;
 
 
 #### Casts
-| Name                                                                    | Description                                                                                                                                                     |
-|-------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Raycast`<br>`SphereCast`<br>`BoxCast`<br>`CapsuleCast`                 | Using similar parameters as<br>`Physics.Raycast`<br>`Physics.SphereCast`<br>`Physics.BoxCast`<br>`Physics.CapsuleCast`<br>with an optional `RaycastHit` result. |
-| <br>`RaycastAll`<br>`SphereCastAll`<br>`BoxCastAll`<br>`CapsuleCastAll` | `RaycastHit[]` results using similar parameters as<br>`Physics.RaycastAll`<br>`Physics.SphereCastAll`<br>`Physics.BoxCastAll`<br>`Physics.CapsuleCastAll`       |
+| Name                                                                    | Description                                                                                                                                                                           |
+|-------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Raycast`<br>`Linecast`<br>`SphereCast`<br>`BoxCast`<br>`CapsuleCast`   | Using similar parameters as<br>`Physics.Raycast`<br>`Physics.Linecast`<br>`Physics.SphereCast`<br>`Physics.BoxCast`<br>`Physics.CapsuleCast`<br>with an optional `RaycastHit` result. |
+| <br>`RaycastAll`<br>`SphereCastAll`<br>`BoxCastAll`<br>`CapsuleCastAll` | `RaycastHit[]` results using similar parameters as<br>`Physics.RaycastAll`<br>`Physics.SphereCastAll`<br>`Physics.BoxCastAll`<br>`Physics.CapsuleCastAll`                             |
 
 ### 2D
 #### Shapes

@@ -4,6 +4,22 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-pre.2]
+### Changed
+- Order of arguments in Shape.SphereCast and SphereCastAll is now consistent with Physics.SphereCast.
+
+### Added
+- Added `DrawPhysics`, identical to `Physics` but implements the appropriate `D.raw` call for each operation.
+- Added `DrawPhysics2D`, identical to `Physics2D` but implements the appropriate `D.raw` call for each operation.
+- Added Linecast.
+- Added DashedLine.
+
+### Fixed
+- Capsule outlines no longer break when drawing around the origin.
+
+### Known Issues
+- See 2.0.0-pre.1
+
 ## [2.0.0-pre.1]
 ### Added, changed, improved
 - **Complete API overhaul**, nothing is as it was previously! See README for more information.
