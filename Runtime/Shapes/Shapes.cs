@@ -39,7 +39,7 @@ namespace Vertx.Debugging
 				return new Line(A + dir * length, B - dir * length);
 			}
 		}
-		
+
 		public readonly struct DashedLine : IDrawable
 		{
 			public readonly Vector3 A, B;
@@ -576,6 +576,16 @@ namespace Vertx.Debugging
 
 			public Sphere(Transform transform) => Matrix = transform.localToWorldMatrix;
 
+#if VERTX_PHYSICS
+			public Sphere(SphereCollider sphereCollider)
+			{
+				Transform transform = sphereCollider.transform;
+				Vector3 scale = transform.lossyScale;
+				float radiusScaled = Mathf.Max(Mathf.Abs(scale.x), Mathf.Max(Mathf.Abs(scale.y), Mathf.Abs(scale.z))) * sphereCollider.radius;
+				Matrix = Matrix4x4.TRS(transform.TransformPoint(sphereCollider.center), transform.rotation, new Vector3(radiusScaled, radiusScaled, radiusScaled));
+			}
+#endif
+
 			public Sphere GetTranslated(Vector3 translation) => new Sphere(Matrix4x4.Translate(translation) * Matrix);
 
 #if UNITY_EDITOR
@@ -664,6 +674,15 @@ namespace Vertx.Debugging
 			}
 
 			public Box(Bounds bounds, bool shade3D = true) : this(bounds.center, bounds.extents, Quaternion.identity, shade3D) { }
+
+#if VERTX_PHYSICS
+			public Box(BoxCollider boxCollider)
+			{
+				Shade3D = true;
+				Transform transform = boxCollider.transform;
+				Matrix = Matrix4x4.TRS(transform.TransformPoint(boxCollider.center), transform.rotation, Vector3.Scale(boxCollider.size * 0.5f, transform.lossyScale));
+			}
+#endif
 
 			public Box GetTranslated(Vector3 translation) => new Box(Matrix4x4.Translate(translation) * Matrix);
 
@@ -817,7 +836,7 @@ namespace Vertx.Debugging
 					new Circle(Center, circleRotation, Radius).Draw(commandBuilder, color, duration);
 					return;
 				}
-				
+
 				Vector3 up = Rotation * new Vector3(0, HalfHeight, 0);
 				Vector3 point1 = Center + up;
 				Vector3 point2 = Center - up;
@@ -831,7 +850,7 @@ namespace Vertx.Debugging
 				Vector3 perpendicular = Rotation * new Vector3(Radius, 0, 0);
 				Vector3 perpendicular2 = Rotation * new Vector3(0, 0, Radius);
 
-				
+
 				new Circle(point1, circleRotation, Radius).Draw(commandBuilder, color, duration);
 				new Circle(point2, circleRotation, Radius).Draw(commandBuilder, color, duration);
 

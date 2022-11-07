@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
@@ -96,6 +97,37 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RaycastHit hit, float duration = 0) => raw(hit, Shape.HitColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Collider collider, Color color, float duration = 0)
+		{
+			switch (collider)
+			{
+				case BoxCollider boxCollider:
+					new Shape.Box(boxCollider).Draw(s_Builder, color, duration);
+					break;
+				case CapsuleCollider capsuleCollider:
+					new Shape.Capsule(capsuleCollider).Draw(s_Builder, color, duration);
+					break;
+				case CharacterController characterController:
+					new Shape.Capsule(characterController).Draw(s_Builder, color, duration);
+					break;
+				case MeshCollider meshCollider:
+					raw(meshCollider.bounds);
+					break;
+				case SphereCollider sphereCollider:
+					new Shape.Sphere(sphereCollider).Draw(s_Builder, color, duration);
+					break;
+				default:
+					return;
+			}
+		}
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Collider collider, float duration = 0) => raw(collider, Color.white, duration);
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Collider collider, bool hit, float duration = 0) => raw(collider, hit ? Shape.HitColor : Shape.CastColor, duration);
 #endif
 		
 #if VERTX_PHYSICS_2D

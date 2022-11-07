@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added `DrawPhysics2D`, identical to `Physics2D` but implements the appropriate `D.raw` call for each operation.
 - Added Linecast.
 - Added DashedLine.
+- Added primitive Collider drawing.
 
 ### Fixed
 - Capsule outlines no longer break when drawing around the origin.

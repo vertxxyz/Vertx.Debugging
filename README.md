@@ -69,6 +69,7 @@ using static Vertx.Debugging.Shape;
 | `Vector3` (Built-in)                                         | Fallback to `Point`.                                                                             |
 | `RaycastHit` (Built-in)                                      | Fallback to `SurfacePoint`.                                                                      |
 | `Bounds` (Built-in)                                          | Fallback to `Box`.                                                                               |
+| `Collider` (Built-in)                                        | Fallback to the correct shape matching the collider type (primitive colliders only).             |
 
 
 #### Casts
