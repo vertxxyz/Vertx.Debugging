@@ -1,9 +1,9 @@
 Fast editor debugging and gizmo utilities for Unity.  
-
-Should support all render pipelines. Uses instanced rendering to efficiently batch drawing functions.
+Uses instanced rendering to draw shapes efficiently.
 
 > **Note**  
 > Unity 2019.4+  
+> Should support all render pipelines.  
 > Debugging from jobs and builds is not supported, I recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
 
 https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-9316-78f7d4fbea1a.mp4
@@ -11,6 +11,8 @@ https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-
 ## Usage
 <details>
 <summary>Shape drawing</summary>
+  
+### Example
 
 ```csharp
 // Draw a sphere with the specified color.
@@ -30,13 +32,16 @@ If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.ma
 
 ### Code stripping
 Calls to these methods are stripped when building. You do not have to remove code or use defines.  
-If your code spans many statements external to the method calls, it is unlikely to be stripped.
+If your code spans many statements, only the method call will be stripped.
 
+---
+  
 </details>
 
 <details>
-<summary>Drawing Physics and Physics2D operations</summary>
+  <summary>Drawing <code>Physics</code> and <code>Physics2D</code> operations</summary>
 
+### Example
 You can replace calls to `Physics` and `Physics2D` methods with `DrawPhysics` and `DrawPhysics2D` to simply draw the results of a physics operation.
 
 ```csharp
@@ -53,15 +58,17 @@ using Physics = Vertx.Debugging.DrawPhysics;
 #endif
 ```
 
+---
+
 </details>
 
-> **Warning**  
-> If you find you have rendering issues like upside-down depth testing, or artifacts in the game view window:  
-> You can disable Depth Write and Depth Test for the window causing issues using the settings in **Project Settings > Vertx > Debugging**.  
-> If you're on a version of Unity where this UI doesn't work, it's a bug, wow thanks Unity!
+> **Note**  
+> If you find you have rendering issues like upside-down depth testing, or artifacts in the game view: This is a Unity bug.  
+> You can disable Depth Write and Depth Test in the problematic view using the settings in **Project Settings > Vertx > Debugging**.  
+> If you're on a version of Unity where the settings UI doesn't work, it's another Unity bug, thanks Unity!
 
 ## Shapes
-All new shapes are contained within the `Shape` class. Statically import the class if you use them often:
+Drawable shapes and casts are contained within the `Shape` class. Statically import the class if you use them often:
 
 ```csharp
 using static Vertx.Debugging.Shape;
@@ -128,17 +135,25 @@ using static Vertx.Debugging.Shape;
 
 [^1]: The helper class `Angle` is used to define angles, author it with the static methods like `Angle.FromDegrees`.
 
+---
+  
 </details>
 
 <details>
-<summary>Creating extensions</summary>
+<summary>Authoring new shapes</summary>
 
+### Extensions
+  
 The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
 Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
 
+---
+  
 </details>
 
 ## Components
+Components to draw physics events and common object attributes.
+  
 <details>
 <summary>Component list</summary>
 
@@ -150,53 +165,34 @@ Use the `CommandBuilder` `Append` functions to create your own shapes, or combin
 | Debug Collision Events | Draws `OnCollisionEnter`, `Stay` and `Exit` events. |
 | Debug Trigger Events   | Draws `OnTriggerEnter`, `Stay` and `Exit` events.   |
 | Debug Mesh Normals     | Draws normals for a (read/write) Mesh.              |
-
+  
 </details>
-
----
-If you find this resource helpful:
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)
 
 ## Installation
+[![openupm](https://img.shields.io/npm/v/com.vertx.debugging?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.vertx.debugging/)
+  
+<table><tr><td>
+  
+#### Add the OpenUPM registry
+1. Open `Edit/Project Settings/Package Manager`
+1. Add a new Scoped Registry (or edit the existing OpenUPM entry):
+   ```
+   Name: OpenUPM
+   URL:  https://package.openupm.com/
+   Scope(s): com.vertx
+   ```
+1. **Save**
 
-<details>
-<summary>Add from OpenUPM <em>| via scoped registry, recommended</em></summary>
-
-This package is available on OpenUPM: https://openupm.com/packages/com.vertx.debugging
-
-To add it the package to your project:
-
-- open `Edit/Project Settings/Package Manager`
-- add a new Scoped Registry:
-  ```
-  Name: OpenUPM
-  URL:  https://package.openupm.com/
-  Scope(s): com.vertx
-  ```
-- click <kbd>Save</kbd>
-- open Package Manager
-- click <kbd>+</kbd>
-- select <kbd>Add from Git URL</kbd>
-- paste `com.vertx.debugging`
-- click <kbd>Add</kbd>
-</details>
-
-<details>
-<summary>Add from GitHub | <em>not recommended, no updates through UPM</em></summary>
-
-You can also add it directly from GitHub. Note that you won't be able to receive updates through Package Manager this way, you'll have to update manually.
-
-- open Package Manager
-- click <kbd>+</kbd>
-- select <kbd>Add from Git URL</kbd>
-- paste `https://github.com/vertxxyz/Vertx.Debugging.git`
-- click <kbd>Add</kbd>  
-  **or**
-- Edit your `manifest.json` file to contain `"com.vertx.debugging": "https://github.com/vertxxyz/Vertx.Debugging.git"`,
-
-To update the package with new changes, remove the lock from the `packages-lock.json` file.
-</details>
-
+#### Add the package
+1. Open the Package Manager via `Window/Package Manager`.
+1. Select the <kbd>+</kbd> from the top left of the window.
+1. Select **Add package by Name** or **Add package from Git URL**.
+1. Enter `com.vertx.debugging`.
+1. Select **Add**.
+  
 > **Note**  
 > This package will benefit from [Burst](https://docs.unity3d.com/Packages/com.unity.burst@latest/), though it's an optional dependency.
+
+</td></tr></table>
+  
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)
