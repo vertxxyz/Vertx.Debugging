@@ -101,6 +101,7 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Collider collider, Color color, float duration = 0)
 		{
+#if UNITY_EDITOR
 			switch (collider)
 			{
 				case BoxCollider boxCollider:
@@ -122,6 +123,7 @@ namespace Vertx.Debugging
 					// Could be null
 					return;
 			}
+#endif
 		}
 
 		[Conditional("UNITY_EDITOR")]
@@ -141,6 +143,7 @@ namespace Vertx.Debugging
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Collider2D collider, Color color, float duration = 0)
 		{
+#if UNITY_EDITOR
 			switch (collider)
 			{
 				case BoxCollider2D boxCollider:
@@ -156,6 +159,7 @@ namespace Vertx.Debugging
 					// Could be null
 					return;
 			}
+#endif
 		}
 		
 		[Conditional("UNITY_EDITOR")]
