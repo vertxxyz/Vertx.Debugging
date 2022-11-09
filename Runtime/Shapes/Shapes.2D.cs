@@ -16,14 +16,11 @@ namespace Vertx.Debugging
 			public readonly Vector3 Position;
 			public readonly float Scale;
 
-			public Point2D(Vector2 point, float z, float scale = 0.3f)
+			public Point2D(Vector2 point, float z = 0, float scale = 0.3f)
 			{
 				Scale = scale;
 				Position = new Vector3(point.x, point.y, z);
 			}
-
-			public Point2D(Vector2 point, float scale = 0.3f)
-				: this(point, 0, scale) { }
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -188,6 +185,13 @@ namespace Vertx.Debugging
 			internal Circle2D(Vector3 origin, float radius)
 				=> _circle = new Circle(origin, Quaternion.identity, radius);
 
+			public Circle2D(CircleCollider2D circleCollider)
+			{
+				Transform transform = circleCollider.transform;
+				Vector3 scale = transform.lossyScale;
+				_circle = new Circle(circleCollider.transform.TransformPoint(circleCollider.offset), Quaternion.identity, circleCollider.radius * Mathf.Max(scale.x, scale.y));
+			}
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => _circle.Draw(commandBuilder, color, duration);
 #endif
@@ -206,6 +210,8 @@ namespace Vertx.Debugging
 
 			public Arc2D(Vector2 origin, float rotationDegrees, float radius, float z = 0) : this(origin, rotationDegrees, radius, Angle.FromTurns(1), z) { }
 
+			internal Arc2D(Matrix4x4 matrix) => Arc = new Arc(matrix);
+
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => Arc.Draw(commandBuilder, color, duration);
 #endif
@@ -222,8 +228,12 @@ namespace Vertx.Debugging
 			public Box2D(Vector3 origin, Vector2 size, float angle = 0) => Matrix = Matrix4x4.TRS(origin, Quaternion.AngleAxis(angle, Vector3.forward), size);
 
 			public Box2D(Vector3 origin, Quaternion rotation, Vector2 size) => Matrix = Matrix4x4.TRS(origin, rotation, size);
-
-			public Box2D GetTranslated(Vector3 translation) => new Box2D(Matrix4x4.Translate(translation) * Matrix);
+			
+			public Box2D(BoxCollider2D boxCollider)
+			{
+				Transform transform = boxCollider.transform;
+				Matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale * boxCollider.size);
+			}
 
 			[Flags]
 			internal enum Point
@@ -264,7 +274,7 @@ namespace Vertx.Debugging
 				2, 3,
 				3, 0
 			};
-
+			
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
 				Matrix4x4 m = Matrix;
@@ -393,7 +403,7 @@ namespace Vertx.Debugging
 			public Capsule2D(Vector2 point, Vector2 size, Direction capsuleDirection, float angle = 0)
 				: this(point, size, capsuleDirection, angle, 0) { }
 
-			private Capsule2D(Vector3 pointA, Vector3 pointB, float radius, Vector3 verticalDirection, Vector3 scaledLeft)
+			internal Capsule2D(Vector3 pointA, Vector3 pointB, float radius, Vector3 verticalDirection, Vector3 scaledLeft)
 			{
 				_pointA = pointA;
 				_pointB = pointB;
@@ -401,15 +411,6 @@ namespace Vertx.Debugging
 				_verticalDirection = verticalDirection;
 				_scaledLeft = scaledLeft;
 			}
-
-			public Capsule2D GetTranslated(Vector2 translation)
-				=> new Capsule2D(
-					new Vector3(_pointA.x + translation.x, _pointA.y + translation.y, _pointA.z),
-					new Vector3(_pointB.x + translation.x, _pointB.y + translation.y, _pointB.z),
-					_radius,
-					_verticalDirection,
-					_scaledLeft
-				);
 
 			public Capsule2D(Vector2 point, Vector2 size, Direction capsuleDirection, float angle, float z)
 			{

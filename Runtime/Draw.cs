@@ -119,6 +119,7 @@ namespace Vertx.Debugging
 					new Shape.Sphere(sphereCollider).Draw(s_Builder, color, duration);
 					break;
 				default:
+					// Could be null
 					return;
 			}
 		}
@@ -132,10 +133,36 @@ namespace Vertx.Debugging
 		
 #if VERTX_PHYSICS_2D
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit2D hit, Color color, float duration = 0) => raw(new Shape.Ray(hit.point, hit.normal), color, duration);
+		public static void raw(RaycastHit2D hit, Color color, float duration = 0) => raw(new Shape.Ray(new Vector3(hit.point.x, hit.point.y, hit.transform.position.z), hit.normal), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RaycastHit2D hit, float duration = 0) => raw(hit, Shape.HitColor, duration);
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Collider2D collider, Color color, float duration = 0)
+		{
+			switch (collider)
+			{
+				case BoxCollider2D boxCollider:
+					new Shape.Box2D(boxCollider).Draw(s_Builder, color, duration);
+					break;
+				case CapsuleCollider2D capsuleCollider:
+					new Shape.Capsule2D(capsuleCollider).Draw(s_Builder, color, duration);
+					break;
+				case CircleCollider2D circleCollider2D:
+					new Shape.Circle2D(circleCollider2D).Draw(s_Builder, color, duration);
+					break;
+				default:
+					// Could be null
+					return;
+			}
+		}
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Collider2D collider, float duration = 0) => raw(collider, Color.white, duration);
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Collider2D collider, bool hit, float duration = 0) => raw(collider, hit ? Shape.HitColor : Shape.CastColor, duration);
 #endif
 	}
 

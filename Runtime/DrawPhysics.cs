@@ -1,10 +1,9 @@
 #if VERTX_PHYSICS
-using System;
-using System.Runtime.CompilerServices;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 using static Vertx.Debugging.Shape;
-// ReSharper disable RedundantCast
 
+// ReSharper disable RedundantCast
 // ReSharper disable Unity.PreferNonAllocApi
 
 namespace Vertx.Debugging

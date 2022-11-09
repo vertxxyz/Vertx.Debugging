@@ -7,13 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [2.0.0-pre.2]
 ### Changed
 - Order of arguments in Shape.SphereCast and SphereCastAll is now consistent with Physics.SphereCast.
+- Order of arguments in Shape.CircleCast and CircleCastAll is now consistent with Physics2D.CircleCast.
+- 2D casts now support minDepth and maxDepth instead of one optional depth.
 
 ### Added
 - Added `DrawPhysics`, identical to `Physics` but implements the appropriate `D.raw` call for each operation.
 - Added `DrawPhysics2D`, identical to `Physics2D` but implements the appropriate `D.raw` call for each operation.
-- Added Linecast.
+- Added Linecast and Linecast2D.
 - Added DashedLine.
-- Added primitive Collider drawing.
+- Added primitive Collider and Collider2D drawing.
 
 ### Fixed
 - Capsule outlines no longer break when drawing around the origin.

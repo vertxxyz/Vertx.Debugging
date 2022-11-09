@@ -2,13 +2,15 @@ Fast editor debugging and gizmo utilities for Unity.
 
 Should support all render pipelines. Uses instanced rendering to efficiently batch drawing functions.
 
-> **Warning**  
+> **Note**  
 > Unity 2019.4+  
 > Debugging from jobs and builds is not supported, I recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
 
 https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-9316-78f7d4fbea1a.mp4
 
 ## Usage
+<details>
+<summary>Shape drawing</summary>
 
 ```csharp
 // Draw a sphere with the specified color.
@@ -23,12 +25,35 @@ D.raw(new Shape.Sphere(position, radius), hit, duration);
 D.raw(new Shape.SphereCastAll(position, direction, radius, hits, hitCount, 10), duration);
 ```
 
-> **Note**  
-> Calls to these methods are stripped when building. You do not have to remove code or use defines.  
-> If your code spans many statements external to the method calls, it is unlikely to be stripped.
-
 You can call these methods from most places, `Update`, `LateUpdate`, `FixedUpdate`, `OnDrawGizmos`, and with `ExecuteAlways`/`ExecuteInEditMode`.  
 If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.matrix` works, `Gizmos.color` is unsupported. Gizmos are not pickable.
+
+### Code stripping
+Calls to these methods are stripped when building. You do not have to remove code or use defines.  
+If your code spans many statements external to the method calls, it is unlikely to be stripped.
+
+</details>
+
+<details>
+<summary>Drawing Physics and Physics2D operations</summary>
+
+You can replace calls to `Physics` and `Physics2D` methods with `DrawPhysics` and `DrawPhysics2D` to simply draw the results of a physics operation.
+
+```csharp
+int count = DrawPhysics.RaycastNonAlloc(r, results, distance);
+```
+
+### Code stripping
+The drawing within these methods will be stripped, and the original method is attempted to be inlined, but this is not consistent.  
+A single method call doesn't matter when compared to a physics operation, but you can completely strip these calls by instead declaring:
+
+```csharp
+#if UNITY_EDITOR
+using Physics = Vertx.Debugging.DrawPhysics;
+#endif
+```
+
+</details>
 
 > **Warning**  
 > If you find you have rendering issues like upside-down depth testing, or artifacts in the game view window:  
@@ -36,11 +61,14 @@ If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.ma
 > If you're on a version of Unity where this UI doesn't work, it's a bug, wow thanks Unity!
 
 ## Shapes
-All new shapes are contained within the `Shape` class. I recommend statically importing the class if you are using them often:
+All new shapes are contained within the `Shape` class. Statically import the class if you use them often:
 
 ```csharp
 using static Vertx.Debugging.Shape;
 ```
+
+<details>
+<summary>Shape list</summary>
 
 ### General
 | Name         | Description                                                                                                                                       |
@@ -71,7 +99,6 @@ using static Vertx.Debugging.Shape;
 | `Bounds` (Built-in)                                          | Fallback to `Box`.                                                                               |
 | `Collider` (Built-in)                                        | Fallback to the correct shape matching the collider type (primitive colliders only).             |
 
-
 #### Casts
 | Name                                                                    | Description                                                                                                                                                                           |
 |-------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -94,14 +121,27 @@ using static Vertx.Debugging.Shape;
 | `Rect` (Built-in)                                          | Fallback to `Box2D`.                                         |
 
 #### Casts
-| Name                                                                            | Description                                                                                                                                                               |
-|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Raycast2D`<br>`CircleCast2D`<br>`BoxCast2D`<br>`CapsuleCast2D`                 | Using similar parameters as<br>`Physics2D.Raycast`<br>`Physics2D.SphereCast`<br>`Physics2D.BoxCast`<br>`Physics2D.CapsuleCast`<br>with an optional `RaycastHit2D` result. |
-| <br>`RaycastAll2D`<br>`CircleCastAll2D`<br>`BoxCastAll2D`<br>`CapsuleCastAll2D` | `RaycastHit2D[]` results using similar parameters as<br>`Physics2D.RaycastAll`<br>`Physics2D.SphereCastAll`<br>`Physics2D.BoxCastAll`<br>`Physics2D.CapsuleCastAll`       |
+| Name                                                                            | Description                                                                                                                                                                                       |
+|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Raycast2D`<br>`Linecast2D`<br>`CircleCast2D`<br>`BoxCast2D`<br>`CapsuleCast2D` | Using similar parameters as<br>`Physics2D.Raycast`<br>`Physics2D.Linecast`<br>`Physics2D.SphereCast`<br>`Physics2D.BoxCast`<br>`Physics2D.CapsuleCast`<br>with an optional `RaycastHit2D` result. |
+| <br>`RaycastAll2D`<br>`CircleCastAll2D`<br>`BoxCastAll2D`<br>`CapsuleCastAll2D` | `RaycastHit2D[]` results using similar parameters as<br>`Physics2D.RaycastAll`<br>`Physics2D.SphereCastAll`<br>`Physics2D.BoxCastAll`<br>`Physics2D.CapsuleCastAll`                               |
 
 [^1]: The helper class `Angle` is used to define angles, author it with the static methods like `Angle.FromDegrees`.
 
+</details>
+
+<details>
+<summary>Creating extensions</summary>
+
+The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
+
+</details>
+
 ## Components
+<details>
+<summary>Component list</summary>
+
 | Name                   | Description                                         |
 |------------------------|-----------------------------------------------------|
 | Debug Transform        | Draws up, right, forward axes of a Transform.       |
@@ -111,10 +151,7 @@ using static Vertx.Debugging.Shape;
 | Debug Trigger Events   | Draws `OnTriggerEnter`, `Stay` and `Exit` events.   |
 | Debug Mesh Normals     | Draws normals for a (read/write) Mesh.              |
 
-## Extensions
-
-The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
-Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
+</details>
 
 ---
 If you find this resource helpful:
