@@ -32,6 +32,18 @@ namespace Vertx.Debugging
 			}
 		}
 		
+		private readonly struct DashedLineGroup
+		{
+			[UsedImplicitly] public readonly Shape.DashedLine Line;
+			[UsedImplicitly] public readonly Color Color;
+
+			public DashedLineGroup(in Shape.DashedLine line, Color color)
+			{
+				Line = line;
+				Color = color;
+			}
+		}
+		
 		private readonly struct ArcGroup
 		{
 			[UsedImplicitly] public readonly Shape.Arc Arc;

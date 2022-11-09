@@ -141,14 +141,6 @@ v2f vert(vertInput input)
         o.uvAndTurns = float4(input.uv, 1, 0);
         return o;
     }
-    else if (has_face_camera(modifications))
-    {
-        float angle = input.uv.y * 3.14159265359;
-        angle *= a.Turns;
-        input.vertex.xy = float2(cos(angle), sin(angle));
-        a.Turns = 1;
-        o.position = billboard(input.vertex.xyz);
-    }
     else
     {
         // return mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, float4(pos, 1.0)));

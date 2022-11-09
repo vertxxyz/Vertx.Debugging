@@ -1,5 +1,8 @@
 #if VERTX_PHYSICS_2D
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberHidesStaticFromOuterClass
@@ -10,16 +13,21 @@ namespace Vertx.Debugging
 	{
 		public readonly struct Raycast2D : IDrawableCast
 		{
-			public readonly Vector3 Origin;
+			public readonly Vector2 Origin;
 			public readonly Vector2 Direction;
+			public readonly float Distance;
+			public readonly float MinDepth, MaxDepth;
 			public readonly RaycastHit2D? Result;
 
-			public Raycast2D(Vector2 origin, Vector2 direction, RaycastHit2D? result, float distance = Mathf.Infinity, float z = 0)
+			public Raycast2D(Vector2 origin, Vector2 direction, RaycastHit2D? result, float distance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
 			{
-				Origin = new Vector3(origin.x, origin.y, z);
+				Origin = origin;
 				direction.EnsureNormalized();
-				Direction = direction * GetClampedMaxDistance(distance);
+				Direction = direction;
+				Distance = distance;
 				Result = result;
+				MinDepth = minDepth;
+				MaxDepth = Mathf.Max(minDepth, maxDepth);
 			}
 
 #if UNITY_EDITOR
@@ -33,17 +41,78 @@ namespace Vertx.Debugging
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				commandBuilder.AppendRay(new Ray(Origin, Direction), castColor, duration);
+				var originMin = new Vector3(Origin.x, Origin.y, MinDepth);
+				if (MaxDepth - MinDepth < 0.001f)
+				{
+					commandBuilder.AppendRay(new Ray(originMin, Direction, Distance), castColor, duration);
+				}
+				else
+				{
+					var originMax = new Vector3(Origin.x, Origin.y, MaxDepth);
+					float maxDistance = GetClampedMaxDistance(Distance);
+					Vector3 direction = Direction * maxDistance;
+					commandBuilder.AppendRay(new Ray(originMin, direction), castColor, duration);
+					commandBuilder.AppendDashedLine(new DashedLine(originMin, originMax), castColor, duration);
+					if (!float.IsInfinity(Distance))
+						commandBuilder.AppendDashedLine(new DashedLine(originMin + direction, originMax + direction), castColor, duration);
+					commandBuilder.AppendRay(new Ray(originMax, direction), castColor, duration);
+				}
+
 				if (!Result.HasValue)
 					return;
-				commandBuilder.AppendRay(
-					new Ray(
-						new Vector3(Result.Value.point.x, Result.Value.point.y, Origin.z),
-						Result.Value.normal
-					),
-					hitColor,
-					duration
-				);
+
+				D.raw(Result.Value, hitColor, duration);
+			}
+#endif
+		}
+
+		public readonly struct Linecast2D : IDrawableCast
+		{
+			public readonly Vector2 PointA;
+			public readonly Vector2 PointB;
+			public readonly float MinDepth, MaxDepth;
+			public readonly RaycastHit2D? Result;
+
+			public Linecast2D(Vector2 pointA, Vector2 pointB, RaycastHit2D? result, float minDepth = 0, float maxDepth = 0)
+			{
+				PointA = pointA;
+				PointB = pointB;
+				Result = result;
+				MinDepth = minDepth;
+				MaxDepth = Mathf.Max(maxDepth, minDepth);
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
+
+			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			{
+				var aMin = new Vector3(PointA.x, PointA.y, MinDepth);
+				var bMin = new Vector3(PointB.x, PointB.y, MinDepth);
+				if (MaxDepth - MinDepth < 0.001f)
+				{
+					commandBuilder.AppendLine(new Line(aMin, bMin), castColor, duration);
+				}
+				else
+				{
+					var aMax = new Vector3(PointA.x, PointA.y, MaxDepth);
+					var bMax = new Vector3(PointB.x, PointB.y, MaxDepth);
+					commandBuilder.AppendLine(new Line(aMin, bMin), castColor, duration);
+					commandBuilder.AppendDashedLine(new DashedLine(aMin, aMax), castColor, duration);
+					commandBuilder.AppendDashedLine(new DashedLine(bMin, bMax), castColor, duration);
+					commandBuilder.AppendLine(new Line(aMax, bMax), castColor, duration);
+				}
+
+				if (!Result.HasValue)
+					return;
+
+				D.raw(Result.Value, hitColor, duration);
 			}
 #endif
 		}
@@ -51,15 +120,18 @@ namespace Vertx.Debugging
 		public readonly struct RaycastAll2D : IDrawableCast
 		{
 			public readonly Raycast2D Raycast;
-			public readonly RaycastHit2D[] Results;
+			public readonly IList<RaycastHit2D> Results;
 			public readonly int ResultCount;
 
-			public RaycastAll2D(Vector2 origin, Vector2 direction, RaycastHit2D[] results, int resultCount, float distance = Mathf.Infinity, float z = 0)
+			public RaycastAll2D(Vector2 origin, Vector2 direction, IList<RaycastHit2D> results, int resultCount, float distance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
 			{
-				Raycast = new Raycast2D(origin, direction, null, distance, z);
+				Raycast = new Raycast2D(origin, direction, null, distance, minDepth, maxDepth);
 				Results = results;
 				ResultCount = resultCount;
 			}
+
+			public RaycastAll2D(Vector2 origin, Vector2 direction, IList<RaycastHit2D> results, float distance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
+				: this(origin, direction, results, results.Count, distance, minDepth, maxDepth) { }
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -74,30 +146,64 @@ namespace Vertx.Debugging
 			{
 				Raycast.Draw(commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
-				{
-					RaycastHit2D result = Results[i];
-					commandBuilder.AppendRay(new Ray(new Vector3(result.point.x, result.point.y, Raycast.Origin.z), result.normal), hitColor, duration);
-				}
+					D.raw(Results[i], hitColor, duration);
+			}
+#endif
+		}
+
+		public readonly struct LinecastAll2D : IDrawableCast
+		{
+			public readonly Linecast2D Linecast;
+			public readonly IList<RaycastHit2D> Results;
+			public readonly int ResultCount;
+
+			public LinecastAll2D(Vector2 pointA, Vector2 pointB, IList<RaycastHit2D> results, int resultCount, float minDepth = 0, float maxDepth = 0)
+			{
+				Linecast = new Linecast2D(pointA, pointB, null, minDepth, maxDepth);
+				Results = results;
+				ResultCount = resultCount;
+			}
+
+			public LinecastAll2D(Vector2 pointA, Vector2 pointB, IList<RaycastHit2D> results, float minDepth = 0, float maxDepth = 0)
+				: this(pointA, pointB, results, results.Count, minDepth, maxDepth) { }
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
+
+			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			{
+				Linecast.Draw(commandBuilder, castColor, hitColor, duration);
+				for (int i = 0; i < ResultCount; i++)
+					D.raw(Results[i], hitColor, duration);
 			}
 #endif
 		}
 
 		public readonly struct CircleCast : IDrawableCast
 		{
-			public readonly Vector3 Origin;
+			public readonly Vector2 Origin;
 			public readonly float Radius;
 			public readonly Vector2 Direction;
 			public readonly float MaxDistance;
+			public readonly float MinDepth, MaxDepth;
 			public readonly RaycastHit2D? Hit;
 
-			public CircleCast(Vector2 origin, Vector2 direction, float radius, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float z = 0)
+			public CircleCast(Vector2 origin, float radius, Vector2 direction, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
 			{
-				Origin = new Vector3(origin.x, origin.y, z);
+				Origin = origin;
 				direction.EnsureNormalized();
 				Direction = direction;
 				Radius = radius;
 				Hit = hit;
-				MaxDistance = GetClampedMaxDistance(maxDistance);
+				MinDepth = minDepth;
+				MaxDepth = Mathf.Max(minDepth, maxDepth);
+				MaxDistance = maxDistance;
 			}
 
 #if UNITY_EDITOR
@@ -111,10 +217,30 @@ namespace Vertx.Debugging
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				new Circle(Origin, Quaternion.identity, Radius).Draw(commandBuilder, castColor, duration);
-				new Capsule2D(Origin, Origin + (Vector3)(Direction * MaxDistance), Radius).Draw(commandBuilder, castColor, duration);
-				if (Hit.HasValue)
-					new Circle(Origin + (Vector3)(Direction * Hit.Value.distance), Quaternion.identity, Radius).Draw(commandBuilder, hitColor, duration);
+				float maxDistance = GetClampedMaxDistance(MaxDistance);
+				Vector3 originMin = new Vector3(Origin.x, Origin.y, MinDepth);
+				var offset = (Vector3)(Direction * maxDistance);
+				if (MaxDepth - MinDepth < 0.001f)
+				{
+					new Circle(originMin, Quaternion.identity, Radius).Draw(commandBuilder, castColor, duration);
+					new Capsule2D(originMin, originMin + offset, Radius).Draw(commandBuilder, castColor, duration);
+				}
+				else
+				{
+					new Circle(originMin, Quaternion.identity, Radius).Draw(commandBuilder, castColor, duration);
+					new Capsule2D(originMin, originMin + offset, Radius).Draw(commandBuilder, castColor, duration);
+
+					Vector3 originMax = new Vector3(Origin.x, Origin.y, MaxDepth);
+
+					new Circle(originMax, Quaternion.identity, Radius).Draw(commandBuilder, castColor, duration);
+					new Capsule2D(originMax, originMax + offset, Radius).Draw(commandBuilder, castColor, duration);
+				}
+
+				if (!Hit.HasValue)
+					return;
+
+				Vector2 hitPoint = Origin + Direction * Hit.Value.distance;
+				new Circle(new Vector3(hitPoint.x, hitPoint.y, Hit.Value.transform.position.z), Quaternion.identity, Radius).Draw(commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -122,15 +248,18 @@ namespace Vertx.Debugging
 		public readonly struct CircleCastAll : IDrawableCast
 		{
 			public readonly CircleCast CircleCast;
-			public readonly RaycastHit2D[] Results;
+			public readonly IList<RaycastHit2D> Results;
 			public readonly int ResultCount;
 
-			public CircleCastAll(Vector2 origin, Vector2 direction, float radius, RaycastHit2D[] results, int resultCount, float maxDistance = Mathf.Infinity, float z = 0)
+			public CircleCastAll(Vector2 origin, float radius, Vector2 direction, IList<RaycastHit2D> results, int resultCount, float maxDistance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
 			{
-				CircleCast = new CircleCast(origin, direction, radius, null, maxDistance, z);
+				CircleCast = new CircleCast(origin, radius, direction, null, maxDistance, minDepth, maxDepth);
 				Results = results;
 				ResultCount = resultCount;
 			}
+
+			public CircleCastAll(Vector2 origin, float radius, Vector2 direction, IList<RaycastHit2D> results, float maxDistance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
+				: this(origin, radius, direction, results, results.Count, maxDistance, minDepth, maxDepth) { }
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -147,7 +276,8 @@ namespace Vertx.Debugging
 				for (int i = 0; i < ResultCount; i++)
 				{
 					RaycastHit2D result = Results[i];
-					new Circle(CircleCast.Origin + (Vector3)(CircleCast.Direction * result.distance), Quaternion.identity, CircleCast.Radius).Draw(commandBuilder, hitColor, duration);
+					Vector2 hitPoint = CircleCast.Origin + CircleCast.Direction * result.distance;
+					new Circle(new Vector3(hitPoint.x, hitPoint.y, result.transform.position.z), Quaternion.identity, CircleCast.Radius).Draw(commandBuilder, hitColor, duration);
 				}
 			}
 #endif
@@ -157,16 +287,19 @@ namespace Vertx.Debugging
 		{
 			public readonly Box2D Box;
 			public readonly Vector2 Direction;
-			public readonly float MaxDistance;
+			public readonly float Distance;
+			public readonly float MinDepth, MaxDepth;
 			public readonly RaycastHit2D? Hit;
 
-			public BoxCast2D(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float z = 0)
+			public BoxCast2D(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D? hit, float distance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
 			{
-				Box = new Box2D(origin, size, angle, z);
+				MinDepth = minDepth;
+				MaxDepth = Mathf.Max(minDepth, maxDepth);
+				Box = new Box2D(origin, size, angle, minDepth);
 				Hit = hit;
 				direction.EnsureNormalized();
 				Direction = direction;
-				MaxDistance = GetClampedMaxDistance(maxDistance);
+				Distance = distance;
 			}
 
 #if UNITY_EDITOR
@@ -180,8 +313,15 @@ namespace Vertx.Debugging
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
+				float maxDistance = GetClampedMaxDistance(Distance);
+
+				bool hasMax = MaxDepth - MinDepth > 0.001f;
+
 				Box.Draw(commandBuilder, castColor, duration);
-				Vector3 offset = Direction * MaxDistance;
+				if (hasMax)
+					Box.GetWithZ(MaxDepth).Draw(commandBuilder, castColor, duration);
+
+				Vector3 offset = Direction * maxDistance;
 
 				Matrix4x4 boxMatrix = Box.Matrix;
 				Vector3 origin = Box2D.GetPoint(boxMatrix, Box2D.Point.Origin);
@@ -198,11 +338,25 @@ namespace Vertx.Debugging
 				{
 					commandBuilder.AppendLine(new Line(tr, tr + offset), castColor, duration);
 					commandBuilder.AppendLine(new Line(bl, bl + offset), castColor, duration);
+					if (hasMax)
+					{
+						tr.z = MaxDepth;
+						bl.z = MaxDepth;
+						commandBuilder.AppendLine(new Line(tr, tr + offset), castColor, duration);
+						commandBuilder.AppendLine(new Line(bl, bl + offset), castColor, duration);
+					}
 				}
 				else
 				{
 					commandBuilder.AppendLine(new Line(tl, tl + offset), castColor, duration);
 					commandBuilder.AppendLine(new Line(br, br + offset), castColor, duration);
+					if (hasMax)
+					{
+						tl.z = MaxDepth;
+						br.z = MaxDepth;
+						commandBuilder.AppendLine(new Line(tl, tl + offset), castColor, duration);
+						commandBuilder.AppendLine(new Line(br, br + offset), castColor, duration);
+					}
 				}
 
 				// Draw the edges that make up the end of the cast. This better indicates the cast direction without having to colour it,
@@ -223,11 +377,17 @@ namespace Vertx.Debugging
 					Vector3 p1 = Box2D.GetPoint(endBox, point | (Box2D.Point)(1 << min));
 					Vector3 p2 = Box2D.GetPoint(endBox, point | (Box2D.Point)(1 << max));
 					commandBuilder.AppendLine(new Line(p1, p2), castColor, duration);
+					if (!hasMax)
+						continue;
+					p1.z = MaxDepth;
+					p2.z = MaxDepth;
+					commandBuilder.AppendLine(new Line(p1, p2), castColor, duration);
 				}
 
 				if (!Hit.HasValue)
 					return;
-				Box.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
+
+				Box.GetTranslatedWithZ(Direction * Hit.Value.distance, Hit.Value.transform.position.z).Draw(commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -235,15 +395,18 @@ namespace Vertx.Debugging
 		public readonly struct BoxCast2DAll : IDrawableCast
 		{
 			public readonly BoxCast2D BoxCast;
-			public readonly RaycastHit2D[] Results;
+			public readonly IList<RaycastHit2D> Results;
 			public readonly int ResultCount;
 
-			public BoxCast2DAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, int resultsCount, float maxDistance = Mathf.Infinity, float z = 0)
+			public BoxCast2DAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, IList<RaycastHit2D> results, int resultsCount, float distance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
 			{
-				BoxCast = new BoxCast2D(origin, size, angle, direction, null, maxDistance, z);
+				BoxCast = new BoxCast2D(origin, size, angle, direction, null, distance, minDepth, maxDepth);
 				Results = results;
 				ResultCount = resultsCount;
 			}
+
+			public BoxCast2DAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, IList<RaycastHit2D> results, float distance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
+				: this(origin, size, angle, direction, results, results.Count, distance, minDepth, maxDepth) { }
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -260,7 +423,7 @@ namespace Vertx.Debugging
 				for (int i = 0; i < ResultCount; i++)
 				{
 					RaycastHit2D result = Results[i];
-					BoxCast.Box.GetTranslated(BoxCast.Direction * result.distance).Draw(commandBuilder, hitColor, duration);
+					BoxCast.Box.GetTranslatedWithZ(BoxCast.Direction * result.distance, result.transform.position.z).Draw(commandBuilder, hitColor, duration);
 				}
 			}
 #endif
@@ -270,16 +433,19 @@ namespace Vertx.Debugging
 		{
 			public readonly Capsule2D Capsule;
 			public readonly Vector2 Direction;
-			public readonly float MaxDistance;
+			public readonly float Distance;
+			public readonly float MinDepth, MaxDepth;
 			public readonly RaycastHit2D? Hit;
 
-			public CapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float z = 0)
+			public CapsuleCast2D(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D? hit, float maxDistance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
 			{
-				Capsule = new Capsule2D(origin, size, capsuleDirection, angle, z);
+				Capsule = new Capsule2D(origin, size, capsuleDirection, angle, minDepth);
 				direction.EnsureNormalized();
 				Direction = direction;
 				Hit = hit;
-				MaxDistance = GetClampedMaxDistance(maxDistance);
+				Distance = maxDistance;
+				MinDepth = minDepth;
+				MaxDepth = Mathf.Max(minDepth, maxDepth);
 			}
 
 #if UNITY_EDITOR
@@ -293,7 +459,13 @@ namespace Vertx.Debugging
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
+				bool hasMax = MaxDepth - MinDepth > 0.001f;
+
 				Capsule.Draw(commandBuilder, castColor, duration);
+				if (hasMax)
+					Capsule.GetWithZ(MaxDepth).Draw(commandBuilder, castColor, duration);
+
+				float maxDistance = GetClampedMaxDistance(Distance);
 
 				var verticalDirection = (Vector2)Capsule._verticalDirection;
 				float dot = Vector2.Dot(PerpendicularClockwise(verticalDirection), Direction);
@@ -302,15 +474,35 @@ namespace Vertx.Debugging
 				Vector2 o1 = PerpendicularCounterClockwise(Direction) * scaledRadius;
 				Vector2 o2 = PerpendicularClockwise(Direction) * scaledRadius;
 
-				Capsule2D endCapsule = Capsule.GetTranslated(Direction * MaxDistance);
-				commandBuilder.AppendLine(new Line(Capsule.PointA.Add(o1), endCapsule.PointA.Add(o1)), castColor, duration);
-				commandBuilder.AppendLine(new Line(Capsule.PointB.Add(o2), endCapsule.PointB.Add(o2)), castColor, duration);
+				Capsule2D endCapsule = Capsule.GetTranslated(Direction * maxDistance);
+				var lineA = new Line(Capsule.PointA.Add(o1), endCapsule.PointA.Add(o1));
+				var lineB = new Line(Capsule.PointB.Add(o2), endCapsule.PointB.Add(o2));
+				commandBuilder.AppendLine(lineA, castColor, duration);
+				commandBuilder.AppendLine(lineB, castColor, duration);
+				if (hasMax)
+				{
+					commandBuilder.AppendLine(lineA.GetWithZ(MaxDepth), castColor, duration);
+					commandBuilder.AppendLine(lineB.GetWithZ(MaxDepth), castColor, duration);
+				}
+
+				// Toggle off hasMax if it's not going to be drawn on-screen anyway.
+				hasMax &= !float.IsInfinity(Distance);
 
 				// Termination capsule lines
 				if (dot > 0)
-					commandBuilder.AppendLine(new Line(endCapsule.PointA + endCapsule._scaledLeft, endCapsule.PointB + endCapsule._scaledLeft), castColor, duration);
+				{
+					lineA = new Line(endCapsule.PointA + endCapsule._scaledLeft, endCapsule.PointB + endCapsule._scaledLeft);
+					commandBuilder.AppendLine(lineA, castColor, duration);
+					if (hasMax)
+						commandBuilder.AppendLine(lineA.GetWithZ(MaxDepth), castColor, duration);
+				}
 				else if (dot < 0)
-					commandBuilder.AppendLine(new Line(endCapsule.PointA - endCapsule._scaledLeft, endCapsule.PointB - endCapsule._scaledLeft), castColor, duration);
+				{
+					lineB = new Line(endCapsule.PointA - endCapsule._scaledLeft, endCapsule.PointB - endCapsule._scaledLeft);
+					commandBuilder.AppendLine(lineB, castColor, duration);
+					if (hasMax)
+						commandBuilder.AppendLine(lineA.GetWithZ(MaxDepth), castColor, duration);
+				}
 
 				// Termination capsule ends
 				float angle = verticalDirection.ToAngleDegrees();
@@ -320,13 +512,21 @@ namespace Vertx.Debugging
 
 				Angle offsetA = Angle.FromRadians(Mathf.Acos(dotA));
 				Angle offsetB = Angle.FromRadians(Mathf.Acos(dotB));
-				
-				commandBuilder.AppendArc(new Arc(endCapsule.PointA, angle - offsetA.Degrees * 0.5f * sign, Capsule.Radius, offsetB.Abs()), castColor, duration);
-				commandBuilder.AppendArc(new Arc(endCapsule.PointB, angle + 180 + offsetB.Degrees * 0.5f * sign, Capsule.Radius, offsetA.Abs()), castColor, duration);
+
+				Arc arcA = new Arc(endCapsule.PointA, angle - offsetA.Degrees * 0.5f * sign, Capsule.Radius, offsetB.Abs());
+				Arc arcB = new Arc(endCapsule.PointB, angle + 180 + offsetB.Degrees * 0.5f * sign, Capsule.Radius, offsetA.Abs());
+				commandBuilder.AppendArc(arcA, castColor, duration);
+				commandBuilder.AppendArc(arcB, castColor, duration);
+				if (hasMax)
+				{
+					commandBuilder.AppendArc(arcA.GetWithZ(MaxDepth), castColor, duration);
+					commandBuilder.AppendArc(arcB.GetWithZ(MaxDepth), castColor, duration);
+				}
 
 				if (!Hit.HasValue)
 					return;
-				Capsule.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
+				
+				Capsule.GetTranslatedWithZ(Direction * Hit.Value.distance, Hit.Value.transform.position.z).Draw(commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -334,15 +534,19 @@ namespace Vertx.Debugging
 		public readonly struct CapsuleCast2DAll : IDrawableCast
 		{
 			public readonly CapsuleCast2D CapsuleCast;
-			public readonly RaycastHit2D[] Results;
+			public readonly IList<RaycastHit2D> Results;
 			public readonly int ResultCount;
 
-			public CapsuleCast2DAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, int count, float maxDistance = Mathf.Infinity, float z = 0)
+			public CapsuleCast2DAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, IList<RaycastHit2D> results, int count, float maxDistance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
 			{
-				CapsuleCast = new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, null, maxDistance, z);
+				CapsuleCast = new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, null, maxDistance, minDepth, maxDepth);
 				Results = results;
 				ResultCount = count;
 			}
+
+			public CapsuleCast2DAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, IList<RaycastHit2D> results, float maxDistance = Mathf.Infinity, float minDepth = 0, float maxDepth = 0)
+				: this(origin, size, capsuleDirection, angle, direction, results, results.Count, maxDistance, minDepth, maxDepth) { }
+
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)

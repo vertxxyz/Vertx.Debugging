@@ -11,18 +11,17 @@ namespace Vertx.Debugging
 		public readonly struct Raycast : IDrawableCast
 		{
 			public readonly Ray Ray;
-			public readonly RaycastHit Hit;
+			public readonly RaycastHit? Hit;
 
-			public Raycast(Vector3 origin, Vector3 direction, RaycastHit hit, float distance = Mathf.Infinity)
+			public Raycast(Vector3 origin, Vector3 direction, RaycastHit? hit, float distance = Mathf.Infinity)
 			{
 				Ray = new Ray(origin, direction, distance);
 				Hit = hit;
 			}
 
-			public Raycast(UnityEngine.Ray ray, RaycastHit hit, float distance = Mathf.Infinity) : this(ray.origin, ray.direction, hit, distance) { }
+			public Raycast(UnityEngine.Ray ray, RaycastHit? hit, float distance = Mathf.Infinity) : this(ray.origin, ray.direction, hit, distance) { }
 
 #if UNITY_EDITOR
-
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
@@ -34,7 +33,37 @@ namespace Vertx.Debugging
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				Ray.Draw(commandBuilder, castColor, duration);
-				new SurfacePoint(Hit.point, Hit.normal).Draw(commandBuilder, hitColor, duration);
+				if (Hit.HasValue)
+					new SurfacePoint(Hit.Value.point, Hit.Value.normal).Draw(commandBuilder, hitColor, duration);
+			}
+#endif
+		}
+		
+		public readonly struct Linecast : IDrawableCast
+		{
+			public readonly Line Line;
+			public readonly RaycastHit? Hit;
+
+			public Linecast(Vector3 start, Vector3 end, RaycastHit? hit)
+			{
+				Line = new Line(start, end);
+				Hit = hit;
+			}
+			
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (IsWhite(color))
+					Draw(commandBuilder, CastColor, HitColor, duration);
+				else
+					Draw(commandBuilder, color, color, duration);
+			}
+
+			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			{
+				Line.Draw(commandBuilder, castColor, duration);
+				if (Hit.HasValue)
+					new SurfacePoint(Hit.Value.point, Hit.Value.normal).Draw(commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -89,7 +118,7 @@ namespace Vertx.Debugging
 			public readonly float MaxDistance;
 			public readonly RaycastHit? Hit;
 
-			public SphereCast(Vector3 origin, Vector3 direction, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity)
+			public SphereCast(Vector3 origin, float radius, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
 			{
 				Origin = origin;
 				direction.EnsureNormalized();
@@ -99,7 +128,7 @@ namespace Vertx.Debugging
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
 
-			public SphereCast(UnityEngine.Ray ray, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity) : this(ray.origin, ray.direction, radius, hit, maxDistance) { }
+			public SphereCast(UnityEngine.Ray ray, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity) : this(ray.origin, radius, ray.direction, hit, maxDistance) { }
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -135,7 +164,7 @@ namespace Vertx.Debugging
 			public readonly RaycastHit[] Results;
 			public readonly int ResultCount;
 
-			public SphereCastAll(Vector3 origin, Vector3 direction, float radius, RaycastHit[] results, int resultCount, float maxDistance = Mathf.Infinity)
+			public SphereCastAll(Vector3 origin, float radius, Vector3 direction, RaycastHit[] results, int resultCount, float maxDistance = Mathf.Infinity)
 			{
 				Origin = origin;
 				direction.EnsureNormalized();
@@ -146,9 +175,9 @@ namespace Vertx.Debugging
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
 
-			public SphereCastAll(Vector3 origin, Vector3 direction, float radius, RaycastHit[] results, float maxDistance = Mathf.Infinity) : this(origin, direction, radius, results, results.Length, maxDistance) { }
+			public SphereCastAll(Vector3 origin, float radius, Vector3 direction, RaycastHit[] results, float maxDistance = Mathf.Infinity) : this(origin, radius, direction, results, results.Length, maxDistance) { }
 
-			public SphereCastAll(UnityEngine.Ray ray, float radius, RaycastHit[] results, int resultCount, float distance = Mathf.Infinity) : this(ray.origin, ray.direction, radius, results, resultCount, distance) { }
+			public SphereCastAll(UnityEngine.Ray ray, float radius, RaycastHit[] results, int resultCount, float distance = Mathf.Infinity) : this(ray.origin, radius, ray.direction, results, resultCount, distance) { }
 
 			public SphereCastAll(UnityEngine.Ray ray, float radius, RaycastHit[] results, float distance = Mathf.Infinity) : this(ray, radius, results, results.Length, distance) { }
 
@@ -163,7 +192,7 @@ namespace Vertx.Debugging
 
 			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				new SphereCast(Origin, Direction, Radius, null, MaxDistance).Draw(commandBuilder, castColor, hitColor, duration);
+				new SphereCast(Origin, Radius, Direction, null, MaxDistance).Draw(commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
