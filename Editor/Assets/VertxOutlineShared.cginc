@@ -38,6 +38,16 @@ struct Plane
     float Distance;
 };
 
+float signed_distance_to_point(Plane plane, float3 p)
+{
+    return dot(float4(plane.Normal, plane.Distance), float4(p, 1.0f));
+}
+
+float3 plane_projection(Plane plane, float3 p)
+{
+    return p - plane.Normal * signed_distance_to_point(plane, p);
+}
+
 bool plane_plane_intersection(
     Plane p1, Plane p2,
     // output args
@@ -130,17 +140,19 @@ bool closest_plane_circle_intersection(
         intersection = circleCenter + circlePerpendicular * i1.x + circlePerpendicular2 * i1.y;
         return true;
     }
+    
     i1 = normalize(i1) * circleRadius;
     i2 = normalize(i2) * circleRadius;
-    
-    // Reproject back into 3D.
+
     float3 i13 = circleCenter + circlePerpendicular * i1.x + circlePerpendicular2 * i1.y;
     float3 i23 = circleCenter + circlePerpendicular * i2.x + circlePerpendicular2 * i2.y;
-    // Find the closest intersection to our input.
-    i1 -= intersection;
-    i2 -= intersection;
-    float d1 = dot(i1, i1);
-    float d2 = dot(i2, i2);
+
+    float3 i13d = i13 - intersection;
+    float3 i23d = i23 - intersection;
+
+    float d1 = dot(i13d, i13d);
+    float d2 = dot(i23d, i23d);
+
     intersection = d1 < d2 ? i13 : i23;
     return true;
 }
@@ -155,7 +167,7 @@ v2f vert(vertInput input)
         o.color = 0;
         return o;
     }
-    
+
     OutineGroup og = outline_buffer[index];
     Outine outline = og.A;
     int modifications = og.Modifications;
@@ -184,12 +196,12 @@ v2f vert(vertInput input)
         float4 rot = axis_angle(outline.A - outline.B, 3.14159265359 * 0.25);
         float3 normalA = rotate(rot, outline.C);
         float3 normalB = rotate(quaternion_inverse(rot), outline.C);
-        
+
         o.color.a *= max(0.3, step(0, max(dot(cameraDirection, normalA), dot(cameraDirection, normalB))));
         o.position = mul(UNITY_MATRIX_VP, offset_world_towards_camera(float4(originWorld, 1), cameraDirection));
         return o;
     }
-    
+
     float radius = length(outline.C);
 
     float3 originWorld = input.vertexID % 2 == 0 ? outline.A : outline.B;
@@ -202,7 +214,7 @@ v2f vert(vertInput input)
 
         float3 worldPos = originWorld
             + right * radius;
-        
+
         if (has_custom(modifications))
         {
             if (dot(outline.C, right) < 0)
@@ -217,12 +229,10 @@ v2f vert(vertInput input)
     }
     else
     {
-        float3 normal = normalize(_WorldSpaceCameraPos.xyz - originWorld);
-        float3 right = normalize(cross(normal, direction));
-
         float offset;
-        float3 oNormal;
-        get_circle_info_basic(originWorld, radius, offset, oNormal);
+        float3 normal;
+        get_circle_info_basic(originWorld, radius, offset, normal);
+        float3 right = normalize(cross(normal, direction));
 
         // Find the intersection between this new plane (the one created by get_circle_info)
         // and the circle that is at originWorld, facing in direction, and of radius;
@@ -231,15 +241,15 @@ v2f vert(vertInput input)
         // Look, this took me forever, give me a break.
         float3 intersection = originWorld + right * radius;
 
-        if(!closest_plane_circle_intersection(
-                originWorld,
-                direction,
-                right,
-                radius,
-                originWorld + oNormal * offset,
-                oNormal,
-                intersection
-            ))
+        if (!closest_plane_circle_intersection(
+            originWorld, // float3 circleCenter
+            direction, // float3 circleNormal
+            right, // float3 circlePerpendicular
+            radius, // float circleRadius
+            originWorld + normal * offset, // float3 planePoint
+            normal, // float3 planeNormal
+            intersection
+        ))
         {
             o.color.a = 0;
             o.position = 0;

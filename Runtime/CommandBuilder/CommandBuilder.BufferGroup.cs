@@ -14,6 +14,7 @@ namespace Vertx.Debugging
 		{
 			private readonly string _commandBufferName;
 			public readonly ShapeBuffersWithData<LineGroup> Lines;
+			public readonly ShapeBuffersWithData<DashedLineGroup> DashedLines;
 			public readonly ShapeBuffersWithData<ArcGroup> Arcs;
 			public readonly ShapeBuffersWithData<BoxGroup> Boxes;
 			public readonly ShapeBuffersWithData<OutlineGroup> Outlines;
@@ -26,6 +27,7 @@ namespace Vertx.Debugging
 			private enum ShapeIndex
 			{
 				Line,
+				DashedLine,
 				Arc,
 				Box,
 				Outline,
@@ -41,11 +43,12 @@ namespace Vertx.Debugging
 			{
 				_commandBufferName = commandBufferName;
 				Lines = new ShapeBuffersWithData<LineGroup>("line_buffer", usesDurations);
+				DashedLines = new ShapeBuffersWithData<DashedLineGroup>("dashed_line_buffer", usesDurations);
 				Arcs = new ShapeBuffersWithData<ArcGroup>("arc_buffer", usesDurations);
 				Boxes = new ShapeBuffersWithData<BoxGroup>("box_buffer", usesDurations);
 				Outlines = new ShapeBuffersWithData<OutlineGroup>("outline_buffer", usesDurations);
 				Casts = new ShapeBuffersWithData<CastGroup>("cast_buffer", usesDurations);
-				_shapes = new IShape[] { Lines, Arcs, Boxes, Outlines, Casts };
+				_shapes = new IShape[] { Lines, DashedLines, Arcs, Boxes, Outlines, Casts };
 				_counters = new int[_shapes.Length];
 			}
 
@@ -67,6 +70,7 @@ namespace Vertx.Debugging
 			public void Clear()
 			{
 				Lines.Clear();
+				DashedLines.Clear();
 				Arcs.Clear();
 				Boxes.Clear();
 				Outlines.Clear();
@@ -78,6 +82,7 @@ namespace Vertx.Debugging
 			public void Dispose()
 			{
 				Lines.Dispose();
+				DashedLines.Dispose();
 				Arcs.Dispose();
 				Boxes.Dispose();
 				Outlines.Dispose();
@@ -92,6 +97,7 @@ namespace Vertx.Debugging
 
 				JobHandle? coreHandle = null;
 				_counters[(int)ShapeIndex.Line] = QueueRemovalJob<LineGroup, RemovalJob<LineGroup>>(Lines, dependency, ref coreHandle);
+				_counters[(int)ShapeIndex.DashedLine] = QueueRemovalJob<DashedLineGroup, RemovalJob<DashedLineGroup>>(DashedLines, dependency, ref coreHandle);
 				_counters[(int)ShapeIndex.Arc] = QueueRemovalJob<ArcGroup, RemovalJob<ArcGroup>>(Arcs, dependency, ref coreHandle);
 				_counters[(int)ShapeIndex.Box] = QueueRemovalJob<BoxGroup, RemovalJob<BoxGroup>>(Boxes, dependency, ref coreHandle);
 				_counters[(int)ShapeIndex.Outline] = QueueRemovalJob<OutlineGroup, RemovalJob<OutlineGroup>>(Outlines, dependency, ref coreHandle);

@@ -97,6 +97,20 @@ namespace Vertx.Debugging
 				duration
 			);
 		}
+		
+		public void AppendDashedLine(in Shape.DashedLine line, Color color, float duration)
+		{
+			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
+			group.DashedLines.Add(
+				new DashedLineGroup(
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
+						? new Shape.DashedLine(Gizmos.matrix.MultiplyPoint3x4(line.A), Gizmos.matrix.MultiplyPoint3x4(line.B))
+						: line,
+					color
+				),
+				duration
+			);
+		}
 
 		public void AppendArc(in Shape.Arc arc, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
 		{
