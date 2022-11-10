@@ -36,7 +36,7 @@ namespace Vertx.Debugging
 
 		public ScreenTextOverlay()
 		{
-#if UNITY_2022_1_OR_NEWER
+#if UNITY_2022_2_OR_NEWER
 			size = new Vector2(180, 300);
 			minSize = _minSize;
 			maxSize = _maxSize;
@@ -59,7 +59,7 @@ namespace Vertx.Debugging
 				_bounds = GetScreenTextLayout(commandBuilder.DefaultScreenTexts, _layout, Rect.zero);
 				_bounds = GetScreenTextLayout(commandBuilder.GizmoScreenTexts, _layout, _bounds);
 
-#if UNITY_2022_1_OR_NEWER
+#if UNITY_2022_2_OR_NEWER
 				if (size.y > maxHeight)
 					size = new Vector2(Mathf.Min(_bounds.width + OverlayBounds.x, _maxSize.x), Mathf.Min(_bounds.height + OverlayBounds.y, maxHeight));
 				if (size.y < _minSize.y)
@@ -71,7 +71,7 @@ namespace Vertx.Debugging
 			else if (Event.current.type != EventType.Layout)
 			{
 				using (var scope = new GUI.ScrollViewScope(
-#if UNITY_2022_1_OR_NEWER
+#if UNITY_2022_2_OR_NEWER
 					       new Rect(0, 0, size.x - OverlayBounds.x, size.y - OverlayBounds.y),
 #else
 					       new Rect(0, 0, Mathf.Clamp(_bounds.width, _minSize.x, _maxSize.x) - OverlayBounds.x + 6, Mathf.Clamp(_bounds.height, _minSize.y, maxHeight) - OverlayBounds.y),
