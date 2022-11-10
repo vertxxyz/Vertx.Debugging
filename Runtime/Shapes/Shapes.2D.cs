@@ -185,12 +185,14 @@ namespace Vertx.Debugging
 			internal Circle2D(Vector3 origin, float radius)
 				=> _circle = new Circle(origin, Quaternion.identity, radius);
 
+#if VERTX_PHYSICS_2D
 			public Circle2D(CircleCollider2D circleCollider)
 			{
 				Transform transform = circleCollider.transform;
 				Vector3 scale = transform.lossyScale;
 				_circle = new Circle(circleCollider.transform.TransformPoint(circleCollider.offset), Quaternion.identity, circleCollider.radius * Mathf.Max(scale.x, scale.y));
 			}
+#endif
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => _circle.Draw(commandBuilder, color, duration);
@@ -229,11 +231,13 @@ namespace Vertx.Debugging
 
 			public Box2D(Vector3 origin, Quaternion rotation, Vector2 size) => Matrix = Matrix4x4.TRS(origin, rotation, size);
 			
+#if VERTX_PHYSICS_2D
 			public Box2D(BoxCollider2D boxCollider)
 			{
 				Transform transform = boxCollider.transform;
 				Matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale * boxCollider.size);
 			}
+#endif
 
 			[Flags]
 			internal enum Point
