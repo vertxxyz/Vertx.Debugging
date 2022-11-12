@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
@@ -13,10 +12,10 @@ namespace Vertx.Debugging
 #endif
 
 		[Conditional("UNITY_EDITOR")]
-		public static void raw<T>(T shape) where T : struct, IDrawable
+		public static void raw<T>(T shape, float duration = 0) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
-			shape.Draw(s_Builder, Color.white, 0);
+			shape.Draw(s_Builder, Color.white, duration);
 #endif
 		}
 
