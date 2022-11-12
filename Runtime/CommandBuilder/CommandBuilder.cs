@@ -84,11 +84,24 @@ namespace Vertx.Debugging
 
 		private void EditorApplicationOnPlayModeStateChanged(PlayModeStateChange obj)
 		{
-			_isPlaying = obj == PlayModeStateChange.EnteredPlayMode;
-			if (obj != PlayModeStateChange.EnteredPlayMode && obj != PlayModeStateChange.EnteredEditMode)
-				return;
-			_defaultGroup.Clear();
-			_gizmosGroup.Clear();
+			switch (obj)
+			{
+				case PlayModeStateChange.ExitingEditMode:
+					_defaultGroup.Clear();
+					_gizmosGroup.Clear();
+					_isPlaying = true;
+					break;
+				case PlayModeStateChange.ExitingPlayMode:
+					_defaultGroup.Clear();
+					_gizmosGroup.Clear();
+					_isPlaying = false;
+					break;
+				case PlayModeStateChange.EnteredPlayMode:
+				case PlayModeStateChange.EnteredEditMode:
+					break;
+				default:
+					return;
+			}
 		}
 
 		private void OnBeginContextRendering(ScriptableRenderContext context, List<Camera> cameras)
