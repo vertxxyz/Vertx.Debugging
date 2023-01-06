@@ -4,6 +4,17 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.0]
+### Fixed
+- Fixed UnityException when using Shape colors from field initialisers, like DebugCollisionEvents does.
+- Removed obsolete calls 2023+ projects that use Physics2D.
+
+### Added
+- Added Arc overload that takes a chord, arc length, and aiming vector.
+
+### Improved
+- DebugMeshNormals doesn't rely on ReadWrite meshes for 2020+
+
 ## [2.0.0-pre.6]
 ### Fixed
 - Fixed issue where lines would fail to render if they were the only type of shape rendering.

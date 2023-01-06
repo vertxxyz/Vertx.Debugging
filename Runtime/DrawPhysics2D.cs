@@ -116,6 +116,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results)
 		{
@@ -147,6 +148,7 @@ namespace Vertx.Debugging
 			D.raw(new LinecastAll2D(start, end, results, count, minDepth, maxDepth));
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static RaycastHit2D Raycast(Vector2 origin, Vector2 direction)
@@ -212,6 +214,7 @@ namespace Vertx.Debugging
 			return count;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results)
 		{
@@ -227,6 +230,7 @@ namespace Vertx.Debugging
 			D.raw(new RaycastAll2D(origin, direction, results, count, distance));
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
@@ -236,6 +240,7 @@ namespace Vertx.Debugging
 			return count;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
 		{
@@ -251,6 +256,7 @@ namespace Vertx.Debugging
 			D.raw(new RaycastAll2D(origin, direction, results, count, distance, minDepth, maxDepth));
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction)
@@ -396,6 +402,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results)
 		{
@@ -435,6 +442,7 @@ namespace Vertx.Debugging
 			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance, minDepth, maxDepth));
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction)
@@ -540,6 +548,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results)
 		{
@@ -579,6 +588,7 @@ namespace Vertx.Debugging
 			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance, minDepth, maxDepth));
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction)
@@ -687,6 +697,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results)
 		{
@@ -726,6 +737,7 @@ namespace Vertx.Debugging
 			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance, minDepth, maxDepth));
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static RaycastHit2D GetRayIntersection(UnityEngine.Ray ray)
@@ -787,6 +799,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int GetRayIntersectionNonAlloc(UnityEngine.Ray ray, RaycastHit2D[] results)
 		{
@@ -806,6 +819,7 @@ namespace Vertx.Debugging
 				D.raw(results[i]);
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int GetRayIntersectionNonAlloc(UnityEngine.Ray ray, RaycastHit2D[] results, float distance, int layerMask)
@@ -917,6 +931,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results)
 		{
@@ -974,6 +989,7 @@ namespace Vertx.Debugging
 
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Collider2D OverlapCircle(Vector2 point, float radius)
@@ -1076,6 +1092,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results)
 		{
@@ -1117,6 +1134,7 @@ namespace Vertx.Debugging
 				D.raw(results[i], HitColor);
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle)
@@ -1218,6 +1236,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results)
 		{
@@ -1259,6 +1278,7 @@ namespace Vertx.Debugging
 				D.raw(results[i], HitColor);
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Collider2D OverlapArea(Vector2 pointA, Vector2 pointB)
@@ -1360,6 +1380,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results)
 		{
@@ -1401,6 +1422,7 @@ namespace Vertx.Debugging
 				D.raw(results[i], HitColor);
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle)
@@ -1502,6 +1524,7 @@ namespace Vertx.Debugging
 			return results;
 		}
 
+#if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results)
 		{
@@ -1543,6 +1566,7 @@ namespace Vertx.Debugging
 				D.raw(results[i], HitColor);
 			return count;
 		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int OverlapCollider(Collider2D collider, ContactFilter2D contactFilter, Collider2D[] results)
