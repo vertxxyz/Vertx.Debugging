@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine;
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -9,6 +10,9 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
+#if UNITY_EDITOR
+	[InitializeOnLoad]
+#endif
 	public static partial class Shape
 	{
 #if UNITY_EDITOR
@@ -19,24 +23,29 @@ namespace Vertx.Debugging
 		static Shape()
 		{
 #if UNITY_EDITOR
-			SyncColors();
+			// Called after a delay to avoid errors when called during serialization:
+			// > UnityEngine.UnityException: LoadSerializedFileAndForget is not allowed to be called from a MonoBehaviour constructor (or instance field initializer),
+			// > call it in Awake or Start instead. Called from MonoBehaviour 'DebugCollisionEvents' on game object 'Prefab'.
+			// > See "Script Serialization" page in the Unity Manual for further details.
+			// The first time this is used, colors may resolve as constants, but the typical case will mean these values are overridden by that point.
+			EditorApplication.delayCall += SyncColors;
 #endif
 		}
 
 #if UNITY_EDITOR
 		// Axis
-		public static Color XColor { get; private set; }
-		public static Color YColor { get; private set; }
-		public static Color ZColor { get; private set; }
+		public static Color XColor { get; private set; } = Constants.XColor;
+		public static Color YColor { get; private set; } = Constants.YColor;
+		public static Color ZColor { get; private set; } = Constants.ZColor;
 
 		// Casts
-		public static Color HitColor { get; private set; }
-		public static Color CastColor { get; private set; }
+		public static Color HitColor { get; private set; } = Constants.HitColor;
+		public static Color CastColor { get; private set; } = Constants.CastColor;
 
 		// Physics Events
-		public static Color EnterColor { get; private set; }
-		public static Color StayColor { get; private set; }
-		public static Color ExitColor { get; private set; }
+		public static Color EnterColor { get; private set; } = Constants.EnterColor;
+		public static Color StayColor { get; private set; } = Constants.StayColor;
+		public static Color ExitColor { get; private set; } = Constants.ExitColor;
 
 		internal static void SyncColors()
 		{

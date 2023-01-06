@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 #if !UNITY_2021_1_OR_NEWER
 using Vertx.Debugging.Internal;
@@ -35,15 +36,31 @@ namespace Vertx.Debugging
 				if (Mesh == null)
 					return;
 
+#if !UNITY_2020_1_OR_NEWER
 				if (!Mesh.isReadable)
 				{
 					Debug.LogWarning($"{Mesh} must be marked as Read/Write to use {nameof(MeshNormals)}.");
 					return;
 				}
+#endif
 
 				Matrix4x4 matrix = Matrix;
 				var unscaledMatrix = Matrix4x4.TRS(matrix.MultiplyPoint(Vector3.zero), matrix.rotation, Vector3.one);
 
+#if UNITY_2020_1_OR_NEWER
+				var array = Mesh.AcquireReadOnlyMeshData(Mesh);
+
+				for (int i = 0; i < array.Length; i++)
+				{
+					var meshData = array[i];
+					var vertices = new NativeArray<Vector3>(meshData.vertexCount, Allocator.Temp);
+					var normals = new NativeArray<Vector3>(meshData.vertexCount, Allocator.Temp);
+					meshData.GetVertices(vertices);
+					meshData.GetNormals(normals);
+					for (int j = 0; j < meshData.vertexCount; j++)
+						new Arrow(matrix.MultiplyPoint(vertices[j]), unscaledMatrix.MultiplyVector(normals[j]) * ArrowLength).Draw(commandBuilder, color, duration);
+				}
+#else
 				using (ListPool<Vector3>.Get(out List<Vector3> vertices))
 				using (ListPool<Vector3>.Get(out List<Vector3> normals))
 				{
@@ -52,6 +69,7 @@ namespace Vertx.Debugging
 					for (int i = 0; i < vertices.Count; i++)
 						new Arrow(matrix.MultiplyPoint(vertices[i]), unscaledMatrix.MultiplyVector(normals[i]) * ArrowLength).Draw(commandBuilder, color, duration);
 				}
+#endif
 			}
 #endif
 		}
