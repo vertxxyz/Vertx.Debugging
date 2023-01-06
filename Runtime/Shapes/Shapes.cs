@@ -521,7 +521,10 @@ namespace Vertx.Debugging
 				Angle = angle;
 			}
 
-			public Arc(Matrix4x4 matrix) : this(matrix, Angle.FromTurns(1)) { }
+			/// <summary>
+			/// Creates an Arc
+			/// </summary>
+			internal Arc(Matrix4x4 matrix) : this(matrix, Angle.FromTurns(1)) { }
 
 			public Arc(Vector3 origin, Quaternion rotation, float radius, Angle angle)
 			{
@@ -549,12 +552,78 @@ namespace Vertx.Debugging
 			/// It's cheaper to use the <see cref="Arc(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
 			/// </summary>
 			public Arc(Vector3 origin, Vector3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius, Angle.FromTurns(1)) { }
+			
+			/// <param name="chord">A line that makes up the chord of the arc (two positions at the ends of the arc)</param>
+			/// <param name="aim">The direction for the arc to bend towards.</param>
+			/// <param name="arcLength">The length of the arc. If <see cref="arcLength"/> is less than the length of the chord, nothing will draw.</param>
+			public Arc(Line chord, Vector3 aim, float arcLength)
+			{
+				Vector3 tangent = chord.A - chord.B;
+				float chordLength = tangent.magnitude;
+				if (chordLength < 0.00001f || arcLength <= chordLength)
+				{
+					Angle = default;
+					Matrix = Matrix4x4.identity;
+					// ideally this would draw a line if the arc length was less than or equal to the chord length.
+					return;
+				}
+				
+				(float radius, float height, Angle angle) = GetSegmentDetails(chordLength, arcLength);
+				
+				tangent /= chordLength;
+				aim.EnsureNormalized();
+				Vector3 normal = Vector3.Cross(aim, tangent).normalized;
+				// Ensure direction is tangent to the chord:
+				Vector3 direction = Vector3.Cross(tangent, normal);
+
+				Matrix = Matrix4x4.TRS(
+					(chord.A + chord.B) / 2 - direction * height,
+					Quaternion.LookRotation(direction, normal) * s_Base3DRotation, 
+					new Vector3(radius, radius, radius)
+				);
+				Angle = angle;
+			}
+			
+			/// <summary>
+			/// Gets other details about a circular segment/arc from the input parameters.
+			/// </summary>
+			/// <param name="chordLength">The length of the arc's chord.</param>
+			/// <param name="arcLength">The length of the arc.</param>
+			/// <returns>The radius of the arc, sagitta (height), and angle.</returns>
+			private static (float radius, float height, Angle angle) GetSegmentDetails(float chordLength, float arcLength)
+			{
+				// Thanks to @FreyaHolmer's community <3
+				// Taylor expansion to find first approximation
+				float x = Mathf.Sqrt(48f * ((arcLength - chordLength) / (2f * arcLength)));
+				
+				// Newton method to find root within acceptable error.
+				float error;
+				int iterations = 0;
+				do
+				{
+					float sR = Mathf.Sin(x * 0.5f);
+					error = sR / x - chordLength / (2 * arcLength);
+					float firstDerivative = (x * Mathf.Cos(x * 0.5f) - 2f * sR) / (2f * x * x);
+					x -= error / firstDerivative;
+				} while (error > 0.001f && ++iterations < 10);
+				
+				float angleRad = x;
+				float radius = arcLength / angleRad;
+				float height = radius * Mathf.Cos(0.5f * angleRad);
+				return (radius, height, Angle.FromRadians(angleRad));
+			}
+
 
 			public static float GetRadius(in Angle angle, float chordLength) => chordLength / (2 * Mathf.Sin(0.5f * angle.Radians));
 			public static Angle GetAngle(float radius, float chordLength) => Angle.FromRadians(Mathf.Asin(chordLength / (2f * radius)) * 2);
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendArc(this, color, duration);
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (Angle.Turns == 0)
+					return;
+				commandBuilder.AppendArc(this, color, duration);
+			}
 #endif
 		}
 

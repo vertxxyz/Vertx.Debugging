@@ -21,7 +21,7 @@ namespace Vertx.Debugging
 	[InitializeOnLoad]
 	internal static class DrawText
 	{
-		internal static GUIStyle TextStyle => textStyle ?? (textStyle = new GUIStyle(EditorStyles.label) { font = AssetsUtility.JetBrainsMono });
+		internal static GUIStyle TextStyle => s_TextStyle ?? (s_TextStyle = new GUIStyle(EditorStyles.label) { font = AssetsUtility.JetBrainsMono });
 
 		private static Type GameViewType => s_GameViewType ?? (s_GameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
 
@@ -39,7 +39,7 @@ namespace Vertx.Debugging
 		}
 
 		private static readonly GUIContent s_SharedContent = new GUIContent();
-		private static GUIStyle textStyle;
+		private static GUIStyle s_TextStyle;
 		private static Type s_GameViewType;
 		private static EditorWindow s_GameView;
 
