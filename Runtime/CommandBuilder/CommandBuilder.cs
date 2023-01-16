@@ -78,6 +78,7 @@ namespace Vertx.Debugging
 			EditorApplication.playModeStateChanged += EditorApplicationOnPlayModeStateChanged;
 			EditorApplication.pauseStateChanged -= EditorApplicationOnPauseStateChanged;
 			EditorApplication.pauseStateChanged += EditorApplicationOnPauseStateChanged;
+			InitialiseDisposal();
 		}
 
 		private void EditorApplicationOnPauseStateChanged(PauseState obj) => _isPaused = obj == PauseState.Paused;
@@ -209,7 +210,6 @@ namespace Vertx.Debugging
 			if (!ShouldRenderCamera(camera, renderingType))
 				return false;
 
-			InitialiseDisposal();
 			group.ReadyResources(ref commandBuffer);
 			return FillCommandBuffer(commandBuffer, camera, group, renderingType);
 		}
