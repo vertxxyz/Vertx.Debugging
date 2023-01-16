@@ -1,6 +1,7 @@
 #if VERTX_PHYSICS_2D && UNITY_2022_1_OR_NEWER
 using UnityEngine;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using static Vertx.Debugging.Shape;
 
@@ -11,12 +12,21 @@ namespace Vertx.Debugging
 {
 	public static class DrawPhysics2D
 	{
+		// ReSharper disable once MemberCanBePrivate.Global
+		public static float Duration { 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get;
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			[Conditional("UNITY_EDITOR")]
+			set;
+		} = 0;
+		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ColliderDistance2D Distance(Collider2D colliderA, Collider2D colliderB)
 		{
 			ColliderDistance2D distance = Physics2D.Distance(colliderA, colliderB);
-			D.raw(new Text(distance.pointB + distance.normal * (distance.distance * 0.5f), distance.distance));
-			D.raw(new Line(distance.pointA, distance.pointB), CastColor);
+			D.raw(new Text(distance.pointB + distance.normal * (distance.distance * 0.5f), distance.distance), Duration);
+			D.raw(new Line(distance.pointA, distance.pointB), CastColor, Duration);
 			return distance;
 		}
 
@@ -24,7 +34,7 @@ namespace Vertx.Debugging
 		public static Vector2 ClosestPoint(Vector2 position, Collider2D collider)
 		{
 			Vector2 result = Physics2D.ClosestPoint(position, collider);
-			D.raw(new Point2D(result), HitColor);
+			D.raw(new Point2D(result), HitColor, Duration);
 			return result;
 		}
 
@@ -32,7 +42,7 @@ namespace Vertx.Debugging
 		public static Vector2 ClosestPoint(Vector2 position, Rigidbody2D rigidbody)
 		{
 			Vector2 result = Physics2D.ClosestPoint(position, rigidbody);
-			D.raw(new Point2D(result), HitColor);
+			D.raw(new Point2D(result), HitColor, Duration);
 			return result;
 		}
 
@@ -40,7 +50,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Linecast(Vector2 start, Vector2 end)
 		{
 			RaycastHit2D result = Physics2D.Linecast(start, end);
-			D.raw(new Linecast2D(start, end, result));
+			D.raw(new Linecast2D(start, end, result), Duration);
 			return result;
 		}
 
@@ -48,7 +58,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Linecast(Vector2 start, Vector2 end, int layerMask)
 		{
 			RaycastHit2D result = Physics2D.Linecast(start, end, layerMask);
-			D.raw(new Linecast2D(start, end, result));
+			D.raw(new Linecast2D(start, end, result), Duration);
 			return result;
 		}
 
@@ -56,7 +66,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Linecast(Vector2 start, Vector2 end, int layerMask, float minDepth)
 		{
 			RaycastHit2D result = Physics2D.Linecast(start, end, layerMask, minDepth);
-			D.raw(new Linecast2D(start, end, result, minDepth));
+			D.raw(new Linecast2D(start, end, result, minDepth), Duration);
 			return result;
 		}
 
@@ -64,7 +74,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Linecast(Vector2 start, Vector2 end, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D result = Physics2D.Linecast(start, end, layerMask, minDepth, maxDepth);
-			D.raw(new Linecast2D(start, end, result, minDepth, maxDepth));
+			D.raw(new Linecast2D(start, end, result, minDepth, maxDepth), Duration);
 			return result;
 		}
 
@@ -72,7 +82,7 @@ namespace Vertx.Debugging
 		public static int Linecast(Vector2 start, Vector2 end, ContactFilter2D contactFilter, RaycastHit2D[] results)
 		{
 			int count = Physics2D.Linecast(start, end, contactFilter, results);
-			D.raw(new LinecastAll2D(start, end, results, count));
+			D.raw(new LinecastAll2D(start, end, results, count), Duration);
 			return count;
 		}
 
@@ -80,7 +90,7 @@ namespace Vertx.Debugging
 		public static int Linecast(Vector2 start, Vector2 end, ContactFilter2D contactFilter, List<RaycastHit2D> results)
 		{
 			int count = Physics2D.Linecast(start, end, contactFilter, results);
-			D.raw(new LinecastAll2D(start, end, results, count));
+			D.raw(new LinecastAll2D(start, end, results, count), Duration);
 			return count;
 		}
 
@@ -88,7 +98,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] LinecastAll(Vector2 start, Vector2 end)
 		{
 			RaycastHit2D[] results = Physics2D.LinecastAll(start, end);
-			D.raw(new LinecastAll2D(start, end, results));
+			D.raw(new LinecastAll2D(start, end, results), Duration);
 			return results;
 		}
 
@@ -96,7 +106,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] LinecastAll(Vector2 start, Vector2 end, int layerMask)
 		{
 			RaycastHit2D[] results = Physics2D.LinecastAll(start, end, layerMask);
-			D.raw(new LinecastAll2D(start, end, results));
+			D.raw(new LinecastAll2D(start, end, results), Duration);
 			return results;
 		}
 
@@ -104,7 +114,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] LinecastAll(Vector2 start, Vector2 end, int layerMask, float minDepth)
 		{
 			RaycastHit2D[] results = Physics2D.LinecastAll(start, end, layerMask, minDepth);
-			D.raw(new LinecastAll2D(start, end, results, minDepth));
+			D.raw(new LinecastAll2D(start, end, results, minDepth), Duration);
 			return results;
 		}
 
@@ -112,7 +122,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] LinecastAll(Vector2 start, Vector2 end, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D[] results = Physics2D.LinecastAll(start, end, layerMask, minDepth, maxDepth);
-			D.raw(new LinecastAll2D(start, end, results, minDepth, maxDepth));
+			D.raw(new LinecastAll2D(start, end, results, minDepth, maxDepth), Duration);
 			return results;
 		}
 
@@ -121,7 +131,7 @@ namespace Vertx.Debugging
 		public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results)
 		{
 			int count = Physics2D.LinecastNonAlloc(start, end, results);
-			D.raw(new LinecastAll2D(start, end, results, count));
+			D.raw(new LinecastAll2D(start, end, results, count), Duration);
 			return count;
 		}
 
@@ -129,7 +139,7 @@ namespace Vertx.Debugging
 		public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results, int layerMask)
 		{
 			int count = Physics2D.LinecastNonAlloc(start, end, results, layerMask);
-			D.raw(new LinecastAll2D(start, end, results, count));
+			D.raw(new LinecastAll2D(start, end, results, count), Duration);
 			return count;
 		}
 
@@ -137,7 +147,7 @@ namespace Vertx.Debugging
 		public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results, int layerMask, float minDepth)
 		{
 			int count = Physics2D.LinecastNonAlloc(start, end, results, layerMask, minDepth);
-			D.raw(new LinecastAll2D(start, end, results, count, minDepth));
+			D.raw(new LinecastAll2D(start, end, results, count, minDepth), Duration);
 			return count;
 		}
 
@@ -145,7 +155,7 @@ namespace Vertx.Debugging
 		public static int LinecastNonAlloc(Vector2 start, Vector2 end, RaycastHit2D[] results, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.LinecastNonAlloc(start, end, results, layerMask, minDepth, maxDepth);
-			D.raw(new LinecastAll2D(start, end, results, count, minDepth, maxDepth));
+			D.raw(new LinecastAll2D(start, end, results, count, minDepth, maxDepth), Duration);
 			return count;
 		}
 #endif
@@ -154,7 +164,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Raycast(Vector2 origin, Vector2 direction)
 		{
 			RaycastHit2D result = Physics2D.Raycast(origin, direction);
-			D.raw(new Raycast2D(origin, direction, result));
+			D.raw(new Raycast2D(origin, direction, result), Duration);
 			return result;
 		}
 
@@ -162,7 +172,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Raycast(Vector2 origin, Vector2 direction, float distance)
 		{
 			RaycastHit2D result = Physics2D.Raycast(origin, direction, distance);
-			D.raw(new Raycast2D(origin, direction, result, distance));
+			D.raw(new Raycast2D(origin, direction, result, distance), Duration);
 			return result;
 		}
 
@@ -170,7 +180,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Raycast(Vector2 origin, Vector2 direction, float distance, int layerMask)
 		{
 			RaycastHit2D result = Physics2D.Raycast(origin, direction, distance, layerMask);
-			D.raw(new Raycast2D(origin, direction, result, distance));
+			D.raw(new Raycast2D(origin, direction, result, distance), Duration);
 			return result;
 		}
 
@@ -178,7 +188,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Raycast(Vector2 origin, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
 			RaycastHit2D result = Physics2D.Raycast(origin, direction, distance, layerMask, minDepth);
-			D.raw(new Raycast2D(origin, direction, result, distance, minDepth));
+			D.raw(new Raycast2D(origin, direction, result, distance, minDepth), Duration);
 			return result;
 		}
 
@@ -186,7 +196,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D Raycast(Vector2 origin, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D result = Physics2D.Raycast(origin, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new Raycast2D(origin, direction, result, distance, minDepth, maxDepth));
+			D.raw(new Raycast2D(origin, direction, result, distance, minDepth, maxDepth), Duration);
 			return result;
 		}
 
@@ -194,7 +204,7 @@ namespace Vertx.Debugging
 		public static int Raycast(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
 		{
 			int count = Physics2D.Raycast(origin, direction, contactFilter, results);
-			D.raw(new RaycastAll2D(origin, direction, results, count));
+			D.raw(new RaycastAll2D(origin, direction, results, count), Duration);
 			return count;
 		}
 
@@ -202,7 +212,7 @@ namespace Vertx.Debugging
 		public static int Raycast(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.Raycast(origin, direction, contactFilter, results, distance);
-			D.raw(new RaycastAll2D(origin, direction, results, count, distance));
+			D.raw(new RaycastAll2D(origin, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -210,7 +220,7 @@ namespace Vertx.Debugging
 		public static int Raycast(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = Mathf.Infinity)
 		{
 			int count = Physics2D.Raycast(origin, direction, contactFilter, results, distance);
-			D.raw(new RaycastAll2D(origin, direction, results, count, distance));
+			D.raw(new RaycastAll2D(origin, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -219,7 +229,7 @@ namespace Vertx.Debugging
 		public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results)
 		{
 			int count = Physics2D.RaycastNonAlloc(origin, direction, results);
-			D.raw(new RaycastAll2D(origin, direction, results, count));
+			D.raw(new RaycastAll2D(origin, direction, results, count), Duration);
 			return count;
 		}
 
@@ -227,7 +237,7 @@ namespace Vertx.Debugging
 		public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.RaycastNonAlloc(origin, direction, results, distance);
-			D.raw(new RaycastAll2D(origin, direction, results, count, distance));
+			D.raw(new RaycastAll2D(origin, direction, results, count, distance), Duration);
 			return count;
 		}
 #endif
@@ -236,7 +246,7 @@ namespace Vertx.Debugging
 		public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
 		{
 			int count = Physics2D.RaycastNonAlloc(origin, direction, results, distance, layerMask);
-			D.raw(new RaycastAll2D(origin, direction, results, count, distance));
+			D.raw(new RaycastAll2D(origin, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -245,7 +255,7 @@ namespace Vertx.Debugging
 		public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
 		{
 			int count = Physics2D.RaycastNonAlloc(origin, direction, results, distance, layerMask, minDepth);
-			D.raw(new RaycastAll2D(origin, direction, results, count, distance, minDepth));
+			D.raw(new RaycastAll2D(origin, direction, results, count, distance, minDepth), Duration);
 			return count;
 		}
 
@@ -253,7 +263,7 @@ namespace Vertx.Debugging
 		public static int RaycastNonAlloc(Vector2 origin, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.RaycastNonAlloc(origin, direction, results, distance, layerMask, minDepth, maxDepth);
-			D.raw(new RaycastAll2D(origin, direction, results, count, distance, minDepth, maxDepth));
+			D.raw(new RaycastAll2D(origin, direction, results, count, distance, minDepth, maxDepth), Duration);
 			return count;
 		}
 #endif
@@ -262,7 +272,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction)
 		{
 			RaycastHit2D[] results = Physics2D.RaycastAll(origin, direction);
-			D.raw(new RaycastAll2D(origin, direction, results));
+			D.raw(new RaycastAll2D(origin, direction, results), Duration);
 			return results;
 		}
 
@@ -270,7 +280,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction, float distance)
 		{
 			RaycastHit2D[] results = Physics2D.RaycastAll(origin, direction, distance);
-			D.raw(new RaycastAll2D(origin, direction, results, distance));
+			D.raw(new RaycastAll2D(origin, direction, results, distance), Duration);
 			return results;
 		}
 
@@ -278,7 +288,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction, float distance, int layerMask)
 		{
 			RaycastHit2D[] results = Physics2D.RaycastAll(origin, direction, distance, layerMask);
-			D.raw(new RaycastAll2D(origin, direction, results, distance));
+			D.raw(new RaycastAll2D(origin, direction, results, distance), Duration);
 			return results;
 		}
 
@@ -286,7 +296,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
 			RaycastHit2D[] results = Physics2D.RaycastAll(origin, direction, distance, layerMask, minDepth);
-			D.raw(new RaycastAll2D(origin, direction, results, distance, minDepth));
+			D.raw(new RaycastAll2D(origin, direction, results, distance, minDepth), Duration);
 			return results;
 		}
 
@@ -294,7 +304,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] RaycastAll(Vector2 origin, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D[] results = Physics2D.RaycastAll(origin, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new RaycastAll2D(origin, direction, results, distance, minDepth, maxDepth));
+			D.raw(new RaycastAll2D(origin, direction, results, distance, minDepth, maxDepth), Duration);
 			return results;
 		}
 
@@ -302,7 +312,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CircleCast(Vector2 origin, float radius, Vector2 direction)
 		{
 			RaycastHit2D result = Physics2D.CircleCast(origin, radius, direction);
-			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null));
+			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null), Duration);
 			return result;
 		}
 
@@ -310,7 +320,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CircleCast(Vector2 origin, float radius, Vector2 direction, float distance)
 		{
 			RaycastHit2D result = Physics2D.CircleCast(origin, radius, direction, distance);
-			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null, distance));
+			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null, distance), Duration);
 			return result;
 		}
 
@@ -318,7 +328,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CircleCast(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask)
 		{
 			RaycastHit2D result = Physics2D.CircleCast(origin, radius, direction, distance, layerMask);
-			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null, distance));
+			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null, distance), Duration);
 			return result;
 		}
 
@@ -326,7 +336,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CircleCast(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
 			RaycastHit2D result = Physics2D.CircleCast(origin, radius, direction, distance, layerMask, minDepth);
-			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null, distance, minDepth));
+			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null, distance, minDepth), Duration);
 			return result;
 		}
 
@@ -334,7 +344,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CircleCast(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D result = Physics2D.CircleCast(origin, radius, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null, distance, minDepth, maxDepth));
+			D.raw(new CircleCast(origin, radius, direction, (RaycastHit2D?)null, distance, minDepth, maxDepth), Duration);
 			return result;
 		}
 
@@ -342,7 +352,7 @@ namespace Vertx.Debugging
 		public static int CircleCast(Vector2 origin, float radius, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
 		{
 			int count = Physics2D.CircleCast(origin, radius, direction, contactFilter, results);
-			D.raw(new CircleCastAll(origin, radius, direction, results));
+			D.raw(new CircleCastAll(origin, radius, direction, results), Duration);
 			return count;
 		}
 
@@ -350,7 +360,7 @@ namespace Vertx.Debugging
 		public static int CircleCast(Vector2 origin, float radius, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.CircleCast(origin, radius, direction, contactFilter, results, distance);
-			D.raw(new CircleCastAll(origin, radius, direction, results, distance));
+			D.raw(new CircleCastAll(origin, radius, direction, results, distance), Duration);
 			return count;
 		}
 
@@ -358,7 +368,7 @@ namespace Vertx.Debugging
 		public static int CircleCast(Vector2 origin, float radius, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = Mathf.Infinity)
 		{
 			int count = Physics2D.CircleCast(origin, radius, direction, contactFilter, results, distance);
-			D.raw(new CircleCastAll(origin, radius, direction, results, distance));
+			D.raw(new CircleCastAll(origin, radius, direction, results, distance), Duration);
 			return count;
 		}
 
@@ -366,7 +376,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction)
 		{
 			RaycastHit2D[] results = Physics2D.CircleCastAll(origin, radius, direction);
-			D.raw(new CircleCastAll(origin, radius, direction, results));
+			D.raw(new CircleCastAll(origin, radius, direction, results), Duration);
 			return results;
 		}
 
@@ -374,7 +384,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction, float distance)
 		{
 			RaycastHit2D[] results = Physics2D.CircleCastAll(origin, radius, direction, distance);
-			D.raw(new CircleCastAll(origin, radius, direction, results, distance));
+			D.raw(new CircleCastAll(origin, radius, direction, results, distance), Duration);
 			return results;
 		}
 
@@ -382,7 +392,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask)
 		{
 			RaycastHit2D[] results = Physics2D.CircleCastAll(origin, radius, direction, distance, layerMask);
-			D.raw(new CircleCastAll(origin, radius, direction, results, distance));
+			D.raw(new CircleCastAll(origin, radius, direction, results, distance), Duration);
 			return results;
 		}
 
@@ -390,7 +400,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
 			RaycastHit2D[] results = Physics2D.CircleCastAll(origin, radius, direction, distance, layerMask, minDepth);
-			D.raw(new CircleCastAll(origin, radius, direction, results, distance, minDepth));
+			D.raw(new CircleCastAll(origin, radius, direction, results, distance, minDepth), Duration);
 			return results;
 		}
 
@@ -398,7 +408,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CircleCastAll(Vector2 origin, float radius, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D[] results = Physics2D.CircleCastAll(origin, radius, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CircleCastAll(origin, radius, direction, results, distance, minDepth, maxDepth));
+			D.raw(new CircleCastAll(origin, radius, direction, results, distance, minDepth, maxDepth), Duration);
 			return results;
 		}
 
@@ -407,7 +417,7 @@ namespace Vertx.Debugging
 		public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results)
 		{
 			int count = Physics2D.CircleCastNonAlloc(origin, radius, direction, results);
-			D.raw(new CircleCastAll(origin, radius, direction, results, count));
+			D.raw(new CircleCastAll(origin, radius, direction, results, count), Duration);
 			return count;
 		}
 
@@ -415,7 +425,7 @@ namespace Vertx.Debugging
 		public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.CircleCastNonAlloc(origin, radius, direction, results, distance);
-			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance));
+			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -423,7 +433,7 @@ namespace Vertx.Debugging
 		public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
 		{
 			int count = Physics2D.CircleCastNonAlloc(origin, radius, direction, results, distance, layerMask);
-			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance));
+			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -431,7 +441,7 @@ namespace Vertx.Debugging
 		public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
 		{
 			int count = Physics2D.CircleCastNonAlloc(origin, radius, direction, results, distance, layerMask, minDepth);
-			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance, minDepth));
+			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance, minDepth), Duration);
 			return count;
 		}
 
@@ -439,7 +449,7 @@ namespace Vertx.Debugging
 		public static int CircleCastNonAlloc(Vector2 origin, float radius, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.CircleCastNonAlloc(origin, radius, direction, results, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance, minDepth, maxDepth));
+			D.raw(new CircleCastAll(origin, radius, direction, results, count, distance, minDepth, maxDepth), Duration);
 			return count;
 		}
 #endif
@@ -448,7 +458,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction)
 		{
 			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result));
+			D.raw(new BoxCast2D(origin, size, angle, direction, result), Duration);
 			return result;
 		}
 
@@ -456,7 +466,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance)
 		{
 			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction, distance);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance));
+			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance), Duration);
 			return result;
 		}
 
@@ -464,7 +474,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask)
 		{
 			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction, distance, layerMask);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance));
+			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance), Duration);
 			return result;
 		}
 
@@ -472,7 +482,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
 			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction, distance, layerMask, minDepth);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance, minDepth));
+			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance, minDepth), Duration);
 			return result;
 		}
 
@@ -480,7 +490,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance, minDepth, maxDepth));
+			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance, minDepth, maxDepth), Duration);
 			return result;
 		}
 
@@ -488,7 +498,7 @@ namespace Vertx.Debugging
 		public static int BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
 		{
 			int count = Physics2D.BoxCast(origin, size, angle, direction, contactFilter, results);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count), Duration);
 			return count;
 		}
 
@@ -496,7 +506,7 @@ namespace Vertx.Debugging
 		public static int BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.BoxCast(origin, size, angle, direction, contactFilter, results, distance);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -504,7 +514,7 @@ namespace Vertx.Debugging
 		public static int BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = Mathf.Infinity)
 		{
 			int count = Physics2D.BoxCast(origin, size, angle, direction, contactFilter, results, distance);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -512,7 +522,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction)
 		{
 			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results), Duration);
 			return results;
 		}
 
@@ -520,7 +530,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance)
 		{
 			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction, distance);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance), Duration);
 			return results;
 		}
 
@@ -528,7 +538,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask)
 		{
 			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction, distance, layerMask);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance), Duration);
 			return results;
 		}
 
@@ -536,7 +546,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
 			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction, distance, layerMask, minDepth);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance, minDepth));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance, minDepth), Duration);
 			return results;
 		}
 
@@ -544,7 +554,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance, minDepth, maxDepth));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance, minDepth, maxDepth), Duration);
 			return results;
 		}
 
@@ -553,7 +563,7 @@ namespace Vertx.Debugging
 		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results)
 		{
 			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count), Duration);
 			return count;
 		}
 
@@ -561,7 +571,7 @@ namespace Vertx.Debugging
 		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results, distance);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -569,7 +579,7 @@ namespace Vertx.Debugging
 		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
 		{
 			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results, distance, layerMask);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -577,7 +587,7 @@ namespace Vertx.Debugging
 		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
 		{
 			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results, distance, layerMask, minDepth);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance, minDepth));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance, minDepth), Duration);
 			return count;
 		}
 
@@ -585,7 +595,7 @@ namespace Vertx.Debugging
 		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results, distance, layerMask, minDepth, maxDepth);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance, minDepth, maxDepth));
+			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance, minDepth, maxDepth), Duration);
 			return count;
 		}
 #endif
@@ -594,7 +604,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction)
 		{
 			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result));
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result), Duration);
 			return result;
 		}
 
@@ -602,7 +612,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance)
 		{
 			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, distance);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance));
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance), Duration);
 			return result;
 		}
 
@@ -610,7 +620,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask)
 		{
 			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, distance, layerMask);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance));
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance), Duration);
 			return result;
 		}
 
@@ -618,7 +628,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
 			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance, minDepth));
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance, minDepth), Duration);
 			return result;
 		}
 
@@ -626,7 +636,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance, minDepth, maxDepth));
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance, minDepth, maxDepth), Duration);
 			return result;
 		}
 
@@ -634,7 +644,7 @@ namespace Vertx.Debugging
 		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
 		{
 			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, contactFilter, results);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count), Duration);
 			return count;
 		}
 
@@ -643,7 +653,7 @@ namespace Vertx.Debugging
 		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, contactFilter, results, distance);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -652,7 +662,7 @@ namespace Vertx.Debugging
 		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = Mathf.Infinity)
 		{
 			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, contactFilter, results);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count), Duration);
 			return count;
 		}
 
@@ -661,7 +671,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction)
 		{
 			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results), Duration);
 			return results;
 		}
 
@@ -669,7 +679,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance)
 		{
 			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance), Duration);
 			return results;
 		}
 
@@ -677,7 +687,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask)
 		{
 			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, layerMask);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance), Duration);
 			return results;
 		}
 
@@ -685,7 +695,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
 			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance, minDepth));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance, minDepth), Duration);
 			return results;
 		}
 
@@ -693,7 +703,7 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance, minDepth, maxDepth));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance, minDepth, maxDepth), Duration);
 			return results;
 		}
 
@@ -702,7 +712,7 @@ namespace Vertx.Debugging
 		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results)
 		{
 			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count), Duration);
 			return count;
 		}
 
@@ -710,7 +720,7 @@ namespace Vertx.Debugging
 		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -718,7 +728,7 @@ namespace Vertx.Debugging
 		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
 		{
 			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, layerMask);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance), Duration);
 			return count;
 		}
 
@@ -726,7 +736,7 @@ namespace Vertx.Debugging
 		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
 		{
 			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, layerMask, minDepth);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance, minDepth));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance, minDepth), Duration);
 			return count;
 		}
 
@@ -734,7 +744,7 @@ namespace Vertx.Debugging
 		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance, minDepth, maxDepth));
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance, minDepth, maxDepth), Duration);
 			return count;
 		}
 #endif
@@ -743,9 +753,9 @@ namespace Vertx.Debugging
 		public static RaycastHit2D GetRayIntersection(UnityEngine.Ray ray)
 		{
 			RaycastHit2D result = Physics2D.GetRayIntersection(ray);
-			D.raw(ray);
+			D.raw(ray, Duration);
 			if (result.collider)
-				D.raw(result);
+				D.raw(result, Duration);
 			return result;
 		}
 
@@ -753,9 +763,9 @@ namespace Vertx.Debugging
 		public static RaycastHit2D GetRayIntersection(UnityEngine.Ray ray, float distance)
 		{
 			RaycastHit2D result = Physics2D.GetRayIntersection(ray, distance);
-			D.raw(new Raycast(ray, null, distance));
+			D.raw(new Raycast(ray, null, distance), Duration);
 			if (result.collider)
-				D.raw(result);
+				D.raw(result, Duration);
 			return result;
 		}
 
@@ -763,9 +773,9 @@ namespace Vertx.Debugging
 		public static RaycastHit2D GetRayIntersection(UnityEngine.Ray ray, float distance, int layerMask)
 		{
 			RaycastHit2D result = Physics2D.GetRayIntersection(ray, distance, layerMask);
-			D.raw(new Raycast(ray, null, distance));
+			D.raw(new Raycast(ray, null, distance), Duration);
 			if (result.collider)
-				D.raw(result);
+				D.raw(result, Duration);
 			return result;
 		}
 
@@ -773,9 +783,9 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] GetRayIntersectionAll(UnityEngine.Ray ray)
 		{
 			RaycastHit2D[] results = Physics2D.GetRayIntersectionAll(ray);
-			D.raw(ray);
+			D.raw(ray, Duration);
 			foreach (RaycastHit2D result in results)
-				D.raw(result);
+				D.raw(result, Duration);
 			return results;
 		}
 
@@ -783,9 +793,9 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] GetRayIntersectionAll(UnityEngine.Ray ray, float distance)
 		{
 			RaycastHit2D[] results = Physics2D.GetRayIntersectionAll(ray, distance);
-			D.raw(new Raycast(ray, null, distance));
+			D.raw(new Raycast(ray, null, distance), Duration);
 			foreach (RaycastHit2D result in results)
-				D.raw(result);
+				D.raw(result, Duration);
 			return results;
 		}
 
@@ -793,9 +803,9 @@ namespace Vertx.Debugging
 		public static RaycastHit2D[] GetRayIntersectionAll(UnityEngine.Ray ray, float distance, int layerMask)
 		{
 			RaycastHit2D[] results = Physics2D.GetRayIntersectionAll(ray, distance, layerMask);
-			D.raw(new Raycast(ray, null, distance));
+			D.raw(new Raycast(ray, null, distance), Duration);
 			foreach (RaycastHit2D result in results)
-				D.raw(result);
+				D.raw(result, Duration);
 			return results;
 		}
 
@@ -804,9 +814,9 @@ namespace Vertx.Debugging
 		public static int GetRayIntersectionNonAlloc(UnityEngine.Ray ray, RaycastHit2D[] results)
 		{
 			int count = Physics2D.GetRayIntersectionNonAlloc(ray, results);
-			D.raw(ray);
+			D.raw(ray, Duration);
 			for (var i = 0; i < count; i++)
-				D.raw(results[i]);
+				D.raw(results[i], Duration);
 			return count;
 		}
 
@@ -814,9 +824,9 @@ namespace Vertx.Debugging
 		public static int GetRayIntersectionNonAlloc(UnityEngine.Ray ray, RaycastHit2D[] results, float distance)
 		{
 			int count = Physics2D.GetRayIntersectionNonAlloc(ray, results, distance);
-			D.raw(new Raycast(ray, null, distance));
+			D.raw(new Raycast(ray, null, distance), Duration);
 			for (var i = 0; i < count; i++)
-				D.raw(results[i]);
+				D.raw(results[i], Duration);
 			return count;
 		}
 #endif
@@ -825,9 +835,9 @@ namespace Vertx.Debugging
 		public static int GetRayIntersectionNonAlloc(UnityEngine.Ray ray, RaycastHit2D[] results, float distance, int layerMask)
 		{
 			int count = Physics2D.GetRayIntersectionNonAlloc(ray, results, distance, layerMask);
-			D.raw(new Raycast(ray, null, distance));
+			D.raw(new Raycast(ray, null, distance), Duration);
 			for (var i = 0; i < count; i++)
-				D.raw(results[i]);
+				D.raw(results[i], Duration);
 			return count;
 		}
 
@@ -835,8 +845,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapPoint(Vector2 point)
 		{
 			Collider2D result = Physics2D.OverlapPoint(point);
-			D.raw(new Point2D(point), result);
-			D.raw(result, HitColor);
+			D.raw(new Point2D(point), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -844,8 +854,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapPoint(Vector2 point, int layerMask)
 		{
 			Collider2D result = Physics2D.OverlapPoint(point, layerMask);
-			D.raw(new Point2D(point), result);
-			D.raw(result, HitColor);
+			D.raw(new Point2D(point), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -853,8 +863,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapPoint(Vector2 point, int layerMask, float minDepth)
 		{
 			Collider2D result = Physics2D.OverlapPoint(point, layerMask, minDepth);
-			D.raw(new Point2D(point, minDepth), result);
-			D.raw(result, HitColor);
+			D.raw(new Point2D(point, minDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -862,10 +872,10 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapPoint(Vector2 point, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D result = Physics2D.OverlapPoint(point, layerMask, minDepth, maxDepth);
-			D.raw(new Point2D(point, minDepth), result);
+			D.raw(new Point2D(point, minDepth), result, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Point2D(point, maxDepth), result);
-			D.raw(result, HitColor);
+				D.raw(new Point2D(point, maxDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -873,9 +883,9 @@ namespace Vertx.Debugging
 		public static int OverlapPoint(Vector2 point, ContactFilter2D contactFilter, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapPoint(point, contactFilter, results);
-			D.raw(new Point2D(point), count > 0);
+			D.raw(new Point2D(point), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -883,9 +893,9 @@ namespace Vertx.Debugging
 		public static int OverlapPoint(Vector2 point, ContactFilter2D contactFilter, List<Collider2D> results)
 		{
 			int count = Physics2D.OverlapPoint(point, contactFilter, results);
-			D.raw(new Point2D(point), count > 0);
+			D.raw(new Point2D(point), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -893,9 +903,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapPointAll(Vector2 point)
 		{
 			Collider2D[] results = Physics2D.OverlapPointAll(point);
-			D.raw(new Point2D(point), results.Length > 0);
+			D.raw(new Point2D(point), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -903,9 +913,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapPointAll(Vector2 point, int layerMask)
 		{
 			Collider2D[] results = Physics2D.OverlapPointAll(point, layerMask);
-			D.raw(new Point2D(point), results.Length > 0);
+			D.raw(new Point2D(point), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -913,9 +923,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapPointAll(Vector2 point, int layerMask, float minDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapPointAll(point, layerMask, minDepth);
-			D.raw(new Point2D(point, minDepth), results.Length > 0);
+			D.raw(new Point2D(point, minDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -923,11 +933,11 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapPointAll(Vector2 point, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapPointAll(point, layerMask, minDepth, maxDepth);
-			D.raw(new Point2D(point, minDepth), results.Length > 0);
+			D.raw(new Point2D(point, minDepth), results.Length > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Point2D(point, maxDepth), results.Length > 0);
+				D.raw(new Point2D(point, maxDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -936,11 +946,11 @@ namespace Vertx.Debugging
 		public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapPointNonAlloc(point, results);
-			D.raw(new Point2D(point), results.Length > 0);
+			D.raw(new Point2D(point), results.Length > 0, Duration);
 			for (int i = 0; i < count; i++)
 			{
 				Collider2D collider = results[i];
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			}
 
 			return count;
@@ -950,11 +960,11 @@ namespace Vertx.Debugging
 		public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results, int layerMask)
 		{
 			int count = Physics2D.OverlapPointNonAlloc(point, results, layerMask);
-			D.raw(new Point2D(point), results.Length > 0);
+			D.raw(new Point2D(point), results.Length > 0, Duration);
 			for (int i = 0; i < count; i++)
 			{
 				Collider2D collider = results[i];
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			}
 
 			return count;
@@ -964,11 +974,11 @@ namespace Vertx.Debugging
 		public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results, int layerMask, float minDepth)
 		{
 			int count = Physics2D.OverlapPointNonAlloc(point, results, layerMask, minDepth);
-			D.raw(new Point2D(point, minDepth), results.Length > 0);
+			D.raw(new Point2D(point, minDepth), results.Length > 0, Duration);
 			for (int i = 0; i < count; i++)
 			{
 				Collider2D collider = results[i];
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			}
 
 			return count;
@@ -978,13 +988,13 @@ namespace Vertx.Debugging
 		public static int OverlapPointNonAlloc(Vector2 point, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.OverlapPointNonAlloc(point, results, layerMask, minDepth, maxDepth);
-			D.raw(new Point2D(point, minDepth), results.Length > 0);
+			D.raw(new Point2D(point, minDepth), results.Length > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Point2D(point, maxDepth), results.Length > 0);
+				D.raw(new Point2D(point, maxDepth), results.Length > 0, Duration);
 			for (int i = 0; i < count; i++)
 			{
 				Collider2D collider = results[i];
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			}
 
 			return count;
@@ -995,8 +1005,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapCircle(Vector2 point, float radius)
 		{
 			Collider2D result = Physics2D.OverlapCircle(point, radius);
-			D.raw(new Circle2D(point, radius), result);
-			D.raw(result, HitColor);
+			D.raw(new Circle2D(point, radius), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1004,8 +1014,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapCircle(Vector2 point, float radius, int layerMask)
 		{
 			Collider2D result = Physics2D.OverlapCircle(point, radius, layerMask);
-			D.raw(new Circle2D(point, radius), result);
-			D.raw(result, HitColor);
+			D.raw(new Circle2D(point, radius), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1013,8 +1023,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapCircle(Vector2 point, float radius, int layerMask, float minDepth)
 		{
 			Collider2D result = Physics2D.OverlapCircle(point, radius, layerMask, minDepth);
-			D.raw(new Circle2D(point, radius, minDepth), result);
-			D.raw(result, HitColor);
+			D.raw(new Circle2D(point, radius, minDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1023,10 +1033,10 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapCircle(Vector2 point, float radius, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D result = Physics2D.OverlapCircle(point, radius, layerMask, minDepth, maxDepth);
-			D.raw(new Circle2D(point, radius, minDepth), result);
+			D.raw(new Circle2D(point, radius, minDepth), result, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Circle2D(point, radius, maxDepth), result);
-			D.raw(result, HitColor);
+				D.raw(new Circle2D(point, radius, maxDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1034,9 +1044,9 @@ namespace Vertx.Debugging
 		public static int OverlapCircle(Vector2 point, float radius, ContactFilter2D contactFilter, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapCircle(point, radius, contactFilter, results);
-			D.raw(new Circle2D(point, radius), count > 0);
+			D.raw(new Circle2D(point, radius), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1044,9 +1054,9 @@ namespace Vertx.Debugging
 		public static int OverlapCircle(Vector2 point, float radius, ContactFilter2D contactFilter, List<Collider2D> results)
 		{
 			int count = Physics2D.OverlapCircle(point, radius, contactFilter, results);
-			D.raw(new Circle2D(point, radius), count > 0);
+			D.raw(new Circle2D(point, radius), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1054,9 +1064,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapCircleAll(Vector2 point, float radius)
 		{
 			Collider2D[] results = Physics2D.OverlapCircleAll(point, radius);
-			D.raw(new Circle2D(point, radius), results.Length > 0);
+			D.raw(new Circle2D(point, radius), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1064,9 +1074,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapCircleAll(Vector2 point, float radius, int layerMask)
 		{
 			Collider2D[] results = Physics2D.OverlapCircleAll(point, radius, layerMask);
-			D.raw(new Circle2D(point, radius), results.Length > 0);
+			D.raw(new Circle2D(point, radius), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1074,9 +1084,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapCircleAll(Vector2 point, float radius, int layerMask, float minDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapCircleAll(point, radius, layerMask, minDepth);
-			D.raw(new Circle2D(point, radius, minDepth), results.Length > 0);
+			D.raw(new Circle2D(point, radius, minDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1084,11 +1094,11 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapCircleAll(Vector2 point, float radius, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapCircleAll(point, radius, layerMask, minDepth, maxDepth);
-			D.raw(new Circle2D(point, radius, minDepth), results.Length > 0);
+			D.raw(new Circle2D(point, radius, minDepth), results.Length > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Circle2D(point, radius, maxDepth), results.Length > 0);
+				D.raw(new Circle2D(point, radius, maxDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1097,9 +1107,9 @@ namespace Vertx.Debugging
 		public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapCircleNonAlloc(point, radius, results);
-			D.raw(new Circle2D(point, radius), count > 0);
+			D.raw(new Circle2D(point, radius), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1107,9 +1117,9 @@ namespace Vertx.Debugging
 		public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results, int layerMask)
 		{
 			int count = Physics2D.OverlapCircleNonAlloc(point, radius, results, layerMask);
-			D.raw(new Circle2D(point, radius), count > 0);
+			D.raw(new Circle2D(point, radius), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1117,9 +1127,9 @@ namespace Vertx.Debugging
 		public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results, int layerMask, float minDepth)
 		{
 			int count = Physics2D.OverlapCircleNonAlloc(point, radius, results, layerMask, minDepth);
-			D.raw(new Circle2D(point, radius, minDepth), count > 0);
+			D.raw(new Circle2D(point, radius, minDepth), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1127,11 +1137,11 @@ namespace Vertx.Debugging
 		public static int OverlapCircleNonAlloc(Vector2 point, float radius, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.OverlapCircleNonAlloc(point, radius, results, layerMask, minDepth, maxDepth);
-			D.raw(new Circle2D(point, radius, minDepth), count > 0);
+			D.raw(new Circle2D(point, radius, minDepth), count > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Circle2D(point, radius, minDepth), count > 0);
+				D.raw(new Circle2D(point, radius, minDepth), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 #endif
@@ -1140,8 +1150,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle)
 		{
 			Collider2D result = Physics2D.OverlapBox(point, size, angle);
-			D.raw(new Box2D(point, size, angle), result);
-			D.raw(result, HitColor);
+			D.raw(new Box2D(point, size, angle), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1149,8 +1159,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle, int layerMask)
 		{
 			Collider2D result = Physics2D.OverlapBox(point, size, angle, layerMask);
-			D.raw(new Box2D(point, size, angle), result);
-			D.raw(result, HitColor);
+			D.raw(new Box2D(point, size, angle), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1158,8 +1168,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth)
 		{
 			Collider2D result = Physics2D.OverlapBox(point, size, angle, layerMask, minDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), result);
-			D.raw(result, HitColor);
+			D.raw(new Box2D(point, size, angle, minDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1167,10 +1177,10 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D result = Physics2D.OverlapBox(point, size, angle, layerMask, minDepth, maxDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), result);
+			D.raw(new Box2D(point, size, angle, minDepth), result, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Box2D(point, size, angle, maxDepth), result);
-			D.raw(result, HitColor);
+				D.raw(new Box2D(point, size, angle, maxDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1178,9 +1188,9 @@ namespace Vertx.Debugging
 		public static int OverlapBox(Vector2 point, Vector2 size, float angle, ContactFilter2D contactFilter, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapBox(point, size, angle, contactFilter, results);
-			D.raw(new Box2D(point, size, angle), count > 0);
+			D.raw(new Box2D(point, size, angle), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1188,9 +1198,9 @@ namespace Vertx.Debugging
 		public static int OverlapBox(Vector2 point, Vector2 size, float angle, ContactFilter2D contactFilter, List<Collider2D> results)
 		{
 			int count = Physics2D.OverlapBox(point, size, angle, contactFilter, results);
-			D.raw(new Box2D(point, size, angle), count > 0);
+			D.raw(new Box2D(point, size, angle), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1198,9 +1208,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle)
 		{
 			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angle);
-			D.raw(new Box2D(point, size, angle), results.Length > 0);
+			D.raw(new Box2D(point, size, angle), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1208,9 +1218,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask)
 		{
 			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angle, layerMask);
-			D.raw(new Box2D(point, size, angle), results.Length > 0);
+			D.raw(new Box2D(point, size, angle), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1218,9 +1228,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angle, layerMask, minDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), results.Length > 0);
+			D.raw(new Box2D(point, size, angle, minDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1228,11 +1238,11 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angle, layerMask, minDepth, maxDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), results.Length > 0);
+			D.raw(new Box2D(point, size, angle, minDepth), results.Length > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Box2D(point, size, angle, maxDepth), results.Length > 0);
+				D.raw(new Box2D(point, size, angle, maxDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1241,9 +1251,9 @@ namespace Vertx.Debugging
 		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results);
-			D.raw(new Box2D(point, size, angle), count > 0);
+			D.raw(new Box2D(point, size, angle), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1251,9 +1261,9 @@ namespace Vertx.Debugging
 		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask)
 		{
 			int count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results, layerMask);
-			D.raw(new Box2D(point, size, angle), count > 0);
+			D.raw(new Box2D(point, size, angle), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1261,9 +1271,9 @@ namespace Vertx.Debugging
 		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask, float minDepth)
 		{
 			int count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results, layerMask, minDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), count > 0);
+			D.raw(new Box2D(point, size, angle, minDepth), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1271,11 +1281,11 @@ namespace Vertx.Debugging
 		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results, layerMask, minDepth, maxDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), count > 0);
+			D.raw(new Box2D(point, size, angle, minDepth), count > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Box2D(point, size, angle, maxDepth), count > 0);
+				D.raw(new Box2D(point, size, angle, maxDepth), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 #endif
@@ -1284,8 +1294,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapArea(Vector2 pointA, Vector2 pointB)
 		{
 			Collider2D result = Physics2D.OverlapArea(pointA, pointB);
-			D.raw(new Area2D(pointA, pointB), result);
-			D.raw(result, HitColor);
+			D.raw(new Area2D(pointA, pointB), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1293,8 +1303,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapArea(Vector2 pointA, Vector2 pointB, int layerMask)
 		{
 			Collider2D result = Physics2D.OverlapArea(pointA, pointB, layerMask);
-			D.raw(new Area2D(pointA, pointB), result);
-			D.raw(result, HitColor);
+			D.raw(new Area2D(pointA, pointB), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1302,8 +1312,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapArea(Vector2 pointA, Vector2 pointB, int layerMask, float minDepth)
 		{
 			Collider2D result = Physics2D.OverlapArea(pointA, pointB, layerMask, minDepth);
-			D.raw(new Area2D(pointA, pointB, minDepth), result);
-			D.raw(result, HitColor);
+			D.raw(new Area2D(pointA, pointB, minDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1311,10 +1321,10 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapArea(Vector2 pointA, Vector2 pointB, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D result = Physics2D.OverlapArea(pointA, pointB, layerMask, minDepth, maxDepth);
-			D.raw(new Area2D(pointA, pointB, minDepth), result);
+			D.raw(new Area2D(pointA, pointB, minDepth), result, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Area2D(pointA, pointB, maxDepth), result);
-			D.raw(result, HitColor);
+				D.raw(new Area2D(pointA, pointB, maxDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1322,9 +1332,9 @@ namespace Vertx.Debugging
 		public static int OverlapArea(Vector2 pointA, Vector2 pointB, ContactFilter2D contactFilter, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapArea(pointA, pointB, contactFilter, results);
-			D.raw(new Box2D(pointA, pointB), count > 0);
+			D.raw(new Box2D(pointA, pointB), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1332,9 +1342,9 @@ namespace Vertx.Debugging
 		public static int OverlapArea(Vector2 pointA, Vector2 pointB, ContactFilter2D contactFilter, List<Collider2D> results)
 		{
 			int count = Physics2D.OverlapArea(pointA, pointB, contactFilter, results);
-			D.raw(new Box2D(pointA, pointB), count > 0);
+			D.raw(new Box2D(pointA, pointB), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1342,9 +1352,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapAreaAll(Vector2 pointA, Vector2 pointB)
 		{
 			Collider2D[] results = Physics2D.OverlapAreaAll(pointA, pointB);
-			D.raw(new Area2D(pointA, pointB), results.Length > 0);
+			D.raw(new Area2D(pointA, pointB), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1352,9 +1362,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapAreaAll(Vector2 pointA, Vector2 pointB, int layerMask)
 		{
 			Collider2D[] results = Physics2D.OverlapAreaAll(pointA, pointB, layerMask);
-			D.raw(new Area2D(pointA, pointB), results.Length > 0);
+			D.raw(new Area2D(pointA, pointB), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1362,9 +1372,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapAreaAll(Vector2 pointA, Vector2 pointB, int layerMask, float minDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapAreaAll(pointA, pointB, layerMask, minDepth);
-			D.raw(new Area2D(pointA, pointB, minDepth), results.Length > 0);
+			D.raw(new Area2D(pointA, pointB, minDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1372,11 +1382,11 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapAreaAll(Vector2 pointA, Vector2 pointB, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapAreaAll(pointA, pointB, layerMask, minDepth, maxDepth);
-			D.raw(new Area2D(pointA, pointB, minDepth), results.Length > 0);
+			D.raw(new Area2D(pointA, pointB, minDepth), results.Length > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Area2D(pointA, pointB, maxDepth), results.Length > 0);
+				D.raw(new Area2D(pointA, pointB, maxDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1385,9 +1395,9 @@ namespace Vertx.Debugging
 		public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapAreaNonAlloc(pointA, pointB, results);
-			D.raw(new Area2D(pointA, pointB), count > 0);
+			D.raw(new Area2D(pointA, pointB), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1395,9 +1405,9 @@ namespace Vertx.Debugging
 		public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results, int layerMask)
 		{
 			int count = Physics2D.OverlapAreaNonAlloc(pointA, pointB, results, layerMask);
-			D.raw(new Area2D(pointA, pointB), count > 0);
+			D.raw(new Area2D(pointA, pointB), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1405,9 +1415,9 @@ namespace Vertx.Debugging
 		public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results, int layerMask, float minDepth)
 		{
 			int count = Physics2D.OverlapAreaNonAlloc(pointA, pointB, results, layerMask, minDepth);
-			D.raw(new Area2D(pointA, pointB, minDepth), count > 0);
+			D.raw(new Area2D(pointA, pointB, minDepth), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1415,11 +1425,11 @@ namespace Vertx.Debugging
 		public static int OverlapAreaNonAlloc(Vector2 pointA, Vector2 pointB, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.OverlapAreaNonAlloc(pointA, pointB, results, layerMask, minDepth, maxDepth);
-			D.raw(new Area2D(pointA, pointB, minDepth), count > 0);
+			D.raw(new Area2D(pointA, pointB, minDepth), count > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Area2D(pointA, pointB, maxDepth), count > 0);
+				D.raw(new Area2D(pointA, pointB, maxDepth), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 #endif
@@ -1428,8 +1438,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle)
 		{
 			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angle);
-			D.raw(new Capsule2D(point, size, direction, angle), result);
-			D.raw(result, HitColor);
+			D.raw(new Capsule2D(point, size, direction, angle), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1437,8 +1447,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask)
 		{
 			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angle, layerMask);
-			D.raw(new Capsule2D(point, size, direction, angle), result);
-			D.raw(result, HitColor);
+			D.raw(new Capsule2D(point, size, direction, angle), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1446,8 +1456,8 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth)
 		{
 			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angle, layerMask, minDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), result);
-			D.raw(result, HitColor);
+			D.raw(new Capsule2D(point, size, direction, angle, minDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1455,10 +1465,10 @@ namespace Vertx.Debugging
 		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angle, layerMask, minDepth, maxDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), result);
+			D.raw(new Capsule2D(point, size, direction, angle, minDepth), result, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), result);
-			D.raw(result, HitColor);
+				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), result, Duration);
+			D.raw(result, HitColor, Duration);
 			return result;
 		}
 
@@ -1466,9 +1476,9 @@ namespace Vertx.Debugging
 		public static int OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, ContactFilter2D contactFilter, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapCapsule(point, size, direction, angle, contactFilter, results);
-			D.raw(new Capsule2D(point, size, direction, angle), count > 0);
+			D.raw(new Capsule2D(point, size, direction, angle), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1476,9 +1486,9 @@ namespace Vertx.Debugging
 		public static int OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, ContactFilter2D contactFilter, List<Collider2D> results)
 		{
 			int count = Physics2D.OverlapCapsule(point, size, direction, angle, contactFilter, results);
-			D.raw(new Capsule2D(point, size, direction, angle), count > 0);
+			D.raw(new Capsule2D(point, size, direction, angle), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1486,9 +1496,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle)
 		{
 			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angle);
-			D.raw(new Capsule2D(point, size, direction, angle), results.Length > 0);
+			D.raw(new Capsule2D(point, size, direction, angle), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1496,9 +1506,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask)
 		{
 			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angle, layerMask);
-			D.raw(new Capsule2D(point, size, direction, angle), results.Length > 0);
+			D.raw(new Capsule2D(point, size, direction, angle), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1506,9 +1516,9 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angle, layerMask, minDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), results.Length > 0);
+			D.raw(new Capsule2D(point, size, direction, angle, minDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1516,11 +1526,11 @@ namespace Vertx.Debugging
 		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth, float maxDepth)
 		{
 			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angle, layerMask, minDepth, maxDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), results.Length > 0);
+			D.raw(new Capsule2D(point, size, direction, angle, minDepth), results.Length > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), results.Length > 0);
+				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), results.Length > 0, Duration);
 			foreach (Collider2D collider in results)
-				D.raw(collider, HitColor);
+				D.raw(collider, HitColor, Duration);
 			return results;
 		}
 
@@ -1529,9 +1539,9 @@ namespace Vertx.Debugging
 		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results)
 		{
 			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results);
-			D.raw(new Capsule2D(point, size, direction, angle), count > 0);
+			D.raw(new Capsule2D(point, size, direction, angle), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1539,9 +1549,9 @@ namespace Vertx.Debugging
 		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask)
 		{
 			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask);
-			D.raw(new Capsule2D(point, size, direction, angle), count > 0);
+			D.raw(new Capsule2D(point, size, direction, angle), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1549,9 +1559,9 @@ namespace Vertx.Debugging
 		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask, float minDepth)
 		{
 			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask, minDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), count > 0);
+			D.raw(new Capsule2D(point, size, direction, angle, minDepth), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1559,11 +1569,11 @@ namespace Vertx.Debugging
 		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
 		{
 			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask, minDepth, maxDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), count > 0);
+			D.raw(new Capsule2D(point, size, direction, angle, minDepth), count > 0, Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), count > 0);
+				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), count > 0, Duration);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 #endif
@@ -1573,7 +1583,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.OverlapCollider(collider, contactFilter, results);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1582,7 +1592,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.OverlapCollider(collider, contactFilter, results);
 			for (int i = 0; i < count; i++)
-				D.raw(results[i], HitColor);
+				D.raw(results[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1591,7 +1601,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider1, collider2, contactFilter, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1600,7 +1610,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1609,7 +1619,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider, contactFilter, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1618,7 +1628,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider, colliders);
 			for (int i = 0; i < count; i++)
-				D.raw(colliders[i], HitColor);
+				D.raw(colliders[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1627,7 +1637,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider, contactFilter, colliders);
 			for (int i = 0; i < count; i++)
-				D.raw(colliders[i], HitColor);
+				D.raw(colliders[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1636,7 +1646,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(rigidbody, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1645,7 +1655,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(rigidbody, contactFilter, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1654,7 +1664,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(rigidbody, colliders);
 			for (int i = 0; i < count; i++)
-				D.raw(colliders[i], HitColor);
+				D.raw(colliders[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1663,7 +1673,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(rigidbody, contactFilter, colliders);
 			for (int i = 0; i < count; i++)
-				D.raw(colliders[i], HitColor);
+				D.raw(colliders[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1672,7 +1682,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider1, collider2, contactFilter, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1681,7 +1691,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1690,7 +1700,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider, contactFilter, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1699,7 +1709,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider, colliders);
 			for (int i = 0; i < count; i++)
-				D.raw(colliders[i], HitColor);
+				D.raw(colliders[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1708,7 +1718,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(collider, contactFilter, colliders);
 			for (int i = 0; i < count; i++)
-				D.raw(colliders[i], HitColor);
+				D.raw(colliders[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1717,7 +1727,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(rigidbody, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1726,7 +1736,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(rigidbody, contactFilter, contacts);
 			for (int i = 0; i < count; i++)
-				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor);
+				D.raw(new Shape.Ray2D(contacts[i].point, contacts[i].normal, contacts[i].collider.transform.position.z), HitColor, Duration);
 			return count;
 		}
 
@@ -1735,7 +1745,7 @@ namespace Vertx.Debugging
 		{
 			int count = Physics2D.GetContacts(rigidbody, colliders);
 			for (int i = 0; i < count; i++)
-				D.raw(colliders[i], HitColor);
+				D.raw(colliders[i], HitColor, Duration);
 			return count;
 		}
 
@@ -1744,7 +1754,7 @@ namespace Vertx.Debugging
 		{
         	int count = Physics2D.GetContacts(rigidbody, contactFilter, colliders);
         	for (int i = 0; i < count; i++)
-        		D.raw(colliders[i], HitColor);
+        		D.raw(colliders[i], HitColor, Duration);
         	return count;
         }
 	}
