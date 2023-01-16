@@ -4,18 +4,13 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [2.0.3]
-### Added
-- Added DrawPhysics.Duration and DrawPhysics2D.Duration to allow for drawing physics casts for a longer duration.  
-  These calls will be stripped. Duration needs to be reset manually.
-
-## [2.0.2]
-### Fixed
-- Removed stray meta file.
-
-## [2.0.1]
+## [2.0.1 to 2.0.4]
 ### Fixed
 - Native collection disposal in certain scenarios where no shapes are being drawn.
+- Removed stray meta file.
+## Added
+- Added DrawPhysicsSettings.Duration and DrawPhysicsSettings.SetDuration to override the length of time the casts draw for. You will need to reset this value manually.
+  Calls to `Duration` cannot be stripped, I would recommend using SetDuration if this is important to you.
 
 ## [2.0.0]
 ### Fixed
