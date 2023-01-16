@@ -32,7 +32,7 @@ If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.ma
 
 ### Code stripping
 Calls to these methods are stripped when building. You do not have to remove code or use defines.  
-If your code spans many statements, only the method call will be stripped.
+If your code spans many statements, only the method call will be stripped. 
 
 ---
   
@@ -48,7 +48,8 @@ You can replace calls to `Physics` and `Physics2D` methods with `DrawPhysics` an
 int count = DrawPhysics.RaycastNonAlloc(r, results, distance);
 ```
 
-Use `DrawPhysics.Duration` and `DrawPhysics2D.Duration` to override the length of time the casts draw for. You will need to reset this value manually.
+Use `DrawPhysicsSettings.SetDuration` or `Duration` to override the length of time the casts draw for. You will need to reset this value manually.
+Calls to `Duration` cannot be stripped, I would recommend using SetDuration if this is important to you.
 
 ### Code stripping
 The drawing within these methods will be stripped, and the original method is attempted to be inlined, but this is not consistent.  
