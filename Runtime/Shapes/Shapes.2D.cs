@@ -237,7 +237,7 @@ namespace Vertx.Debugging
 				Transform transform = boxCollider.transform;
 				Matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale * ColliderLocalSize(boxCollider));
 			}
-#if UNITY_2022_1_OR_NEWER
+
 			private static Vector2 ColliderLocalSize(BoxCollider2D boxCollider)
 			{
 				if(!boxCollider.autoTiling 
@@ -247,9 +247,7 @@ namespace Vertx.Debugging
 				
 				return renderer.size;
 			}
-#else
-			private static Vector2 ColliderLocalSize(BoxCollider2D boxCollider) => boxCollider.size;
-#endif
+
 #endif
 
 			[Flags]
