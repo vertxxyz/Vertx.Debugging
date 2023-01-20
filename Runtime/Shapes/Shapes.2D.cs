@@ -181,7 +181,7 @@ namespace Vertx.Debugging
 
 			public Circle2D(Vector2 origin, float radius, float z = 0)
 				=> _circle = new Circle(new Vector3(origin.x, origin.y, z), Quaternion.identity, radius);
-			
+
 			internal Circle2D(Vector3 origin, float radius)
 				=> _circle = new Circle(origin, Quaternion.identity, radius);
 
@@ -190,7 +190,9 @@ namespace Vertx.Debugging
 			{
 				Transform transform = circleCollider.transform;
 				Vector3 scale = transform.lossyScale;
-				_circle = new Circle(circleCollider.transform.TransformPoint(circleCollider.offset), Quaternion.identity, circleCollider.radius * Mathf.Max(scale.x, scale.y));
+				Vector3 position = circleCollider.transform.TransformPoint(circleCollider.offset);
+				position.z = transform.position.z;
+				_circle = new Circle(position, Quaternion.identity, circleCollider.radius * Mathf.Max(scale.x, scale.y));
 			}
 #endif
 
@@ -230,21 +232,34 @@ namespace Vertx.Debugging
 			public Box2D(Vector3 origin, Vector2 size, float angle = 0) => Matrix = Matrix4x4.TRS(origin, Quaternion.AngleAxis(angle, Vector3.forward), size);
 
 			public Box2D(Vector3 origin, Quaternion rotation, Vector2 size) => Matrix = Matrix4x4.TRS(origin, rotation, size);
-			
+
 #if VERTX_PHYSICS_2D
+			/// <summary>
+			/// Creates a box using a <see cref="BoxCollider2D"/>.
+			/// This does not support <see cref="BoxCollider2D.edgeRadius"/>, though <see cref="D.raw(Collider2D, Color, float)"/> does.<br/>
+			/// </summary>
 			public Box2D(BoxCollider2D boxCollider)
 			{
-				Transform transform = boxCollider.transform;
-				Matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale * ColliderLocalSize(boxCollider));
+				if (Mathf.Approximately(boxCollider.transform.lossyScale.sqrMagnitude, 0f))
+				{
+					Matrix = Matrix4x4.Scale(new Vector3(0, 0, 0));
+					return;
+				}
+				Matrix4x4 handleMatrix = boxCollider.transform.localToWorldMatrix;
+				handleMatrix.SetRow(0, Vector4.Scale(handleMatrix.GetRow(0), new Vector4(1f, 1f, 0f, 1f)));
+				handleMatrix.SetRow(1, Vector4.Scale(handleMatrix.GetRow(1), new Vector4(1f, 1f, 0f, 1f)));
+				handleMatrix.SetRow(2, new Vector4(0f, 0f, 1f, boxCollider.transform.position.z));
+				
+				Matrix = handleMatrix * Matrix4x4.TRS(boxCollider.offset, Quaternion.identity, ColliderLocalSize(boxCollider));
 			}
 
 			private static Vector2 ColliderLocalSize(BoxCollider2D boxCollider)
 			{
-				if(!boxCollider.autoTiling 
-					|| !boxCollider.TryGetComponent(out SpriteRenderer renderer) 
-					|| renderer.drawMode == SpriteDrawMode.Simple)
+				if (!boxCollider.autoTiling
+				    || !boxCollider.TryGetComponent(out SpriteRenderer renderer)
+				    || renderer.drawMode == SpriteDrawMode.Simple)
 					return boxCollider.size;
-				
+
 				return renderer.size;
 			}
 
@@ -274,7 +289,15 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			private static readonly Vector3[] s_Vertices =
+			internal enum VertexCorner
+			{
+				BottomLeft,
+				TopLeft,
+				TopRight,
+				BottomRight
+			}
+			
+			internal static readonly Vector3[] s_Vertices =
 			{
 				new Vector3(-0.5f, -0.5f, 0), // 0
 				new Vector3(-0.5f, +0.5f, 0), // 1
@@ -289,7 +312,7 @@ namespace Vertx.Debugging
 				2, 3,
 				3, 0
 			};
-			
+
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
 			{
 				Matrix4x4 m = Matrix;
@@ -392,14 +415,14 @@ namespace Vertx.Debugging
 
 				Transform transform = collider.transform;
 				Vector3 origin = transform.TransformPoint(collider.offset);
-				
+
 				Vector2 radius2D = transform.TransformVector(
 					collider.direction == CapsuleDirection2D.Vertical
 						? new Vector3(size.x, 0, 0)
 						: new Vector3(0, size.x, 0)
 				);
 				_radius = radius2D.magnitude;
-				
+
 				Vector2 offset = transform.TransformVector(
 					collider.direction == CapsuleDirection2D.Vertical
 						? new Vector3(0, size.y, 0)
@@ -468,7 +491,7 @@ namespace Vertx.Debugging
 					new Circle2D(_pointA, _radius).Draw(commandBuilder, color, duration);
 					return;
 				}
-				
+
 				Angle halfCircle = Angle.FromTurns(0.5f);
 				commandBuilder.AppendArc(new Arc(_pointA, Vector3.forward, _verticalDirection, _radius, halfCircle), color, duration);
 				commandBuilder.AppendArc(new Arc(_pointB, Vector3.forward, -_verticalDirection, _radius, halfCircle), color, duration);

@@ -49,7 +49,7 @@ int count = DrawPhysics.RaycastNonAlloc(r, results, distance);
 ```
 
 Use `DrawPhysicsSettings.SetDuration` or `Duration` to override the length of time the casts draw for. You will need to reset this value manually.
-Calls to `Duration` cannot be stripped, I would recommend using SetDuration if this is important to you.
+Calls to `Duration` cannot be stripped, I would recommend using `SetDuration` if this is important to you.
 
 ### Code stripping
 The drawing within these methods will be stripped, and the original method is attempted to be inlined, but this is not consistent.  
