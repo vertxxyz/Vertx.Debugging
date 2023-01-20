@@ -4,13 +4,24 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.5]
+### Note
+- If you are seeing an error about a folder not having a meta file, right-click on the Debugging folder, open it in Explorer and delete the Assets folder.  
+  The folder should be empty. (Project\Library\PackageCache\com.vertx.debugging@version\Assets) if Unity has also generated a meta file, delete that too.
+
+### Added
+- Added missing autoTiling, edgeRadius, and offset support to BoxCollider2D drawing.
+
+### Fixed
+- Fixed Z offset issues with nested rotations and scales and 2D Collider drawing.
+
 ## [2.0.1 to 2.0.4]
 ### Fixed
 - Native collection disposal in certain scenarios where no shapes are being drawn.
 - Removed stray meta file.
 ## Added
-- Added DrawPhysicsSettings.Duration and DrawPhysicsSettings.SetDuration to override the length of time the casts draw for. You will need to reset this value manually.
-  Calls to `Duration` cannot be stripped, I would recommend using SetDuration if this is important to you.
+- Added `DrawPhysicsSettings.Duration` and `DrawPhysicsSettings.SetDuration` to override the length of time the casts draw for. You will need to reset this value manually.
+  Calls to `Duration` cannot be stripped, I would recommend using `SetDuration` if this is important to you.
 
 ## [2.0.0]
 ### Fixed
