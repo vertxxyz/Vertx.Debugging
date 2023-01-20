@@ -235,8 +235,19 @@ namespace Vertx.Debugging
 			public Box2D(BoxCollider2D boxCollider)
 			{
 				Transform transform = boxCollider.transform;
-				Matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale * boxCollider.size);
+				Matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale * ColliderLocalSize(boxCollider));
 			}
+
+			private static Vector2 ColliderLocalSize(BoxCollider2D boxCollider)
+			{
+				if(!boxCollider.autoTiling 
+					|| !boxCollider.TryGetComponent(out SpriteRenderer renderer) 
+					|| renderer.drawMode == SpriteDrawMode.Simple)
+					return boxCollider.size;
+				
+				return renderer.size;
+			}
+
 #endif
 
 			[Flags]
