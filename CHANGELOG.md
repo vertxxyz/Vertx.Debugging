@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.0.6]
+- Attempted fix for OpenUPM gitignore discrepancy that has caused a meta file ignore disconnect between git and the package repo.  
+  This file is tracked in git, but is not present in the package repo for unknown reasons.
+
 ## [2.0.5]
 ### Note
 - If you are seeing an error about a folder not having a meta file, right-click on the Debugging folder, open it in Explorer and delete the Assets folder.  
