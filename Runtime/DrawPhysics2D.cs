@@ -1,4 +1,4 @@
-#if VERTX_PHYSICS_2D && UNITY_2022_1_OR_NEWER
+#if VERTX_PHYSICS_2D
 using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
