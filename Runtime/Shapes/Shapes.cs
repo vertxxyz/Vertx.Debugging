@@ -108,13 +108,9 @@ namespace Vertx.Debugging
 				Direction = direction * GetClampedMaxDistance(distance);
 			}
 
-			public Ray(UnityEngine.Ray ray, float distance = Mathf.Infinity)
-			{
-				Origin = ray.origin;
-				Vector3 direction = ray.direction;
-				direction.EnsureNormalized();
-				Direction = direction * GetClampedMaxDistance(distance);
-			}
+			public Ray(UnityEngine.Ray ray, float distance = Mathf.Infinity) : this(ray.origin, ray.direction * GetClampedMaxDistance(distance)) { }
+
+			public Ray(UnityEngine.Ray2D ray, float distance = Mathf.Infinity) : this(ray.origin, ray.direction * GetClampedMaxDistance(distance)) { }
 
 			public static implicit operator Ray(UnityEngine.Ray ray) => new Ray(ray.origin, ray.direction);
 
@@ -552,7 +548,7 @@ namespace Vertx.Debugging
 			/// It's cheaper to use the <see cref="Arc(Vector3, Vector3, Vector3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
 			/// </summary>
 			public Arc(Vector3 origin, Vector3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius, Angle.FromTurns(1)) { }
-			
+
 			/// <param name="chord">A line that makes up the chord of the arc (two positions at the ends of the arc)</param>
 			/// <param name="aim">The direction for the arc to bend towards.</param>
 			/// <param name="arcLength">The length of the arc. If <see cref="arcLength"/> is less than the length of the chord, nothing will draw.</param>
@@ -567,9 +563,9 @@ namespace Vertx.Debugging
 					// ideally this would draw a line if the arc length was less than or equal to the chord length.
 					return;
 				}
-				
+
 				(float radius, float height, Angle angle) = GetSegmentDetails(chordLength, arcLength);
-				
+
 				tangent /= chordLength;
 				aim.EnsureNormalized();
 				Vector3 normal = Vector3.Cross(aim, tangent).normalized;
@@ -578,12 +574,12 @@ namespace Vertx.Debugging
 
 				Matrix = Matrix4x4.TRS(
 					(chord.A + chord.B) / 2 - direction * height,
-					Quaternion.LookRotation(direction, normal) * s_Base3DRotation, 
+					Quaternion.LookRotation(direction, normal) * s_Base3DRotation,
 					new Vector3(radius, radius, radius)
 				);
 				Angle = angle;
 			}
-			
+
 			/// <summary>
 			/// Gets other details about a circular segment/arc from the input parameters.
 			/// </summary>
@@ -595,7 +591,7 @@ namespace Vertx.Debugging
 				// Thanks to @FreyaHolmer's community <3
 				// Taylor expansion to find first approximation
 				float x = Mathf.Sqrt(48f * ((arcLength - chordLength) / (2f * arcLength)));
-				
+
 				// Newton method to find root within acceptable error.
 				float error;
 				int iterations = 0;
@@ -606,7 +602,7 @@ namespace Vertx.Debugging
 					float firstDerivative = (x * Mathf.Cos(x * 0.5f) - 2f * sR) / (2f * x * x);
 					x -= error / firstDerivative;
 				} while (error > 0.001f && ++iterations < 10);
-				
+
 				float angleRad = x;
 				float radius = arcLength / angleRad;
 				float height = radius * Mathf.Cos(0.5f * angleRad);
@@ -743,6 +739,8 @@ namespace Vertx.Debugging
 			}
 
 			public Box(Bounds bounds, bool shade3D = true) : this(bounds.center, bounds.extents, Quaternion.identity, shade3D) { }
+
+			public Box(BoundsInt bounds, bool shade3D = true) : this(bounds.center, (Vector3)bounds.size * 2f, Quaternion.identity, shade3D) { }
 
 #if VERTX_PHYSICS
 			public Box(BoxCollider boxCollider)
@@ -930,6 +928,49 @@ namespace Vertx.Debugging
 
 				commandBuilder.AppendOutline(new Outline(point1, point2, Radius), color, duration);
 				commandBuilder.AppendOutline(new Outline(point2, point1, Radius), color, duration);
+			}
+#endif
+		}
+
+		public readonly struct Plane : IDrawable
+		{
+			public readonly UnityEngine.Plane Value;
+			public readonly Vector3 PointOnPlane;
+			public readonly Vector2 DisplaySize;
+
+			/// <summary>
+			/// Constructs a Plane
+			/// </summary>
+			/// <param name="plane">The backing plane</param>
+			/// <param name="pointOnPlane">A point to center the debug visual on</param>
+			/// <param name="displaySize">The size of the debugging plane</param>
+			public Plane(UnityEngine.Plane plane, Vector3 pointOnPlane, Vector2 displaySize)
+			{
+				Value = plane;
+				PointOnPlane = plane.ClosestPointOnPlane(pointOnPlane);
+				DisplaySize = displaySize;
+			}
+
+			/// <summary>
+			/// Constructs a Plane
+			/// </summary>
+			/// <param name="plane">The backing plane</param>
+			/// <param name="pointOnPlane">A point to center the debug visual on, defaults to 2x2m in size.</param>
+			public Plane(UnityEngine.Plane plane, Vector3 pointOnPlane)
+			{
+				Value = plane;
+				PointOnPlane = plane.ClosestPointOnPlane(pointOnPlane);
+				DisplaySize = new Vector2(2, 2);
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Vector3 normal = Value.normal;
+				Vector3 perpendicular = GetValidPerpendicular(normal);
+				Quaternion rotation = Quaternion.LookRotation(normal, perpendicular);
+				new Box2D(PointOnPlane, rotation, DisplaySize).Draw(commandBuilder, color, duration);
+				new Arrow(PointOnPlane, rotation).Draw(commandBuilder, color, duration);
 			}
 #endif
 		}

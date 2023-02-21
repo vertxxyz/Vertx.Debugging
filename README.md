@@ -11,6 +11,8 @@ https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-
 ## Usage
 <details>
 <summary>Shape drawing</summary>
+<table><tr><td>
+
   
 ### Example
 
@@ -33,13 +35,13 @@ If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.ma
 ### Code stripping
 Calls to these methods are stripped when building. You do not have to remove code or use defines.  
 If your code spans many statements, only the method call will be stripped. 
-
----
+</td></tr></table>
   
 </details>
 
 <details>
   <summary>Drawing <code>Physics</code> and <code>Physics2D</code> operations</summary>
+<table><tr><td>
 
 ### Example
 You can replace calls to `Physics` and `Physics2D` methods with `DrawPhysics` and `DrawPhysics2D` to simply draw the results of a physics operation.
@@ -60,8 +62,7 @@ A single method call doesn't matter when compared to a physics operation, but yo
 using Physics = Vertx.Debugging.DrawPhysics;
 #endif
 ```
-
----
+</td></tr></table>
 
 </details>
 
@@ -137,21 +138,19 @@ using static Vertx.Debugging.Shape;
 | <br>`RaycastAll2D`<br>`CircleCastAll2D`<br>`BoxCastAll2D`<br>`CapsuleCastAll2D` | `RaycastHit2D[]` results using similar parameters as<br>`Physics2D.RaycastAll`<br>`Physics2D.SphereCastAll`<br>`Physics2D.BoxCastAll`<br>`Physics2D.CapsuleCastAll`                               |
 
 [^1]: The helper class `Angle` is used to define angles, author it with the static methods like `Angle.FromDegrees`.
-
----
   
 </details>
 
 <details>
 <summary>Authoring new shapes</summary>
+<table><tr><td>
 
 ### Extensions
   
 The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
 Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
 
----
-  
+</td></tr></table>
 </details>
 
 ## Components
@@ -159,7 +158,7 @@ Components to draw physics events and common object attributes.
   
 <details>
 <summary>Component list</summary>
-
+  
 | Name                   | Description                                         |
 |------------------------|-----------------------------------------------------|
 | Debug Transform        | Draws up, right, forward axes of a Transform.       |
@@ -168,7 +167,7 @@ Components to draw physics events and common object attributes.
 | Debug Collision Events | Draws `OnCollisionEnter`, `Stay` and `Exit` events. |
 | Debug Trigger Events   | Draws `OnTriggerEnter`, `Stay` and `Exit` events.   |
 | Debug Mesh Normals     | Draws normals for a (read/write) Mesh.              |
-  
+
 </details>
 
 ## Installation
