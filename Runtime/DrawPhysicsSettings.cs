@@ -18,9 +18,15 @@ namespace Vertx.Debugging
 		}
 		
 		/// <summary>
-		/// Override the length of time the casts draw for. You will need to reset this value manually.
+		/// Override the length of time the casts draw for. You will need to reset this value manually, <see cref="ResetDuration"/> will achieve that.
 		/// </summary>
 		[Conditional("UNITY_EDITOR")]
 		public static void SetDuration(float duration) => Duration = duration;
+		
+		/// <summary>
+		/// Reset the length of time the casts draw for.
+		/// </summary>
+		[Conditional("UNITY_EDITOR")]
+		public static void ResetDuration() => Duration = 0;
 	}
 }

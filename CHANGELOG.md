@@ -4,6 +4,15 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.1.0]
+### Added
+- Added `Shape.Plane`.
+- Added `BoundsInt`, `RectInt`, and `Ray2D` overloads.
+- Added `DrawPhysicsSettings.ResetDuration`.
+
+### Fixed
+- DrawPhysics2D being undefined for versions below 2022.1
+
 ## [2.0.6]
 - Attempted fix for OpenUPM gitignore discrepancy that has caused a meta file ignore disconnect between git and the package repo.  
   This file is tracked in git, but is not present in the package repo for unknown reasons.
@@ -23,7 +32,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Native collection disposal in certain scenarios where no shapes are being drawn.
 - Removed stray meta file.
-## Added
+### Added
 - Added `DrawPhysicsSettings.Duration` and `DrawPhysicsSettings.SetDuration` to override the length of time the casts draw for. You will need to reset this value manually.
   Calls to `Duration` cannot be stripped, I would recommend using `SetDuration` if this is important to you.
 

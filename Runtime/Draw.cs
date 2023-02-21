@@ -54,6 +54,15 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray ray, float duration = 0) => raw(ray, Color.white, duration);
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Ray2D ray, Color color, float duration = 0) => raw(new Shape.Ray(ray.origin, ray.direction), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Ray2D ray, bool hit, float duration = 0) => raw(ray, hit ? Shape.HitColor : Shape.CastColor, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Ray2D ray, float duration = 0) => raw(ray, Color.white, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Vector3 position, Color color, float duration = 0) => raw(new Shape.Point(position), color, duration);
@@ -81,6 +90,15 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Bounds bounds, bool hit, float duration = 0) => raw(bounds, hit ? Shape.HitColor : Shape.CastColor, duration);
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(BoundsInt bounds, Color color, float duration = 0) => raw(new Shape.Box(bounds), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(BoundsInt bounds, float duration = 0) => raw(bounds, Color.white, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(BoundsInt bounds, bool hit, float duration = 0) => raw(bounds, hit ? Shape.HitColor : Shape.CastColor, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Rect rect, Color color, float duration = 0) => raw(new Shape.Box2D(rect.center, rect.size), color, duration);
@@ -90,6 +108,15 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Rect rect, bool hit, float duration = 0) => raw(rect, hit ? Shape.HitColor : Shape.CastColor, duration);
+		
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(RectInt rect, Color color, float duration = 0) => raw(new Shape.Box2D(rect.center, rect.size), color, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(RectInt rect, float duration = 0) => raw(rect, Color.white, duration);
+
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(RectInt rect, bool hit, float duration = 0) => raw(rect, hit ? Shape.HitColor : Shape.CastColor, duration);
 
 #if VERTX_PHYSICS
 		[Conditional("UNITY_EDITOR")]
