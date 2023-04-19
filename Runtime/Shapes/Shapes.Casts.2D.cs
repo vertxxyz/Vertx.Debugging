@@ -236,7 +236,7 @@ namespace Vertx.Debugging
 					new Capsule2D(originMax, originMax + offset, Radius).Draw(commandBuilder, castColor, duration);
 				}
 
-				if (!Hit.HasValue)
+				if (!Hit.HasValue || !Hit.Value)
 					return;
 
 				Vector2 hitPoint = Origin + Direction * Hit.Value.distance;
@@ -384,7 +384,7 @@ namespace Vertx.Debugging
 					commandBuilder.AppendLine(new Line(p1, p2), castColor, duration);
 				}
 
-				if (!Hit.HasValue)
+				if (!Hit.HasValue || !Hit.Value)
 					return;
 
 				Box.GetTranslatedWithZ(Direction * Hit.Value.distance, Hit.Value.transform.position.z).Draw(commandBuilder, hitColor, duration);
@@ -523,7 +523,7 @@ namespace Vertx.Debugging
 					commandBuilder.AppendArc(arcB.GetWithZ(MaxDepth), castColor, duration);
 				}
 
-				if (!Hit.HasValue)
+				if (!Hit.HasValue || !Hit.Value)
 					return;
 				
 				Capsule.GetTranslatedWithZ(Direction * Hit.Value.distance, Hit.Value.transform.position.z).Draw(commandBuilder, hitColor, duration);

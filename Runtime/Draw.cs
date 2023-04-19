@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
+
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 namespace Vertx.Debugging
@@ -54,7 +55,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray ray, float duration = 0) => raw(ray, Color.white, duration);
-		
+
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray2D ray, Color color, float duration = 0) => raw(new Shape.Ray(ray.origin, ray.direction), color, duration);
 
@@ -90,7 +91,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Bounds bounds, bool hit, float duration = 0) => raw(bounds, hit ? Shape.HitColor : Shape.CastColor, duration);
-		
+
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(BoundsInt bounds, Color color, float duration = 0) => raw(new Shape.Box(bounds), color, duration);
 
@@ -108,7 +109,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Rect rect, bool hit, float duration = 0) => raw(rect, hit ? Shape.HitColor : Shape.CastColor, duration);
-		
+
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RectInt rect, Color color, float duration = 0) => raw(new Shape.Box2D(rect.center, rect.size), color, duration);
 
@@ -174,7 +175,12 @@ namespace Vertx.Debugging
 
 #if VERTX_PHYSICS_2D
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RaycastHit2D hit, Color color, float duration = 0) => raw(new Shape.Ray(new Vector3(hit.point.x, hit.point.y, hit.transform.position.z), hit.normal), color, duration);
+		public static void raw(RaycastHit2D hit, Color color, float duration = 0)
+		{
+			if (!hit)
+				return;
+			raw(new Shape.Ray(new Vector3(hit.point.x, hit.point.y, hit.transform.position.z), hit.normal), color, duration);
+		}
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RaycastHit2D hit, float duration = 0) => raw(hit, Shape.HitColor, duration);
