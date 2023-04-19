@@ -144,6 +144,7 @@ namespace Vertx.Debugging
 		{
 			public readonly Vector3 Position;
 			public readonly float Angle;
+			public readonly float Scale;
 			public readonly bool ShowArrowHeads;
 
 			public Axis2D(Vector2 origin, float angle, float z = 0, bool showArrowHeads = true)
@@ -151,6 +152,15 @@ namespace Vertx.Debugging
 				Position = new Vector3(origin.x, origin.y, z);
 				Angle = angle;
 				ShowArrowHeads = showArrowHeads;
+				Scale = 1;
+			}
+			
+			public Axis2D(Vector2 origin, float angle, float z = 0, float scale = 1, bool showArrowHeads = true)
+			{
+				Position = new Vector3(origin.x, origin.y, z);
+				Angle = angle;
+				ShowArrowHeads = showArrowHeads;
+				Scale = scale;
 			}
 
 #if UNITY_EDITOR
@@ -158,13 +168,13 @@ namespace Vertx.Debugging
 			{
 				if (ShowArrowHeads)
 				{
-					new Arrow2D(Position, Angle).Draw(commandBuilder, XColor, duration);
-					new Arrow2D(Position, Angle + 90).Draw(commandBuilder, YColor, duration);
+					new Arrow2D(Position, GetDirectionFromAngle(Angle) * Scale).Draw(commandBuilder, XColor, duration);
+					new Arrow2D(Position, GetDirectionFromAngle(Angle + 90) * Scale).Draw(commandBuilder, YColor, duration);
 				}
 				else
 				{
-					new Ray2D(Position, Angle).Draw(commandBuilder, XColor, duration);
-					new Ray2D(Position, Angle + 90).Draw(commandBuilder, YColor, duration);
+					new Ray2D(Position, GetDirectionFromAngle(Angle) * Scale).Draw(commandBuilder, XColor, duration);
+					new Ray2D(Position, GetDirectionFromAngle(Angle + 90) * Scale).Draw(commandBuilder, YColor, duration);
 				}
 			}
 #endif
