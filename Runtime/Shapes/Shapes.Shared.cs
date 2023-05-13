@@ -127,6 +127,9 @@ namespace Vertx.Debugging
 			float sqrMag = vector2.sqrMagnitude;
 			if (Mathf.Approximately(sqrMag, 1))
 				return;
+			if (Mathf.Approximately(sqrMag, 0))
+				return;
+
 			vector2 /= Mathf.Sqrt(sqrMag);
 		}
 
@@ -138,6 +141,11 @@ namespace Vertx.Debugging
 				length = 1;
 				return;
 			}
+			if (Mathf.Approximately(sqrMag, 0))
+			{
+				length = 0;
+				return;
+			}
 
 			length = Mathf.Sqrt(sqrMag);
 			vector2 /= length;
@@ -147,6 +155,8 @@ namespace Vertx.Debugging
 		{
 			float sqrMag = vector3.sqrMagnitude;
 			if (Mathf.Approximately(sqrMag, 1))
+				return;
+			if (Mathf.Approximately(sqrMag, 0))
 				return;
 			vector3 /= Mathf.Sqrt(sqrMag);
 		}
@@ -191,12 +201,7 @@ namespace Vertx.Debugging
 			return RotateUsingCoefficients(vector, s, c);
 		}
 
-		private static Vector2 GetDirectionFromAngle(float angle)
-		{
-			if (angle == 0)
-				return Vector2.right;
-			return Rotate(Vector2.right, angle);
-		}
+		private static Vector2 GetDirectionFromAngle(float angle) => angle == 0 ? Vector2.right : Rotate(Vector2.right, angle);
 
 		private static float ToAngleDegrees(this Vector2 v) => Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
 
