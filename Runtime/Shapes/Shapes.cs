@@ -530,7 +530,9 @@ namespace Vertx.Debugging
 
 			public Arc(Vector3 origin, Quaternion rotation, float radius) : this(origin, rotation, radius, Angle.FromTurns(1)) { }
 
-			public Arc(Vector2 origin, float rotationDegrees, float radius, Angle angle) : this(origin, Quaternion.AngleAxis(rotationDegrees, Vector3.forward), radius, angle) { }
+			public Arc(Vector2 origin, float rotationDegrees, float radius, Angle angle)
+				// If NaN is introduced externally by the user this protects against that silently.
+				: this(origin, float.IsNaN(rotationDegrees) ? Quaternion.identity : Quaternion.AngleAxis(rotationDegrees, Vector3.forward), radius, angle) { }
 
 			public Arc(Vector2 origin, float rotationDegrees, float radius) : this(origin, rotationDegrees, radius, Angle.FromTurns(1)) { }
 

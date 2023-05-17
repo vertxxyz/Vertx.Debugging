@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.1.3]
+### Improved
+- Improved handling of NaN in Arc code paths. This will set reasonable defaults when invalid values are passed.
+
 ## [2.1.2]
 ### Fixed
 - Removed NaNs from certain code paths when zero is used as a direction.
