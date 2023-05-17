@@ -507,7 +507,7 @@ namespace Vertx.Debugging
 				// Termination capsule ends
 				float angle = verticalDirection.ToAngleDegrees();
 
-				float dotA = Vector2.Dot(verticalDirection, Direction);
+				float dotA = Mathf.Clamp(Vector2.Dot(verticalDirection, Direction), -1, 1); // We clamp to ensure Acos gets valid values.
 				float dotB = -dotA;
 
 				Angle offsetA = Angle.FromRadians(Mathf.Acos(dotA));
