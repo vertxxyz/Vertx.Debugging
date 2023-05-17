@@ -94,6 +94,7 @@ using static Vertx.Debugging.Shape;
 |--------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
 | `Sphere`<br>`Hemisphere`<br>`Box`<br>`Capsule`<br>`Cylinder` | 3D shapes.                                                                                       |
 | `Arc`                                                        | An arc (using `Angle`[^1] to define its length).                                                 |
+| `Annulus`                                                    | An annulus or annulus sector.                                                                    |
 | `SurfacePoint`                                               | A ray with a circle to indicate the surface.                                                     |
 | `Point`                                                      | A point without a specified direction.                                                           |
 | `Axis`                                                       | An XYZ direction gizmo.                                                                          |

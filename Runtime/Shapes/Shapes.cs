@@ -625,6 +625,108 @@ namespace Vertx.Debugging
 #endif
 		}
 
+		/// <summary>
+		/// This is 2D, by default the annulus faces right, aligned with XY.<br/>
+		/// Use the helper constructors to create an Arc aligned how you require.
+		/// </summary>
+		public readonly struct Annulus : IDrawable
+		{
+			public readonly Vector3 Origin;
+			public readonly Quaternion Rotation;
+			public readonly float InnerRadius, OuterRadius;
+			public readonly Angle SectorWidth;
+
+			/// <summary>
+			/// Creates an annulus.
+			/// </summary>
+			public Annulus(Vector3 origin, Quaternion rotation, float innerRadius, float outerRadius)
+				: this(origin, rotation, innerRadius, outerRadius, Angle.FromTurns(1)) { }
+			
+			/// <summary>
+			/// Creates an annulus.
+			/// </summary>
+			public Annulus(Vector3 origin, Vector3 normal, Vector3 direction, float innerRadius, float outerRadius)
+				: this(origin, normal, direction, innerRadius, outerRadius, Angle.FromTurns(1)) { }
+
+			/// <summary>
+			/// Creates an annulus sector.
+			/// </summary>
+			public Annulus(Vector3 origin, Quaternion rotation, float innerRadius, float outerRadius, Angle sectorWidth)
+			{
+				SectorWidth = sectorWidth;
+				Origin = origin;
+				Rotation = rotation;
+				InnerRadius = innerRadius;
+				OuterRadius = outerRadius;
+			}
+			
+			/// <summary>
+			/// Creates an annulus sector.
+			/// </summary>
+			public Annulus(Vector3 origin, Vector3 normal, Vector3 direction, float innerRadius, float outerRadius, Angle sectorWidth)
+				: this(origin, Quaternion.LookRotation(direction, normal) * Arc.s_Base3DRotation, innerRadius, outerRadius, sectorWidth) { }
+			
+			/// <summary>
+			/// Uniform annulus sampling.
+			/// </summary>
+			public Vector3 RandomPoint() => Origin + Rotation * RandomPoint(InnerRadius, OuterRadius, SectorWidth);
+
+			/// <summary>
+			/// Uniform annulus sampling.
+			/// </summary>
+			public static Vector2 RandomPoint(float innerRadius, float outerRadius, Angle sectorWidth)
+			{
+				float rad = sectorWidth.Radians * 0.5f,
+					a = UnityEngine.Random.Range(-rad, rad),
+					outerRadiusSquared = outerRadius * outerRadius,
+					innerRadiusSquared = innerRadius * innerRadius,
+					differenceSquared = outerRadiusSquared - innerRadiusSquared,
+					r = Mathf.Sqrt(UnityEngine.Random.value * differenceSquared + innerRadiusSquared),
+					x = r * Mathf.Cos(a),
+					y = r * Mathf.Sin(a);
+				return new Vector2(x, y);
+			}
+			
+			/// <summary>
+			/// A naïve implementation of annulus sampling.
+			/// Samples will bias towards the inner radius.
+			/// See <see cref="RandomPoint(float, float, Angle)"/> for uniform sampling.<br/>
+			/// https://gist.github.com/vertxxyz/e3fa0b033a266027992a715468e7dd1f
+			/// </summary>
+			public static Vector2 RandomPointNonUniform(float innerRadius, float outerRadius, Angle sectorWidth)
+			{
+				float  rad = sectorWidth.Radians * 0.5f,
+					a = UnityEngine.Random.Range(-rad, rad),
+					difference = outerRadius - innerRadius,
+					r = UnityEngine.Random.value * difference + innerRadius,
+					x = r * Mathf.Cos(a),
+					y = r * Mathf.Sin(a);
+				return new Vector2(x, y);
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				new Arc(Origin, Rotation, InnerRadius, SectorWidth).Draw(commandBuilder, color, duration);
+				if (Mathf.Abs(InnerRadius - OuterRadius) < 0.0001f)
+					return;
+				new Arc(Origin, Rotation, OuterRadius, SectorWidth).Draw(commandBuilder, color, duration);
+				if (Mathf.Abs(SectorWidth.Turns - 1) < 0.0001f)
+					return;
+				Quaternion rightRot = Quaternion.AngleAxis(SectorWidth.Degrees * 0.5f, Vector3.forward);
+				Vector3 rightInner = Origin + Rotation * (rightRot * new Vector3(InnerRadius, 0, 0));
+				Vector3 rightOuter = Origin + Rotation * (rightRot * new Vector3(OuterRadius, 0, 0));
+				new Line(rightInner, rightOuter).Draw(commandBuilder, color, duration);
+				if (SectorWidth.Turns == 0)
+					return;
+				Quaternion leftRot = Quaternion.Inverse(rightRot);
+				Vector3 leftInner = Origin + Rotation * (leftRot * new Vector3(InnerRadius, 0, 0));
+				Vector3 leftOuter = Origin + Rotation * (leftRot * new Vector3(OuterRadius, 0, 0));
+				new Line(leftInner, leftOuter).Draw(commandBuilder, color, duration);
+			}
+#endif
+		}
+
 		public readonly struct Sphere : IDrawable
 		{
 			public readonly Matrix4x4 Matrix;
