@@ -21,6 +21,12 @@ namespace Vertx.Debugging
 				Scale = scale;
 				Position = new Vector3(point.x, point.y, z);
 			}
+			
+			public Point2D(Vector3 position, float scale = 0.3f)
+			{
+				Scale = scale;
+				Position = position;
+			}
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
