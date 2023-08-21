@@ -2,9 +2,9 @@ Fast editor debugging and gizmo utilities for Unity.
 Uses instanced rendering to draw shapes efficiently.
 
 > **Note**  
-> Unity 2019.4+  
+> Unity 2020.1+  
 > Should support all render pipelines.  
-> Debugging from jobs and builds is not supported, I recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
+> Supports drawing from jobs and burst. This package depends on **Burst** and **Mathematics**.
 
 https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-9316-78f7d4fbea1a.mp4
 
@@ -192,9 +192,6 @@ Components to draw physics events and common object attributes.
 1. Select **Add package by Name** or **Add package from Git URL**.
 1. Enter `com.vertx.debugging`.
 1. Select **Add**.
-  
-> **Note**  
-> This package will benefit from [Burst](https://docs.unity3d.com/Packages/com.unity.burst@latest/), though it's an optional dependency.
 
 </td></tr></table>
   

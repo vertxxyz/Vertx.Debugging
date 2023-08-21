@@ -1,4 +1,5 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
@@ -11,19 +12,19 @@ namespace Vertx.Debugging
 		public readonly struct Angle
 		{
 			/// <summary>
-			/// Angle in turns
+			/// Angle in turns.
 			/// </summary>
 			public float Turns { get; }
 
-			public float Radians => Turns * Mathf.PI * 2;
+			public float Radians => Turns * math.PI * 2;
 
 			public float Degrees => Turns * 360;
 			
 			private Angle(float turns) => Turns = turns;
 
-			public static Angle FromRadians(float value) => new Angle(value / (Mathf.PI * 2));
+			public static Angle FromRadians(float value) => new Angle(value / (math.PI * 2));
 			
-			public static Angle FromDegrees(float value) => FromRadians(value * Mathf.Deg2Rad);
+			public static Angle FromDegrees(float value) => FromRadians(value * math.TORADIANS);
 			
 			public static Angle FromTurns(float value) => new Angle(value);
 
@@ -34,7 +35,7 @@ namespace Vertx.Debugging
 				return FromRadians(length / radius);
 			}
 
-			internal Angle Abs() => FromTurns(Mathf.Abs(Turns));
+			internal Angle Abs() => FromTurns(math.abs(Turns));
 			
 			public static implicit operator float(Angle value) => value.Turns;
 		}

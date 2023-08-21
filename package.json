@@ -2,7 +2,7 @@
   "name": "com.vertx.debugging",
   "displayName": "Debugging",
   "version": "2.1.5",
-  "unity": "2019.4",
+  "unity": "2020.3",
   "description": "Fast editor debugging and gizmo utilities.\n\n★ Donations help support the development of packages like these ★\n",
   "author": {
     "name": "Vertx",
@@ -13,6 +13,8 @@
   "keywords": [],
   "category": "Tools",
   "dependencies": {
-    "com.unity.collections": "0.9.0-preview.6"
+    "com.unity.collections": "0.9.0-preview.6",
+    "com.unity.burst": "1.8.8",
+    "com.unity.mathematics": "1.3.1"
   }
 }

@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 using static Vertx.Debugging.Shape;
 
 // ReSharper disable RedundantCast
@@ -15,8 +16,12 @@ namespace Vertx.Debugging
 		public static ColliderDistance2D Distance(Collider2D colliderA, Collider2D colliderB)
 		{
 			ColliderDistance2D distance = Physics2D.Distance(colliderA, colliderB);
-			D.raw(new Text(distance.pointB + distance.normal * (distance.distance * 0.5f), distance.distance), DrawPhysicsSettings.Duration);
-			D.raw(new Line(distance.pointA, distance.pointB), CastColor, DrawPhysicsSettings.Duration);
+			float2 a = distance.pointA;
+			float2 b = distance.pointB;
+			float2 normal = distance.normal;
+			float2 halfDistance = b + normal * (distance.distance * 0.5f);
+			D.raw(new Text(new Vector3(halfDistance.x, halfDistance.y, 0), distance.distance), DrawPhysicsSettings.Duration);
+			D.raw(new Line(new float3(a.x, a.y, 0), new float3(b.x, b.y, 0)), CastColor, DrawPhysicsSettings.Duration);
 			return distance;
 		}
 
@@ -207,7 +212,7 @@ namespace Vertx.Debugging
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int Raycast(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = Mathf.Infinity)
+		public static int Raycast(Vector2 origin, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = math.INFINITY)
 		{
 			int count = Physics2D.Raycast(origin, direction, contactFilter, results, distance);
 			D.raw(new RaycastAll2D(origin, direction, results, count, distance), DrawPhysicsSettings.Duration);
@@ -355,7 +360,7 @@ namespace Vertx.Debugging
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CircleCast(Vector2 origin, float radius, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = Mathf.Infinity)
+		public static int CircleCast(Vector2 origin, float radius, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = math.INFINITY)
 		{
 			int count = Physics2D.CircleCast(origin, radius, direction, contactFilter, results, distance);
 			D.raw(new CircleCastAll(origin, radius, direction, results, distance), DrawPhysicsSettings.Duration);
@@ -445,296 +450,296 @@ namespace Vertx.Debugging
 #endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction)
+		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction)
 		{
-			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.BoxCast(origin, size, angleDegrees, direction);
+			D.raw(new BoxCast2D(origin, size, angleDegrees, direction, result), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance)
+		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, float distance)
 		{
-			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction, distance);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.BoxCast(origin, size, angleDegrees, direction, distance);
+			D.raw(new BoxCast2D(origin, size, angleDegrees, direction, result, distance), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask)
+		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, float distance, int layerMask)
 		{
-			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction, distance, layerMask);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.BoxCast(origin, size, angleDegrees, direction, distance, layerMask);
+			D.raw(new BoxCast2D(origin, size, angleDegrees, direction, result, distance), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
+		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
-			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction, distance, layerMask, minDepth);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance, minDepth), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.BoxCast(origin, size, angleDegrees, direction, distance, layerMask, minDepth);
+			D.raw(new BoxCast2D(origin, size, angleDegrees, direction, result, distance, minDepth), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
+		public static RaycastHit2D BoxCast(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
-			RaycastHit2D result = Physics2D.BoxCast(origin, size, angle, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new BoxCast2D(origin, size, angle, direction, result, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.BoxCast(origin, size, angleDegrees, direction, distance, layerMask, minDepth, maxDepth);
+			D.raw(new BoxCast2D(origin, size, angleDegrees, direction, result, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
+		public static int BoxCast(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
 		{
-			int count = Physics2D.BoxCast(origin, size, angle, direction, contactFilter, results);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count), DrawPhysicsSettings.Duration);
+			int count = Physics2D.BoxCast(origin, size, angleDegrees, direction, contactFilter, results);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, count), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
+		public static int BoxCast(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
 		{
-			int count = Physics2D.BoxCast(origin, size, angle, direction, contactFilter, results, distance);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance), DrawPhysicsSettings.Duration);
+			int count = Physics2D.BoxCast(origin, size, angleDegrees, direction, contactFilter, results, distance);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, count, distance), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int BoxCast(Vector2 origin, Vector2 size, float angle, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = Mathf.Infinity)
+		public static int BoxCast(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = math.INFINITY)
 		{
-			int count = Physics2D.BoxCast(origin, size, angle, direction, contactFilter, results, distance);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance), DrawPhysicsSettings.Duration);
+			int count = Physics2D.BoxCast(origin, size, angleDegrees, direction, contactFilter, results, distance);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, count, distance), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction)
+		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction)
 		{
-			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angleDegrees, direction);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance)
+		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, float distance)
 		{
-			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction, distance);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angleDegrees, direction, distance);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, distance), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask)
+		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, float distance, int layerMask)
 		{
-			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction, distance, layerMask);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angleDegrees, direction, distance, layerMask);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, distance), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
+		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
-			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction, distance, layerMask, minDepth);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance, minDepth), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angleDegrees, direction, distance, layerMask, minDepth);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, distance, minDepth), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
+		public static RaycastHit2D[] BoxCastAll(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
-			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angle, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.BoxCastAll(origin, size, angleDegrees, direction, distance, layerMask, minDepth, maxDepth);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 #if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results)
+		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, RaycastHit2D[] results)
 		{
-			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count), DrawPhysicsSettings.Duration);
+			int count = Physics2D.BoxCastNonAlloc(origin, size, angleDegrees, direction, results);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, count), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance)
+		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, RaycastHit2D[] results, float distance)
 		{
-			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results, distance);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance), DrawPhysicsSettings.Duration);
+			int count = Physics2D.BoxCastNonAlloc(origin, size, angleDegrees, direction, results, distance);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, count, distance), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
+		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
 		{
-			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results, distance, layerMask);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance), DrawPhysicsSettings.Duration);
+			int count = Physics2D.BoxCastNonAlloc(origin, size, angleDegrees, direction, results, distance, layerMask);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, count, distance), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
+		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
 		{
-			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results, distance, layerMask, minDepth);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance, minDepth), DrawPhysicsSettings.Duration);
+			int count = Physics2D.BoxCastNonAlloc(origin, size, angleDegrees, direction, results, distance, layerMask, minDepth);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, count, distance, minDepth), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
+		public static int BoxCastNonAlloc(Vector2 origin, Vector2 size, float angleDegrees, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
 		{
-			int count = Physics2D.BoxCastNonAlloc(origin, size, angle, direction, results, distance, layerMask, minDepth, maxDepth);
-			D.raw(new BoxCast2DAll(origin, size, angle, direction, results, count, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
+			int count = Physics2D.BoxCastNonAlloc(origin, size, angleDegrees, direction, results, distance, layerMask, minDepth, maxDepth);
+			D.raw(new BoxCast2DAll(origin, size, angleDegrees, direction, results, count, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
 			return count;
 		}
 #endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction)
+		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction)
 		{
-			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angleDegrees, direction);
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angleDegrees, direction, result), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance)
+		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, float distance)
 		{
-			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, distance);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angleDegrees, direction, distance);
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angleDegrees, direction, result, distance), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask)
+		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, float distance, int layerMask)
 		{
-			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, distance, layerMask);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angleDegrees, direction, distance, layerMask);
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angleDegrees, direction, result, distance), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
+		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
-			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance, minDepth), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angleDegrees, direction, distance, layerMask, minDepth);
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angleDegrees, direction, result, distance, minDepth), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
+		public static RaycastHit2D CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
-			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angle, direction, result, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
+			RaycastHit2D result = Physics2D.CapsuleCast(origin, size, capsuleDirection, angleDegrees, direction, distance, layerMask, minDepth, maxDepth);
+			D.raw(new CapsuleCast2D(origin, size, capsuleDirection, angleDegrees, direction, result, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
+		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results)
 		{
-			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, contactFilter, results);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count), DrawPhysicsSettings.Duration);
+			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angleDegrees, direction, contactFilter, results);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, count), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
+		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] results, float distance)
 		{
-			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, contactFilter, results, distance);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance), DrawPhysicsSettings.Duration);
+			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angleDegrees, direction, contactFilter, results, distance);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, count, distance), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = Mathf.Infinity)
+		public static int CapsuleCast(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, ContactFilter2D contactFilter, List<RaycastHit2D> results, float distance = math.INFINITY)
 		{
-			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angle, direction, contactFilter, results);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count), DrawPhysicsSettings.Duration);
+			int count = Physics2D.CapsuleCast(origin, size, capsuleDirection, angleDegrees, direction, contactFilter, results, distance);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, distance, count), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction)
+		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction)
 		{
-			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angleDegrees, direction);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance)
+		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, float distance)
 		{
-			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angleDegrees, direction, distance);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, distance), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask)
+		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, float distance, int layerMask)
 		{
-			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, layerMask);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angleDegrees, direction, distance, layerMask);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, distance), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth)
+		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, float distance, int layerMask, float minDepth)
 		{
-			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance, minDepth), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angleDegrees, direction, distance, layerMask, minDepth);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, distance, minDepth), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
+		public static RaycastHit2D[] CapsuleCastAll(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, float distance, int layerMask, float minDepth, float maxDepth)
 		{
-			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angle, direction, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
+			RaycastHit2D[] results = Physics2D.CapsuleCastAll(origin, size, capsuleDirection, angleDegrees, direction, distance, layerMask, minDepth, maxDepth);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 #if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results)
+		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, RaycastHit2D[] results)
 		{
-			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count), DrawPhysicsSettings.Duration);
+			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angleDegrees, direction, results);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, count), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance)
+		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, RaycastHit2D[] results, float distance)
 		{
-			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance), DrawPhysicsSettings.Duration);
+			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angleDegrees, direction, results, distance);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, count, distance), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
+		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask)
 		{
-			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, layerMask);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance), DrawPhysicsSettings.Duration);
+			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angleDegrees, direction, results, distance, layerMask);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, count, distance), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
+		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth)
 		{
-			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, layerMask, minDepth);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance, minDepth), DrawPhysicsSettings.Duration);
+			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angleDegrees, direction, results, distance, layerMask, minDepth);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, count, distance, minDepth), DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angle, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
+		public static int CapsuleCastNonAlloc(Vector2 origin, Vector2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, Vector2 direction, RaycastHit2D[] results, float distance, int layerMask, float minDepth, float maxDepth)
 		{
-			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angle, direction, results, distance, layerMask, minDepth, maxDepth);
-			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angle, direction, results, count, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
+			int count = Physics2D.CapsuleCastNonAlloc(origin, size, capsuleDirection, angleDegrees, direction, results, distance, layerMask, minDepth, maxDepth);
+			D.raw(new CapsuleCast2DAll(origin, size, capsuleDirection, angleDegrees, direction, results, count, distance, minDepth, maxDepth), DrawPhysicsSettings.Duration);
 			return count;
 		}
 #endif
@@ -1137,100 +1142,100 @@ namespace Vertx.Debugging
 #endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle)
+		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angleDegrees)
 		{
-			Collider2D result = Physics2D.OverlapBox(point, size, angle);
-			D.raw(new Box2D(point, size, angle), result, DrawPhysicsSettings.Duration);
+			Collider2D result = Physics2D.OverlapBox(point, size, angleDegrees);
+			D.raw(new Box2D(point, size, angleDegrees), result, DrawPhysicsSettings.Duration);
 			D.raw(result, HitColor, DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle, int layerMask)
+		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angleDegrees, int layerMask)
 		{
-			Collider2D result = Physics2D.OverlapBox(point, size, angle, layerMask);
-			D.raw(new Box2D(point, size, angle), result, DrawPhysicsSettings.Duration);
+			Collider2D result = Physics2D.OverlapBox(point, size, angleDegrees, layerMask);
+			D.raw(new Box2D(point, size, angleDegrees), result, DrawPhysicsSettings.Duration);
 			D.raw(result, HitColor, DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth)
+		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angleDegrees, int layerMask, float minDepth)
 		{
-			Collider2D result = Physics2D.OverlapBox(point, size, angle, layerMask, minDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), result, DrawPhysicsSettings.Duration);
+			Collider2D result = Physics2D.OverlapBox(point, size, angleDegrees, layerMask, minDepth);
+			D.raw(new Box2D(point, size, angleDegrees, minDepth), result, DrawPhysicsSettings.Duration);
 			D.raw(result, HitColor, DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth, float maxDepth)
+		public static Collider2D OverlapBox(Vector2 point, Vector2 size, float angleDegrees, int layerMask, float minDepth, float maxDepth)
 		{
-			Collider2D result = Physics2D.OverlapBox(point, size, angle, layerMask, minDepth, maxDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), result, DrawPhysicsSettings.Duration);
+			Collider2D result = Physics2D.OverlapBox(point, size, angleDegrees, layerMask, minDepth, maxDepth);
+			D.raw(new Box2D(point, size, angleDegrees, minDepth), result, DrawPhysicsSettings.Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Box2D(point, size, angle, maxDepth), result, DrawPhysicsSettings.Duration);
+				D.raw(new Box2D(point, size, angleDegrees, maxDepth), result, DrawPhysicsSettings.Duration);
 			D.raw(result, HitColor, DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapBox(Vector2 point, Vector2 size, float angle, ContactFilter2D contactFilter, Collider2D[] results)
+		public static int OverlapBox(Vector2 point, Vector2 size, float angleDegrees, ContactFilter2D contactFilter, Collider2D[] results)
 		{
-			int count = Physics2D.OverlapBox(point, size, angle, contactFilter, results);
-			D.raw(new Box2D(point, size, angle), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapBox(point, size, angleDegrees, contactFilter, results);
+			D.raw(new Box2D(point, size, angleDegrees), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapBox(Vector2 point, Vector2 size, float angle, ContactFilter2D contactFilter, List<Collider2D> results)
+		public static int OverlapBox(Vector2 point, Vector2 size, float angleDegrees, ContactFilter2D contactFilter, List<Collider2D> results)
 		{
-			int count = Physics2D.OverlapBox(point, size, angle, contactFilter, results);
-			D.raw(new Box2D(point, size, angle), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapBox(point, size, angleDegrees, contactFilter, results);
+			D.raw(new Box2D(point, size, angleDegrees), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle)
+		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angleDegrees)
 		{
-			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angle);
-			D.raw(new Box2D(point, size, angle), results.Length > 0, DrawPhysicsSettings.Duration);
+			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angleDegrees);
+			D.raw(new Box2D(point, size, angleDegrees), results.Length > 0, DrawPhysicsSettings.Duration);
 			foreach (Collider2D collider in results)
 				D.raw(collider, HitColor, DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask)
+		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angleDegrees, int layerMask)
 		{
-			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angle, layerMask);
-			D.raw(new Box2D(point, size, angle), results.Length > 0, DrawPhysicsSettings.Duration);
+			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angleDegrees, layerMask);
+			D.raw(new Box2D(point, size, angleDegrees), results.Length > 0, DrawPhysicsSettings.Duration);
 			foreach (Collider2D collider in results)
 				D.raw(collider, HitColor, DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth)
+		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angleDegrees, int layerMask, float minDepth)
 		{
-			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angle, layerMask, minDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), results.Length > 0, DrawPhysicsSettings.Duration);
+			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angleDegrees, layerMask, minDepth);
+			D.raw(new Box2D(point, size, angleDegrees, minDepth), results.Length > 0, DrawPhysicsSettings.Duration);
 			foreach (Collider2D collider in results)
 				D.raw(collider, HitColor, DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angle, int layerMask, float minDepth, float maxDepth)
+		public static Collider2D[] OverlapBoxAll(Vector2 point, Vector2 size, float angleDegrees, int layerMask, float minDepth, float maxDepth)
 		{
-			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angle, layerMask, minDepth, maxDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), results.Length > 0, DrawPhysicsSettings.Duration);
+			Collider2D[] results = Physics2D.OverlapBoxAll(point, size, angleDegrees, layerMask, minDepth, maxDepth);
+			D.raw(new Box2D(point, size, angleDegrees, minDepth), results.Length > 0, DrawPhysicsSettings.Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Box2D(point, size, angle, maxDepth), results.Length > 0, DrawPhysicsSettings.Duration);
+				D.raw(new Box2D(point, size, angleDegrees, maxDepth), results.Length > 0, DrawPhysicsSettings.Duration);
 			foreach (Collider2D collider in results)
 				D.raw(collider, HitColor, DrawPhysicsSettings.Duration);
 			return results;
@@ -1238,42 +1243,42 @@ namespace Vertx.Debugging
 
 #if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results)
+		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angleDegrees, Collider2D[] results)
 		{
-			int count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results);
-			D.raw(new Box2D(point, size, angle), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapBoxNonAlloc(point, size, angleDegrees, results);
+			D.raw(new Box2D(point, size, angleDegrees), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask)
+		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angleDegrees, Collider2D[] results, int layerMask)
 		{
-			int count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results, layerMask);
-			D.raw(new Box2D(point, size, angle), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapBoxNonAlloc(point, size, angleDegrees, results, layerMask);
+			D.raw(new Box2D(point, size, angleDegrees), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask, float minDepth)
+		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angleDegrees, Collider2D[] results, int layerMask, float minDepth)
 		{
-			int count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results, layerMask, minDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapBoxNonAlloc(point, size, angleDegrees, results, layerMask, minDepth);
+			D.raw(new Box2D(point, size, angleDegrees, minDepth), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angle, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
+		public static int OverlapBoxNonAlloc(Vector2 point, Vector2 size, float angleDegrees, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
 		{
-			int count = Physics2D.OverlapBoxNonAlloc(point, size, angle, results, layerMask, minDepth, maxDepth);
-			D.raw(new Box2D(point, size, angle, minDepth), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapBoxNonAlloc(point, size, angleDegrees, results, layerMask, minDepth, maxDepth);
+			D.raw(new Box2D(point, size, angleDegrees, minDepth), count > 0, DrawPhysicsSettings.Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Box2D(point, size, angle, maxDepth), count > 0, DrawPhysicsSettings.Duration);
+				D.raw(new Box2D(point, size, angleDegrees, maxDepth), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
@@ -1425,100 +1430,100 @@ namespace Vertx.Debugging
 #endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle)
+		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees)
 		{
-			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angle);
-			D.raw(new Capsule2D(point, size, direction, angle), result, DrawPhysicsSettings.Duration);
+			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angleDegrees);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees), result, DrawPhysicsSettings.Duration);
 			D.raw(result, HitColor, DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask)
+		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, int layerMask)
 		{
-			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angle, layerMask);
-			D.raw(new Capsule2D(point, size, direction, angle), result, DrawPhysicsSettings.Duration);
+			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angleDegrees, layerMask);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees), result, DrawPhysicsSettings.Duration);
 			D.raw(result, HitColor, DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth)
+		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, int layerMask, float minDepth)
 		{
-			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angle, layerMask, minDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), result, DrawPhysicsSettings.Duration);
+			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angleDegrees, layerMask, minDepth);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees, minDepth), result, DrawPhysicsSettings.Duration);
 			D.raw(result, HitColor, DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth, float maxDepth)
+		public static Collider2D OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, int layerMask, float minDepth, float maxDepth)
 		{
-			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angle, layerMask, minDepth, maxDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), result, DrawPhysicsSettings.Duration);
+			Collider2D result = Physics2D.OverlapCapsule(point, size, direction, angleDegrees, layerMask, minDepth, maxDepth);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees, minDepth), result, DrawPhysicsSettings.Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), result, DrawPhysicsSettings.Duration);
+				D.raw(new Capsule2D(point, size, direction, angleDegrees, maxDepth), result, DrawPhysicsSettings.Duration);
 			D.raw(result, HitColor, DrawPhysicsSettings.Duration);
 			return result;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, ContactFilter2D contactFilter, Collider2D[] results)
+		public static int OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, ContactFilter2D contactFilter, Collider2D[] results)
 		{
-			int count = Physics2D.OverlapCapsule(point, size, direction, angle, contactFilter, results);
-			D.raw(new Capsule2D(point, size, direction, angle), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapCapsule(point, size, direction, angleDegrees, contactFilter, results);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, ContactFilter2D contactFilter, List<Collider2D> results)
+		public static int OverlapCapsule(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, ContactFilter2D contactFilter, List<Collider2D> results)
 		{
-			int count = Physics2D.OverlapCapsule(point, size, direction, angle, contactFilter, results);
-			D.raw(new Capsule2D(point, size, direction, angle), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapCapsule(point, size, direction, angleDegrees, contactFilter, results);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle)
+		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees)
 		{
-			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angle);
-			D.raw(new Capsule2D(point, size, direction, angle), results.Length > 0, DrawPhysicsSettings.Duration);
+			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angleDegrees);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees), results.Length > 0, DrawPhysicsSettings.Duration);
 			foreach (Collider2D collider in results)
 				D.raw(collider, HitColor, DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask)
+		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, int layerMask)
 		{
-			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angle, layerMask);
-			D.raw(new Capsule2D(point, size, direction, angle), results.Length > 0, DrawPhysicsSettings.Duration);
+			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angleDegrees, layerMask);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees), results.Length > 0, DrawPhysicsSettings.Duration);
 			foreach (Collider2D collider in results)
 				D.raw(collider, HitColor, DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth)
+		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, int layerMask, float minDepth)
 		{
-			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angle, layerMask, minDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), results.Length > 0, DrawPhysicsSettings.Duration);
+			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angleDegrees, layerMask, minDepth);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees, minDepth), results.Length > 0, DrawPhysicsSettings.Duration);
 			foreach (Collider2D collider in results)
 				D.raw(collider, HitColor, DrawPhysicsSettings.Duration);
 			return results;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, int layerMask, float minDepth, float maxDepth)
+		public static Collider2D[] OverlapCapsuleAll(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, int layerMask, float minDepth, float maxDepth)
 		{
-			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angle, layerMask, minDepth, maxDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), results.Length > 0, DrawPhysicsSettings.Duration);
+			Collider2D[] results = Physics2D.OverlapCapsuleAll(point, size, direction, angleDegrees, layerMask, minDepth, maxDepth);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees, minDepth), results.Length > 0, DrawPhysicsSettings.Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), results.Length > 0, DrawPhysicsSettings.Duration);
+				D.raw(new Capsule2D(point, size, direction, angleDegrees, maxDepth), results.Length > 0, DrawPhysicsSettings.Duration);
 			foreach (Collider2D collider in results)
 				D.raw(collider, HitColor, DrawPhysicsSettings.Duration);
 			return results;
@@ -1526,42 +1531,42 @@ namespace Vertx.Debugging
 
 #if !UNITY_2023_1_OR_NEWER
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results)
+		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, Collider2D[] results)
 		{
-			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results);
-			D.raw(new Capsule2D(point, size, direction, angle), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angleDegrees, results);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask)
+		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, Collider2D[] results, int layerMask)
 		{
-			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask);
-			D.raw(new Capsule2D(point, size, direction, angle), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angleDegrees, results, layerMask);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask, float minDepth)
+		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, Collider2D[] results, int layerMask, float minDepth)
 		{
-			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask, minDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angleDegrees, results, layerMask, minDepth);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees, minDepth), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angle, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
+		public static int OverlapCapsuleNonAlloc(Vector2 point, Vector2 size, CapsuleDirection2D direction, float angleDegrees, Collider2D[] results, int layerMask, float minDepth, float maxDepth)
 		{
-			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angle, results, layerMask, minDepth, maxDepth);
-			D.raw(new Capsule2D(point, size, direction, angle, minDepth), count > 0, DrawPhysicsSettings.Duration);
+			int count = Physics2D.OverlapCapsuleNonAlloc(point, size, direction, angleDegrees, results, layerMask, minDepth, maxDepth);
+			D.raw(new Capsule2D(point, size, direction, angleDegrees, minDepth), count > 0, DrawPhysicsSettings.Duration);
 			if (maxDepth - minDepth > 0.001f)
-				D.raw(new Capsule2D(point, size, direction, angle, maxDepth), count > 0, DrawPhysicsSettings.Duration);
+				D.raw(new Capsule2D(point, size, direction, angleDegrees, maxDepth), count > 0, DrawPhysicsSettings.Duration);
 			for (int i = 0; i < count; i++)
 				D.raw(results[i], HitColor, DrawPhysicsSettings.Duration);
 			return count;

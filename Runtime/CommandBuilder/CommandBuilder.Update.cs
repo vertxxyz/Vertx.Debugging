@@ -105,9 +105,7 @@ namespace Vertx.Debugging
 			);
 		}
 
-#if VERTX_BURST
 		[Unity.Burst.BurstCompile]
-#endif
 		private struct RemovalJob<T> : IRemovalJob<T> where T : unmanaged
 		{
 			public NativeList<float> Durations;

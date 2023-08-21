@@ -6,7 +6,8 @@
         "GUID:15fc0a57446b3144c949da3e2b9737a9",
         "GUID:457756d89b35d2941b3e7b37b4ece6f1",
         "GUID:df380645f10b7bc4b97d4f5eb6303d95",
-        "GUID:2665a8d13d1b3f18800f46e256720795"
+        "GUID:2665a8d13d1b3f18800f46e256720795",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -45,11 +46,6 @@
             "name": "com.unity.render-pipelines.universal",
             "expression": "9",
             "define": "VERTX_URP_9_0_OR_NEWER"
-        },
-        {
-            "name": "com.unity.burst",
-            "expression": "",
-            "define": "VERTX_BURST"
         },
         {
             "name": "com.unity.collections",

@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 using UnityEngine;
 using Vertx.Debugging.Internal;
 
@@ -92,7 +93,7 @@ namespace Vertx.Debugging
 					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
 						? new Shape.Line(Gizmos.matrix.MultiplyPoint3x4(line.A), Gizmos.matrix.MultiplyPoint3x4(line.B))
 						: line,
-					color
+					new float4(color.r, color.g, color.b, color.a)
 				),
 				duration
 			);
@@ -106,7 +107,7 @@ namespace Vertx.Debugging
 					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
 						? new Shape.DashedLine(Gizmos.matrix.MultiplyPoint3x4(line.A), Gizmos.matrix.MultiplyPoint3x4(line.B))
 						: line,
-					color
+					new float4(color.r, color.g, color.b, color.a)
 				),
 				duration
 			);
@@ -117,8 +118,8 @@ namespace Vertx.Debugging
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Arcs.Add(
 				new ArcGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Arc(Gizmos.matrix * arc.Matrix, arc.Angle) : arc,
-					color,
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Arc(math.mul(Gizmos.matrix, arc.Matrix), arc.Angle) : arc,
+					new float4(color.r, color.g, color.b, color.a),
 					modifications
 				),
 				duration
@@ -130,8 +131,8 @@ namespace Vertx.Debugging
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Boxes.Add(
 				new BoxGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Box(Gizmos.matrix * box.Matrix) : box,
-					color,
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Box(math.mul(Gizmos.matrix, box.Matrix)) : box,
+					new float4(color.r, color.g, color.b, color.a),
 					modifications
 				),
 				duration
@@ -146,7 +147,7 @@ namespace Vertx.Debugging
 					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
 						? new Shape.Outline(Gizmos.matrix.MultiplyPoint3x4(outline.A), Gizmos.matrix.MultiplyPoint3x4(outline.B), Gizmos.matrix.MultiplyPoint3x4(outline.C))
 						: outline,
-					color,
+					new float4(color.r, color.g, color.b, color.a),
 					modifications
 				),
 				duration
@@ -158,8 +159,8 @@ namespace Vertx.Debugging
 			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
 			group.Casts.Add(
 				new CastGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Cast(Gizmos.matrix * cast.Matrix, Gizmos.matrix.MultiplyPoint3x4(cast.Vector)) : cast,
-					color
+					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Cast(math.mul(Gizmos.matrix, cast.Matrix), Gizmos.matrix.MultiplyPoint3x4(cast.Vector)) : cast,
+					new float4(color.r, color.g, color.b, color.a)
 				),
 				duration
 			);

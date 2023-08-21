@@ -4,6 +4,8 @@
 #endif
 using System;
 using System.Collections.Generic;
+using Unity.Burst;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -299,7 +301,7 @@ namespace Vertx.Debugging
 					shape.Set(commandBuffer, propertyBlock);
 					mat.SetFloat(_zWriteKey, depthWrite ? 1f : 0f);
 					mat.SetFloat(_zTestKey, (float)(depthTest ? CompareFunction.LessEqual : CompareFunction.Always));
-					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, depthTest ? -1 : 1, Mathf.CeilToInt(shapeCount / (float)groupCount), propertyBlock);
+					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, depthTest ? -1 : 1, (int)math.ceil(shapeCount / (float)groupCount), propertyBlock);
 					return true;
 				}
 			}

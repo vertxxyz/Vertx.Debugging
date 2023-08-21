@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using static Vertx.Debugging.Shape;
@@ -132,7 +133,7 @@ namespace Vertx.Debugging
 					if (uses3DIcons)
 					{
 						float iconSize = size * 1000;
-						alpha = 1 - Mathf.InverseLerp(iconSize * 0.75f, iconSize, distance);
+						alpha = 1 - math.unlerp(iconSize * 0.75f, iconSize, distance);
 						if (alpha <= 0)
 							continue;
 					}

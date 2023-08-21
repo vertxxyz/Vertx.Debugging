@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
 
@@ -93,49 +94,49 @@ namespace Vertx.Debugging
 
 		private const int MaxDrawDistance = 1_000_000;
 
-		private static Vector3 GetValidPerpendicular(Vector3 input)
+		private static float3 GetValidPerpendicular(float3 input)
 		{
-			Vector3 alt = Vector3.right;
-			if (Mathf.Abs(Vector3.Dot(input, alt)) > 0.95)
-				alt = Vector3.up;
-			return Vector3.Cross(input, alt).normalized;
+			float3 alt = math.right();
+			if (math.abs(math.dot(input, alt)) > 0.95)
+				alt = math.up();
+			return math.normalizesafe(math.cross(input, alt));
 		}
 
-		private static Vector3 GetValidAxisAligned(Vector3 normal)
+		private static float3 GetValidAxisAligned(float3 normal)
 		{
-			Vector3 alternate = new Vector3(0, 0, 1);
-			if (Mathf.Abs(Vector3.Dot(normal, alternate)) > 0.707f)
-				alternate = new Vector3(0, 1, 0);
+			float3 alternate = new float3(0, 0, 1);
+			if (math.abs(math.dot(normal, alternate)) > 0.707f)
+				alternate = new float3(0, 1, 0);
 			return alternate;
 		}
 
-		private static void EnsureNormalized(this ref Vector3 vector3, out float length)
+		private static void EnsureNormalized(this ref float3 vector3, out float length)
 		{
-			float sqrMag = vector3.sqrMagnitude;
+			float sqrMag = math.lengthsq(vector3);
 			if (Mathf.Approximately(sqrMag, 1))
 			{
 				length = 1;
 				return;
 			}
 
-			length = Mathf.Sqrt(sqrMag);
+			length = math.sqrt(sqrMag);
 			vector3 /= length;
 		}
 
-		private static void EnsureNormalized(this ref Vector2 vector2)
+		private static void EnsureNormalized(this ref float2 vector2)
 		{
-			float sqrMag = vector2.sqrMagnitude;
+			float sqrMag = math.lengthsq(vector2);
 			if (Mathf.Approximately(sqrMag, 1))
 				return;
 			if (Mathf.Approximately(sqrMag, 0))
 				return;
 
-			vector2 /= Mathf.Sqrt(sqrMag);
+			vector2 /= math.sqrt(sqrMag);
 		}
 
-		private static void EnsureNormalized(this ref Vector2 vector2, out float length)
+		private static void EnsureNormalized(this ref float2 vector2, out float length)
 		{
-			float sqrMag = vector2.sqrMagnitude;
+			float sqrMag = math.lengthsq(vector2);
 			if (Mathf.Approximately(sqrMag, 1))
 			{
 				length = 1;
@@ -147,73 +148,73 @@ namespace Vertx.Debugging
 				return;
 			}
 
-			length = Mathf.Sqrt(sqrMag);
+			length = math.sqrt(sqrMag);
 			vector2 /= length;
 		}
 
-		private static void EnsureNormalized(this ref Vector3 vector3)
+		private static void EnsureNormalized(this ref float3 vector3)
 		{
-			float sqrMag = vector3.sqrMagnitude;
+			float sqrMag = math.lengthsq(vector3);
 			if (Mathf.Approximately(sqrMag, 1))
 				return;
 			if (Mathf.Approximately(sqrMag, 0))
 				return;
-			vector3 /= Mathf.Sqrt(sqrMag);
+			vector3 /= math.sqrt(sqrMag);
 		}
 
 		private static float GetClampedMaxDistance(float distance)
 		{
 			if (float.IsInfinity(distance))
 				return MaxDrawDistance;
-			return Mathf.Min(distance, MaxDrawDistance);
+			return math.min(distance, MaxDrawDistance);
 		}
 
-		private static void GetRotationCoefficients(float angle, out float s, out float c)
+		private static void GetRotationCoefficients(Angle angle, out float s, out float c)
 		{
-			float a = angle * Mathf.Deg2Rad;
-			s = Mathf.Sin(a);
-			c = Mathf.Cos(a);
+			float a = angle.Radians;
+			s = math.sin(a);
+			c = math.cos(a);
 		}
 
-		private static Vector2 RotateUsingCoefficients(Vector2 vector, float s, float c)
+		private static float2 RotateUsingCoefficients(float2 vector, float s, float c)
 		{
 			float u = vector.x * c - vector.y * s;
 			float v = vector.x * s + vector.y * c;
-			return new Vector2(u, v);
+			return new float2(u, v);
 		}
 
-		private static Vector2 Rotate(Vector2 vector, float angle)
+		private static float2 Rotate(float2 vector, Angle angle)
 		{
 			GetRotationCoefficients(angle, out float s, out float c);
 			return RotateUsingCoefficients(vector, s, c);
 		}
 
-		private static Vector3 RotateUsingCoefficients(Vector3 vector, float s, float c)
+		private static float3 RotateUsingCoefficients(float3 vector, float s, float c)
 		{
 			float u = vector.x * c - vector.y * s;
 			float v = vector.x * s + vector.y * c;
-			return new Vector3(u, v, vector.z);
+			return new float3(u, v, vector.z);
 		}
 
-		private static Vector3 Rotate(Vector3 vector, float angle)
+		private static float3 Rotate(float3 vector, Angle angle)
 		{
 			GetRotationCoefficients(angle, out float s, out float c);
 			return RotateUsingCoefficients(vector, s, c);
 		}
 
-		private static Vector2 GetDirectionFromAngle(float angle) => angle == 0 ? Vector2.right : Rotate(Vector2.right, angle);
+		private static float2 GetDirectionFromAngle(Angle angle) => angle == 0 ? new float2(1, 0) : Rotate(new float2(1, 0), angle);
 
-		private static float ToAngleDegrees(this Vector2 v) => Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
+		private static float ToAngleDegrees(this float2 v) => math.atan2(v.y, v.x) * math.TODEGREES;
 
-		private static Vector2 PerpendicularClockwise(Vector2 vector2) => new Vector2(vector2.y, -vector2.x);
+		private static float2 PerpendicularClockwise(float2 vector2) => new float2(vector2.y, -vector2.x);
 
-		private static Vector2 PerpendicularCounterClockwise(Vector2 vector2) => new Vector2(-vector2.y, vector2.x);
+		private static float2 PerpendicularCounterClockwise(float2 vector2) => new float2(-vector2.y, vector2.x);
 
-		private static Vector3 PerpendicularClockwise(Vector3 vector3) => new Vector3(vector3.y, -vector3.x, vector3.z);
+		private static float3 PerpendicularClockwise(float3 vector3) => new float3(vector3.y, -vector3.x, vector3.z);
 
-		private static Vector3 PerpendicularCounterClockwise(Vector3 vector3) => new Vector3(-vector3.y, vector3.x, vector3.z);
+		private static float3 PerpendicularCounterClockwise(float3 vector3) => new float3(-vector3.y, vector3.x, vector3.z);
 
-		private static Vector3 Add(this Vector3 a, Vector2 b) => new Vector3(a.x + b.x, a.y + b.y, a.z);
+		private static float3 Add(this float3 a, float2 b) => new float3(a.x + b.x, a.y + b.y, a.z);
 
 		private static bool HasZeroDistanceHit(RaycastHit[] results, int resultCount)
 		{
@@ -247,22 +248,22 @@ namespace Vertx.Debugging
 
 			public static readonly Point[] Points =
 			{
-				new Point(new Vector3(-1, -1, -1), Direction.Left | Direction.Bottom | Direction.Back),
-				new Point(new Vector3(1, -1, -1), Direction.Right | Direction.Bottom | Direction.Back),
-				new Point(new Vector3(-1, 1, -1), Direction.Left | Direction.Top | Direction.Back),
-				new Point(new Vector3(1, 1, -1), Direction.Right | Direction.Top | Direction.Back),
-				new Point(new Vector3(-1, -1, 1), Direction.Left | Direction.Bottom | Direction.Forward),
-				new Point(new Vector3(1, -1, 1), Direction.Right | Direction.Bottom | Direction.Forward),
-				new Point(new Vector3(-1, 1, 1), Direction.Left | Direction.Top | Direction.Forward),
-				new Point(new Vector3(1, 1, 1), Direction.Right | Direction.Top | Direction.Forward)
+				new Point(new float3(-1, -1, -1), Direction.Left | Direction.Bottom | Direction.Back),
+				new Point(new float3(1, -1, -1), Direction.Right | Direction.Bottom | Direction.Back),
+				new Point(new float3(-1, 1, -1), Direction.Left | Direction.Top | Direction.Back),
+				new Point(new float3(1, 1, -1), Direction.Right | Direction.Top | Direction.Back),
+				new Point(new float3(-1, -1, 1), Direction.Left | Direction.Bottom | Direction.Forward),
+				new Point(new float3(1, -1, 1), Direction.Right | Direction.Bottom | Direction.Forward),
+				new Point(new float3(-1, 1, 1), Direction.Left | Direction.Top | Direction.Forward),
+				new Point(new float3(1, 1, 1), Direction.Right | Direction.Top | Direction.Forward)
 			};
 
 			public readonly struct Point
 			{
-				public readonly Vector3 Coordinate;
+				public readonly float3 Coordinate;
 				public readonly Direction Direction;
 
-				public Point(Vector3 coordinate, Direction direction)
+				public Point(float3 coordinate, Direction direction)
 				{
 					Coordinate = coordinate;
 					Direction = direction;
@@ -271,30 +272,30 @@ namespace Vertx.Debugging
 
 			public static readonly Edge[] Edges =
 			{
-				new Edge(new Vector3(-1, -1, -1), new Vector3(1, -1, -1), Direction.Bottom | Direction.Back),
-				new Edge(new Vector3(-1, -1, -1), new Vector3(-1, 1, -1), Direction.Left | Direction.Back),
-				new Edge(new Vector3(-1, -1, -1), new Vector3(-1, -1, 1), Direction.Left | Direction.Bottom),
+				new Edge(new float3(-1, -1, -1), new float3(1, -1, -1), Direction.Bottom | Direction.Back),
+				new Edge(new float3(-1, -1, -1), new float3(-1, 1, -1), Direction.Left | Direction.Back),
+				new Edge(new float3(-1, -1, -1), new float3(-1, -1, 1), Direction.Left | Direction.Bottom),
 				//
-				new Edge(new Vector3(-1, -1, 1), new Vector3(-1, 1, 1), Direction.Left | Direction.Forward),
-				new Edge(new Vector3(-1, -1, 1), new Vector3(1, -1, 1), Direction.Bottom | Direction.Forward),
+				new Edge(new float3(-1, -1, 1), new float3(-1, 1, 1), Direction.Left | Direction.Forward),
+				new Edge(new float3(-1, -1, 1), new float3(1, -1, 1), Direction.Bottom | Direction.Forward),
 				//
-				new Edge(new Vector3(-1, 1, -1), new Vector3(1, 1, -1), Direction.Top | Direction.Back),
-				new Edge(new Vector3(-1, 1, -1), new Vector3(-1, 1, 1), Direction.Left | Direction.Top),
+				new Edge(new float3(-1, 1, -1), new float3(1, 1, -1), Direction.Top | Direction.Back),
+				new Edge(new float3(-1, 1, -1), new float3(-1, 1, 1), Direction.Left | Direction.Top),
 				//
-				new Edge(new Vector3(1, -1, -1), new Vector3(1, 1, -1), Direction.Right | Direction.Back),
-				new Edge(new Vector3(1, -1, -1), new Vector3(1, -1, 1), Direction.Right | Direction.Bottom),
+				new Edge(new float3(1, -1, -1), new float3(1, 1, -1), Direction.Right | Direction.Back),
+				new Edge(new float3(1, -1, -1), new float3(1, -1, 1), Direction.Right | Direction.Bottom),
 				//
-				new Edge(new Vector3(1, 1, 1), new Vector3(1, 1, -1), Direction.Right | Direction.Top),
-				new Edge(new Vector3(1, 1, 1), new Vector3(1, -1, 1), Direction.Right | Direction.Forward),
-				new Edge(new Vector3(1, 1, 1), new Vector3(-1, 1, 1), Direction.Top | Direction.Forward)
+				new Edge(new float3(1, 1, 1), new float3(1, 1, -1), Direction.Right | Direction.Top),
+				new Edge(new float3(1, 1, 1), new float3(1, -1, 1), Direction.Right | Direction.Forward),
+				new Edge(new float3(1, 1, 1), new float3(-1, 1, 1), Direction.Top | Direction.Forward)
 			};
 
 			public readonly struct Edge
 			{
-				public readonly Vector3 A, B;
+				public readonly float3 A, B;
 				public readonly Direction Direction;
 
-				public Edge(Vector3 a, Vector3 b, Direction direction)
+				public Edge(float3 a, float3 b, Direction direction)
 				{
 					A = a;
 					B = b;

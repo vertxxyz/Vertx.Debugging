@@ -4,9 +4,14 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [2.1.5]
+## [3.0.0]
+### Changed
+- Minimum Unity version is now 2020.1.
+- Added dependencies on `com.unity.burst` and `com.unity.mathematics`.
+- Added support for drawing from Jobs and Burst-compiled functions.
+
 ### Added
-- Added `[BurstDiscard]` to `D.raw` functions so they don't need to be removed from locations that may be burst-compiled later.
+- Added `[ExecuteAlways]` to Debug Collision/Trigger Events to support visualising during `Physics.Simulate`.
 
 ## [2.1.4]
 ### Added

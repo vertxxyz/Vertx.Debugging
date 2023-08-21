@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Unity.Burst;
+using Unity.Mathematics;
 using UnityEngine;
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -66,7 +67,7 @@ namespace Vertx.Debugging
 
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Ray2D ray, Color color, float duration = 0) => raw(new Shape.Ray(ray.origin, ray.direction), color, duration);
+		public static void raw(Ray2D ray, Color color, float duration = 0) => raw(new Shape.Ray(new float3(ray.origin.x, ray.origin.y, 0), new float3(ray.direction.x, ray.direction.y, 0)), color, duration);
 
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
@@ -138,7 +139,7 @@ namespace Vertx.Debugging
 
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(RectInt rect, Color color, float duration = 0) => raw(new Shape.Box2D(rect.center, rect.size), color, duration);
+		public static void raw(RectInt rect, Color color, float duration = 0) => raw(new Shape.Box2D(rect.center, rect.size.xy()), color, duration);
 
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
@@ -211,7 +212,7 @@ namespace Vertx.Debugging
 		{
 			if (!hit)
 				return;
-			raw(new Shape.Ray(new Vector3(hit.point.x, hit.point.y, hit.transform.position.z), hit.normal), color, duration);
+			raw(new Shape.Ray(new float3(hit.point.x, hit.point.y, hit.transform.position.z), new float3(hit.normal.x, hit.normal.y, 0)), color, duration);
 		}
 
 		[BurstDiscard]
@@ -250,7 +251,7 @@ namespace Vertx.Debugging
 						new Shape.Arc(topLeft, topLeftRot, edgeRadius, angle).Draw(s_Builder, color, duration);
 						new Shape.Arc(bottomLeft, bottomLeftRot, edgeRadius, angle).Draw(s_Builder, color, duration);
 						new Shape.Arc(bottomRight, bottomRightRot, edgeRadius, angle).Draw(s_Builder, color, duration);
-						float h = Mathf.Sqrt(edgeRadius * edgeRadius * 0.5f);
+						float h = math.sqrt(edgeRadius * edgeRadius * 0.5f);
 						Vector3 a = new Vector3(h, h, 0),
 							b = new Vector3(h, -h, 0);
 						new Shape.Line(topLeft + topLeftRot * b, topRight + topRightRot * a).Draw(s_Builder, color, duration);

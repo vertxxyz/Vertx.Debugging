@@ -1,6 +1,7 @@
 #if VERTX_PHYSICS
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using Unity.Mathematics;
 using static Vertx.Debugging.Shape;
 
 // ReSharper disable RedundantCast
@@ -38,7 +39,7 @@ namespace Vertx.Debugging
 		public static bool Raycast(Vector3 origin, Vector3 direction)
 		{
 			bool hit = Physics.Raycast(origin, direction);
-			D.raw(new Shape.Ray(origin, direction, Mathf.Infinity), hit, DrawPhysicsSettings.Duration);
+			D.raw(new Shape.Ray(origin, direction, math.INFINITY), hit, DrawPhysicsSettings.Duration);
 			return hit;
 		}
 
