@@ -31,7 +31,10 @@ namespace Vertx.Debugging
 				: this(mesh, transform.localToWorldMatrix, arrowLength) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, duration);
+			
+			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (Mesh == null)
 					return;

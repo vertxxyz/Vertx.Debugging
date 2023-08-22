@@ -325,6 +325,9 @@ namespace Vertx.Debugging
 
 			_defaultGroup?.Dispose();
 			_gizmosGroup?.Dispose();
+
+			ref var unmanagedCommandBuilder = ref UnmanagedCommandBuilder.Instance.Data;
+			unmanagedCommandBuilder.Dispose();
 		}
 	}
 }

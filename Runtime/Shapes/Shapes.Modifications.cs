@@ -10,14 +10,16 @@ namespace Vertx.Debugging
 {
 	public static partial class Shape
 	{
-		public static float2 xy(this Vector3 value) => new float2(value.x, value.y);
-		public static float3 xy0(this float2 value) => new float3(value.x, value.y, 0);
-		public static float3 xy0(this Vector2 value) => new float3(value.x, value.y, 0);
-		public static float3 xyz(this Vector3Int value) => new float3(value.x, value.y, value.z);
-		public static float2 xy(this Vector2Int value) => new float2(value.x, value.y);
+		internal static float4 ToFloat4(this Color color) => new float4(color.r, color.g, color.b, color.a);
+		
+		internal static float2 xy(this Vector3 value) => new float2(value.x, value.y);
+		internal static float3 xy0(this float2 value) => new float3(value.x, value.y, 0);
+		internal static float3 xy0(this Vector2 value) => new float3(value.x, value.y, 0);
+		internal static float3 xyz(this Vector3Int value) => new float3(value.x, value.y, value.z);
+		internal static float2 xy(this Vector2Int value) => new float2(value.x, value.y);
 
-		public static float4 GetRow(this float4x4 matrix, int row) => new float4(matrix.c0[row], matrix.c1[row], matrix.c2[row], matrix.c3[row]);
-		public static void SetRow(this float4x4 matrix, int row, float4 value)
+		private static float4 GetRow(this float4x4 matrix, int row) => new float4(matrix.c0[row], matrix.c1[row], matrix.c2[row], matrix.c3[row]);
+		private static void SetRow(this float4x4 matrix, int row, float4 value)
 		{
 			matrix.c0[row] = value[0];
             matrix.c1[row] = value[1];
@@ -25,7 +27,7 @@ namespace Vertx.Debugging
             matrix.c3[row] = value[3];
         }
 
-		public static float3 MultiplyPoint3x4(this float4x4 matrix, float3 point)
+		private static float3 MultiplyPoint3x4(this float4x4 matrix, float3 point)
 		{
 			float3 res;
 			float4 c0 = matrix.c0;
@@ -38,7 +40,7 @@ namespace Vertx.Debugging
 			return res;
 		}
         
-		public static float3 MultiplyVector(this float4x4 matrix, float3 vector)
+		private static float3 MultiplyVector(this float4x4 matrix, float3 vector)
 		{
 			float3 res;
 			float4 c0 = matrix.c0;

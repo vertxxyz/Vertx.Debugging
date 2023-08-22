@@ -246,12 +246,10 @@ namespace Vertx.Debugging
 				_elements.SetBufferToPropertyBlock(propertyBlock);
 				propertyBlock.SetInt(s_InstanceCountKey, _elements.Count);
 			}
-
-			public void SetDirty() => _dirty = true;
-			
+            
 			public void ChangedAfterRemoval()
 			{
-				SetDirty();
+				_dirty = true;
 				if (Count == 0)
 					HasNonZeroDuration = false;
 			}

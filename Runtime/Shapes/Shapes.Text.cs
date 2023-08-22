@@ -30,11 +30,17 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, duration);
+			
+			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
 
-			public void Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
-				=> commandBuilder.AppendText(this, backgroundColor, textColor, duration);
+			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> Draw(commandBuilder, backgroundColor, textColor, duration);
+			
+			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> CommandBuilder.Instance.AppendText(this, backgroundColor, textColor, duration);
 #endif
 		}
 
@@ -68,13 +74,19 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, duration);
+			
+			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
 			
-			public void Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> Draw(commandBuilder, backgroundColor, textColor, duration);
+			
+			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
 			{
 				if (ActiveViews == View.None) return;
-				commandBuilder.AppendScreenText(this, backgroundColor, textColor, duration);
+				CommandBuilder.Instance.AppendScreenText(this, backgroundColor, textColor, duration);
 			}
 #endif
 		}

@@ -27,6 +27,11 @@ namespace Vertx.Debugging
 				return;
 
 			State = UpdateState.CapturingGizmos;
+			
+			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.State = UnmanagedCommandBuilder.UpdateState.Gizmos;
+			builder.Gizmos.Clear();
+			
 			CommandBuilder.Instance.ClearGizmoGroup();
 		}
 
@@ -48,6 +53,9 @@ namespace Vertx.Debugging
 				return;
 			if (State == UpdateState.CapturingGizmos)
 				CommandBuilder.Instance.RenderGizmosGroup(true);
+			
+			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.State = UnmanagedCommandBuilder.UpdateState.Update;
 			State = UpdateState.Update;
 		}
 
@@ -63,6 +71,8 @@ namespace Vertx.Debugging
 			if (State == UpdateState.CapturingGizmos)
 				CommandBuilder.Instance.RenderGizmosGroup(false);
 			
+			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.State = UnmanagedCommandBuilder.UpdateState.Update;
 			State = UpdateState.Update;
 		}
 	}

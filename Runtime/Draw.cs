@@ -12,7 +12,7 @@ namespace Vertx.Debugging
 	public static class D
 	{
 #if UNITY_EDITOR
-		private static readonly CommandBuilder s_Builder = CommandBuilder.Instance;
+		private static UnmanagedCommandBuilder s_Builder => UnmanagedCommandBuilder.Instance.Data;
 #endif
 
 		[BurstDiscard]
@@ -32,6 +32,11 @@ namespace Vertx.Debugging
 			shape.Draw(s_Builder, color, duration);
 #endif
 		}
+		
+#if UNITY_EDITOR
+		internal static void raw<T>(UnmanagedCommandBuilder commandBuilder, T shape, Color color, float duration = 0) where T : struct, IDrawable
+			=> shape.Draw(commandBuilder, color, duration);
+#endif
 
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
@@ -50,6 +55,11 @@ namespace Vertx.Debugging
 			shape.Draw(s_Builder, castColor, hitColor, duration);
 #endif
 		}
+        
+#if UNITY_EDITOR
+		internal static void raw<T>(UnmanagedCommandBuilder commandBuilder, T shape, Color castColor, Color hitColor, float duration = 0) where T : struct, IDrawableCast 
+			=> shape.Draw(commandBuilder, castColor, hitColor, duration);
+#endif
 
 		// ------ Conversion for Unity types ------
 
@@ -295,14 +305,14 @@ namespace Vertx.Debugging
 	public interface IDrawable
 	{
 #if UNITY_EDITOR
-		void Draw(CommandBuilder commandBuilder, Color color, float duration);
+		internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration);
 #endif
 	}
 
 	public interface IDrawableCast : IDrawable
 	{
 #if UNITY_EDITOR
-		void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration);
+		internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration);
 #endif
 	}
 }
