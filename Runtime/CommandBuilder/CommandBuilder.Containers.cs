@@ -1,13 +1,9 @@
 #if UNITY_EDITOR
-#if UNITY_2020_1_OR_NEWER
-#define HAS_GRAPHICS_BUFFER
-#endif
 #if UNITY_2021_1_OR_NEWER
 #define HAS_SET_BUFFER_DATA
 #endif
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
@@ -18,65 +14,41 @@ using UnityEngine.Rendering;
 namespace Vertx.Debugging
 {
 	// ReSharper disable once ClassCannotBeInstantiated
-	public sealed partial class CommandBuilder
+	internal sealed partial class CommandBuilder
 	{
 		private static readonly int s_InstanceCountKey = Shader.PropertyToID("_InstanceCount");
 		
-		private class ListWrapper<T> : IDisposable where T : unmanaged
-		{
-			private const int InitialListCapacity = 32;
-
-			public NativeList<T> List;
-			public int Count => List.IsCreated ? List.Length : 0;
-
-			public void Create() => List = new NativeList<T>(InitialListCapacity, Allocator.Persistent);
-
-			public virtual void Dispose()
-			{
-				if (List.IsCreated)
-					List.Dispose();
-			}
-		}
-
-		private sealed class ListAndBuffer<T> : ListWrapper<T> where T : unmanaged
+		private sealed class BufferWrapper<T> where T : unmanaged
 		{
 			private readonly int _bufferId;
-#if HAS_GRAPHICS_BUFFER
 			private GraphicsBuffer _buffer;
 
-#else
-			private ComputeBuffer _buffer;
-#endif
+			private BufferWrapper() { }
 
-			private ListAndBuffer() { }
+			public BufferWrapper(string bufferName) => _bufferId = Shader.PropertyToID(bufferName);
 
-			public ListAndBuffer(string bufferName) => _bufferId = Shader.PropertyToID(bufferName);
-
-			public void SetBufferData(CommandBuffer commandBuffer)
+			public void SetBufferData(CommandBuffer commandBuffer, UnsafeList<T> data)
 			{
-				if (_buffer == null || _buffer.count < List.Capacity)
+				if (_buffer == null || _buffer.count < data.Capacity)
 				{
 					// Expand graphics buffer to encompass the capacity of the list.
 					_buffer?.Dispose();
-#if HAS_GRAPHICS_BUFFER
-					_buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, List.Capacity, UnsafeUtility.SizeOf<T>());
-#else
-					_buffer = new ComputeBuffer(List.Capacity, UnsafeUtility.SizeOf<T>(), ComputeBufferType.Structured);
-#endif
+					_buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, data.Capacity, UnsafeUtility.SizeOf<T>());
 				}
 
 #if HAS_SET_BUFFER_DATA
-				commandBuffer.SetBufferData(_buffer, List.AsArray(), 0, 0, List.Length);
+				commandBuffer.SetBufferData(_buffer, AsArray(data), 0, 0, data.Length);
 #else
-				_buffer.SetData(List.AsArray(), 0, 0, List.Length);
+				_buffer.SetData(AsArray(data), 0, 0, data.Length);
 #endif
 			}
+			
+			public unsafe NativeArray<T> AsArray(UnsafeList<T> list) => NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(list.Ptr, list.Length, Allocator.None);
 
 			public void SetBufferToPropertyBlock(MaterialPropertyBlock propertyBlock) => propertyBlock.SetBuffer(_bufferId, _buffer);
 
-			public override void Dispose()
+			public void Dispose()
 			{
-				base.Dispose();
 				_buffer?.Dispose();
 				_buffer = null;
 			}
@@ -202,93 +174,23 @@ namespace Vertx.Debugging
 			}
 		}
 		
-		private interface IShape
+		private sealed class ShapeBuffer<T> : IDisposable where T : unmanaged
 		{
-			int Count { get; }
-
-			void ChangedAfterRemoval();
-		}
-
-		private sealed class ShapeBuffersWithData<T> : IShape, IDisposable where T : unmanaged
-		{
-			// Avoids redundantly setting internal GraphicsBuffer data.
-			private bool _dirty = true;
-			private readonly ListWrapper<float> _durations;
-			private readonly ListAndBuffer<T> _elements;
-
+			private readonly BufferWrapper<T> _elements;
 			private MaterialPropertyBlock _propertyBlock;
-
 			public MaterialPropertyBlock PropertyBlock => _propertyBlock ?? (_propertyBlock = new MaterialPropertyBlock());
+			public ShapeBuffer(string bufferName) => _elements = new BufferWrapper<T>(bufferName);
 
-			public int Count => _elements.Count;
-
-			// Optimises removal calls, avoiding running the removal job if not necessary.
-			public bool HasNonZeroDuration { get; private set; }
-
-			public NativeList<T> InternalList => _elements.List;
-			public NativeList<float> DurationsInternalList => _durations.List;
-			
-			public ShapeBuffersWithData(string bufferName, bool usesDurations = true)
+			public void Set(CommandBuffer commandBuffer, MaterialPropertyBlock propertyBlock, UnsafeList<T> elements, bool elementsDirty)
 			{
-				if (usesDurations)
-					_durations = new ListWrapper<float>();
-				_elements = new ListAndBuffer<T>(bufferName);
-			}
-
-			public void Set(CommandBuffer commandBuffer, MaterialPropertyBlock propertyBlock)
-			{
-				if (_dirty)
-				{
-					_elements.SetBufferData(commandBuffer);
-					_dirty = false;
-				}
+				if (elementsDirty)
+					_elements.SetBufferData(commandBuffer, elements);
 
 				_elements.SetBufferToPropertyBlock(propertyBlock);
-				propertyBlock.SetInt(s_InstanceCountKey, _elements.Count);
-			}
-            
-			public void ChangedAfterRemoval()
-			{
-				_dirty = true;
-				if (Count == 0)
-					HasNonZeroDuration = false;
+				propertyBlock.SetInt(s_InstanceCountKey, elements.Length);
 			}
 
-			private void EnsureCreated()
-			{
-				if (_elements.List.IsCreated)
-					return;
-				_elements.Create();
-				_durations?.Create();
-				_dirty = true;
-			}
-
-			public void Add(in T element, float duration)
-			{
-				EnsureCreated();
-				_elements.List.Add(element);
-				_durations?.List.Add(duration);
-				_dirty = true;
-				if (duration > 0)
-					HasNonZeroDuration = true;
-			}
-
-			public void Clear()
-			{
-				if (_elements.Count == 0)
-					return;
-				_elements.List.Clear();
-				_durations?.List.Clear();
-				_dirty = true;
-			}
-
-			public void Dispose()
-			{
-				if (!_elements.List.IsCreated)
-					return;
-				_elements.Dispose();
-				_durations?.Dispose();
-			}
+			public void Dispose() => _elements.Dispose();
 		}
 	}
 }

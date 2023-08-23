@@ -4,7 +4,9 @@
 #endif
 using System;
 using System.Linq;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
@@ -20,7 +22,7 @@ using Vertx.Debugging.Internal;
 
 namespace Vertx.Debugging
 {
-	public sealed partial class CommandBuilder
+	internal sealed partial class CommandBuilder
 	{
 		private const string RemoveShapesByDurationProfilerName = Name + " " + nameof(RemoveShapesByDuration);
 
@@ -30,7 +32,7 @@ namespace Vertx.Debugging
 		/// <summary>
 		/// Queues <see cref="EarlyUpdate"/> into the EarlyUpdate portion of the player loop.
 		/// </summary>
-		[InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void InitialiseUpdate()
 		{
 			PlayerLoopSystem playerLoop = UnityEngine.LowLevel.PlayerLoop.GetCurrentPlayerLoop();
@@ -80,7 +82,7 @@ namespace Vertx.Debugging
 			}
 			else
 			{
-				RemoveShapesByDuration(_deltaTimeThisFrame, null);
+				RemoveShapesByDuration(_deltaTimeThisFrame);
 			}
 
 			_timeThisFrame = Time.time;
@@ -89,31 +91,32 @@ namespace Vertx.Debugging
 		/// <summary>
 		/// Remove data where the duration has been met.
 		/// </summary>
-		private void RemoveShapesByDuration(float deltaTime, JobHandle? dependency)
+		private void RemoveShapesByDuration(float deltaTime)
 		{
 			Profiler.BeginSample(RemoveShapesByDurationProfilerName);
-			_defaultGroup.RemoveByDeltaTime(deltaTime, dependency);
+			ref var unmanagedCommandBuilder = ref UnmanagedCommandBuilder.Instance.Data;
+			_defaultGroup.RemoveByDeltaTime(deltaTime, ref unmanagedCommandBuilder.Standard);
 			Profiler.EndSample();
 		}
 
 		private interface IRemovalJob<T> : IJob where T : unmanaged
 		{
 			void Configure(
-				NativeList<T> elements,
-				NativeList<float> durations,
+				UnsafeList<T> elements,
+				UnsafeList<float> durations,
 				float deltaTime
 			);
 		}
 
-		[Unity.Burst.BurstCompile]
+		[BurstCompile]
 		private struct RemovalJob<T> : IRemovalJob<T> where T : unmanaged
 		{
-			public NativeList<float> Durations;
-			public NativeList<T> Elements;
+			public UnsafeList<float> Durations;
+			public UnsafeList<T> Elements;
 			[ReadOnly]
 			public float DeltaTime;
 
-			public void Configure(NativeList<T> elements, NativeList<float> durations, float deltaTime)
+			public void Configure(UnsafeList<T> elements, UnsafeList<float> durations, float deltaTime)
 			{
 				Elements = elements;
 				Durations = durations;

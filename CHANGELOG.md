@@ -6,9 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [3.0.0]
 ### Changed
-- Minimum Unity version is now 2020.1.
+- Minimum Unity version is now 2020.3.
 - Added dependencies on `com.unity.burst` and `com.unity.mathematics`.
 - Added support for drawing from Jobs and Burst-compiled functions.
+- Only the API surface is now public. If you want to extend the package use Assembly References.
 
 ### Added
 - Added `[ExecuteAlways]` to Debug Collision/Trigger Events to support visualising during `Physics.Simulate`.

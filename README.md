@@ -14,7 +14,7 @@ https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-
 <table><tr><td>
 
   
-### Example
+#### Example
 
 ```csharp
 // Draw a sphere with the specified color.
@@ -29,10 +29,11 @@ D.raw(new Shape.Sphere(position, radius), hit, duration);
 D.raw(new Shape.SphereCastAll(position, direction, radius, hits, hitCount, 10), duration);
 ```
 
+#### Available contexts
 You can call these methods from most places, `Update`, `LateUpdate`, `FixedUpdate`, `OnDrawGizmos`, and with `ExecuteAlways`/`ExecuteInEditMode`.  
 If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.matrix` works, `Gizmos.color` is unsupported. Gizmos are not pickable.
 
-### Code stripping
+#### Code stripping
 Calls to these methods are stripped when building. You do not have to remove code or use defines.  
 If your code spans many statements, only the method call will be stripped. 
 </td></tr></table>
@@ -43,7 +44,7 @@ If your code spans many statements, only the method call will be stripped.
   <summary>Drawing <code>Physics</code> and <code>Physics2D</code> operations</summary>
 <table><tr><td>
 
-### Example
+#### Example
 You can replace calls to `Physics` and `Physics2D` methods with `DrawPhysics` and `DrawPhysics2D` to simply draw the results of a physics operation.
 
 ```csharp
@@ -53,7 +54,7 @@ int count = DrawPhysics.RaycastNonAlloc(r, results, distance);
 Use `DrawPhysicsSettings.SetDuration` or `Duration` to override the length of time the casts draw for. You will need to reset this value manually.
 Calls to `Duration` cannot be stripped, I would recommend using `SetDuration` if this is important to you.
 
-### Code stripping
+#### Code stripping
 The drawing within these methods will be stripped, and the original method is attempted to be inlined, but this is not consistent.  
 A single method call doesn't matter when compared to a physics operation, but you can completely strip these calls by instead declaring:
 
@@ -72,7 +73,7 @@ using Physics = Vertx.Debugging.DrawPhysics;
 > If you're on a version of Unity where the settings UI doesn't work, it's another Unity bug, thanks Unity!
 
 ## Shapes
-Drawable shapes and casts are contained within the `Shape` class. Statically import the class if you use them often:
+Drawable shapes and casts are contained within the `Shape` class. You can statically import the class if you use them often:
 
 ```csharp
 using static Vertx.Debugging.Shape;
@@ -149,7 +150,8 @@ using static Vertx.Debugging.Shape;
 ### Extensions
   
 The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
-Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
+
+Use the `UnmanagedCommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
 
 </td></tr></table>
 </details>
@@ -192,7 +194,7 @@ Components to draw physics events and common object attributes.
 1. Select **Add package by Name** or **Add package from Git URL**.
 1. Enter `com.vertx.debugging`.
 1. Select **Add**.
-
+1. If Burst is added for the first time or its version is changed you will need to restart Unity.
 </td></tr></table>
   
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)

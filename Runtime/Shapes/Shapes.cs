@@ -27,10 +27,10 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendLine(this, color, duration);
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendLine(this, color, duration);
 #endif
 
 			public Line GetShortened(float shortenBy, float minShorteningNormalised = 0)
@@ -61,10 +61,10 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendDashedLine(this, color, duration);
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendDashedLine(this, color, duration);
 #endif
 
 			public DashedLine GetShortened(float shortenBy, float minShorteningNormalised = 0)
@@ -85,10 +85,10 @@ namespace Vertx.Debugging
 			public LineStrip(IEnumerable<float3> points) => Points = points;
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3? previous = null;
 				foreach (float3 point in Points)
@@ -125,10 +125,10 @@ namespace Vertx.Debugging
 			public static implicit operator Ray(UnityEngine.Ray ray) => new Ray(ray.origin, ray.direction);
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendRay(this, color, duration);
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendRay(this, color, duration);
 #endif
 		}
 
@@ -146,10 +146,10 @@ namespace Vertx.Debugging
 			public Point(float2 position, float scale = 0.3f) : this(new float3(position.x, position.y, 0), scale) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float distance = Scale * 0.5f;
 				commandBuilder.AppendLine(new Line(new float3(Position.x - distance, Position.y, Position.z), new float3(Position.x + distance, Position.y, Position.z)), color, duration);
@@ -175,10 +175,10 @@ namespace Vertx.Debugging
 			public Arrow(Line line) : this(line.A, line.B - line.A) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
 				DrawArrowHead(commandBuilder, Origin, Direction, color, duration);
@@ -230,10 +230,10 @@ namespace Vertx.Debugging
 			public ArrowStrip(IEnumerable<float3> points) => Points = points;
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3? previous = null;
 				float3? origin = null;
@@ -272,10 +272,10 @@ namespace Vertx.Debugging
 			public HalfArrow(float3 origin, float3 direction, float3 perpendicular) : this(new Line(origin, origin + direction), perpendicular) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendLine(Line, color, duration);
 				DrawHalfArrowHead(commandBuilder, color, duration);
@@ -342,10 +342,10 @@ namespace Vertx.Debugging
 			private const float ArrowHeadAngle = 30f * math.TORADIANS;
 			private static readonly quaternion ArrowheadRotation = quaternion.AxisAngle(math.up(), -ArrowHeadAngle * 2);
 
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				// All this could be improved, reducing complex and redundant calculations.
 				float3 end = Origin + Direction;
@@ -393,10 +393,10 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
 				Arrow2D.DrawArrowHead(commandBuilder, Origin + Direction, math.normalizesafe(Direction), Normal, color, duration);
@@ -431,19 +431,19 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (ShowArrowHeads)
 				{
 					if ((VisibleAxes & Axes.X) != 0)
-						new Arrow(Origin, math.mul(Rotation, new float3(Scale, 0, 0))).Draw(commandBuilder, XColor, duration);
+						new Arrow(Origin, math.mul(Rotation, new float3(Scale, 0, 0))).Draw(ref commandBuilder, XColor, duration);
 					if ((VisibleAxes & Axes.Y) != 0)
-						new Arrow(Origin, math.mul(Rotation, new float3(0, Scale, 0))).Draw(commandBuilder, YColor, duration);
+						new Arrow(Origin, math.mul(Rotation, new float3(0, Scale, 0))).Draw(ref commandBuilder, YColor, duration);
 					if ((VisibleAxes & Axes.Z) != 0)
-						new Arrow(Origin, math.mul(Rotation, new float3(0, 0, Scale))).Draw(commandBuilder, ZColor, duration);
+						new Arrow(Origin, math.mul(Rotation, new float3(0, 0, Scale))).Draw(ref commandBuilder, ZColor, duration);
 				}
 				else
 				{
@@ -480,10 +480,10 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
 				commandBuilder.AppendArc(new Arc(Origin, Direction, Radius), color, duration);
@@ -532,10 +532,10 @@ namespace Vertx.Debugging
 			public Circle(float3 origin, float3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendArc(_arc, color, duration);
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendArc(_arc, color, duration);
 #endif
 		}
 
@@ -656,10 +656,10 @@ namespace Vertx.Debugging
 			public static Angle GetAngle(float radius, float chordLength) => Angle.FromRadians(math.asin(chordLength / (2f * radius)) * 2);
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (Angle.Turns == 0)
 					return;
@@ -748,10 +748,10 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendArc(new Arc(Origin, Rotation, InnerRadius, SectorWidth), color, duration);
 				if (math.abs(InnerRadius - OuterRadius) < 0.0001f)
@@ -804,10 +804,10 @@ namespace Vertx.Debugging
 			public Sphere GetTranslated(float3 translation) => new Sphere(math.mul(float4x4.Translate(translation), Matrix));
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				var coreArc = new Arc(Matrix);
 				commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.NormalFade);
@@ -816,7 +816,7 @@ namespace Vertx.Debugging
 				commandBuilder.AppendArc(coreArc, color, duration, DrawModifications.Custom);
 			}
 
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration, Axes visibleAxes)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration, Axes visibleAxes)
 			{
 				var coreArc = new Arc(Matrix);
 				if ((visibleAxes & Axes.Y) != 0)
@@ -844,20 +844,20 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3 direction = math.mul(Orientation, math.forward());
 
 				// Cap ----
 				float3 perpendicular = math.mul(Orientation, math.up());
 				float3 perpendicular2 = math.mul(Orientation, math.right());
-				Draw(commandBuilder, Origin, direction, perpendicular, perpendicular2, Radius, color, duration);
+				Draw(ref commandBuilder, Origin, direction, perpendicular, perpendicular2, Radius, color, duration);
 			}
 
-			internal static void Draw(UnmanagedCommandBuilder commandBuilder, float3 origin, float3 direction, float3 tangent, float3 bitangent, float radius, Color color, float duration)
+			internal static void Draw(ref UnmanagedCommandBuilder commandBuilder, float3 origin, float3 direction, float3 tangent, float3 bitangent, float radius, Color color, float duration)
 			{
 				// Cap ----
 				float3 endPos = origin;
@@ -910,10 +910,10 @@ namespace Vertx.Debugging
 			public Box GetTranslated(float3 translation) => new Box(math.mul(float4x4.Translate(translation), Matrix));
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> commandBuilder.AppendBox(this, color, duration, Shade3D ? DrawModifications.NormalFade : DrawModifications.None);
 #endif
 		}
@@ -976,16 +976,16 @@ namespace Vertx.Debugging
 			public Capsule GetTranslated(float3 translation) => new Capsule(SpherePosition1 + translation, SpherePosition2 + translation, Radius);
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3 up = SpherePosition2 - SpherePosition1;
 				up.EnsureNormalized(out float length);
 				if (length == 0)
 				{
-					new Sphere(SpherePosition1, Radius).Draw(commandBuilder, color, duration);
+					new Sphere(SpherePosition1, Radius).Draw(ref commandBuilder, color, duration);
 					return;
 				}
 
@@ -993,8 +993,8 @@ namespace Vertx.Debugging
 
 				float3 perpendicular = GetValidPerpendicular(up);
 				float3 perpendicular2 = math.cross(up, perpendicular);
-				Hemisphere.Draw(commandBuilder, SpherePosition2, up, perpendicular, perpendicular2, Radius, color, duration);
-				Hemisphere.Draw(commandBuilder, SpherePosition1, down, perpendicular, perpendicular2, Radius, color, duration);
+				Hemisphere.Draw(ref commandBuilder, SpherePosition2, up, perpendicular, perpendicular2, Radius, color, duration);
+				Hemisphere.Draw(ref commandBuilder, SpherePosition1, down, perpendicular, perpendicular2, Radius, color, duration);
 
 				perpendicular *= Radius;
 				perpendicular2 *= Radius;
@@ -1057,15 +1057,15 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				quaternion circleRotation = quaternion.LookRotation(math.mul(Rotation, math.up()), math.mul(Rotation, math.right()));
 				if (HalfHeight == 0)
 				{
-					new Circle(Center, circleRotation, Radius).Draw(commandBuilder, color, duration);
+					new Circle(Center, circleRotation, Radius).Draw(ref commandBuilder, color, duration);
 					return;
 				}
 
@@ -1083,8 +1083,8 @@ namespace Vertx.Debugging
 				float3 perpendicular2 = math.mul(Rotation, new float3(0, 0, Radius));
 
 
-				new Circle(point1, circleRotation, Radius).Draw(commandBuilder, color, duration);
-				new Circle(point2, circleRotation, Radius).Draw(commandBuilder, color, duration);
+				new Circle(point1, circleRotation, Radius).Draw(ref commandBuilder, color, duration);
+				new Circle(point2, circleRotation, Radius).Draw(ref commandBuilder, color, duration);
 
 				commandBuilder.AppendOutline(new Outline(point1 + perpendicular, point2 + perpendicular, perpendicular), color, duration, DrawModifications.NormalFade);
 				commandBuilder.AppendOutline(new Outline(point1 - perpendicular, point2 - perpendicular, -perpendicular), color, duration, DrawModifications.NormalFade);
@@ -1129,16 +1129,16 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3 normal = Value.normal;
 				float3 perpendicular = GetValidPerpendicular(normal);
 				quaternion rotation = quaternion.LookRotation(normal, perpendicular);
-				new Box2D(PointOnPlane, rotation, DisplaySize).Draw(commandBuilder, color, duration);
-				new Arrow(PointOnPlane, rotation).Draw(commandBuilder, color, duration);
+				new Box2D(PointOnPlane, rotation, DisplaySize).Draw(ref commandBuilder, color, duration);
+				new Arrow(PointOnPlane, rotation).Draw(ref commandBuilder, color, duration);
 			}
 #endif
 		}
@@ -1168,10 +1168,10 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendOutline(this, color, duration);
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendOutline(this, color, duration);
 #endif
 		}
 
@@ -1191,10 +1191,10 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendCast(this, color, duration);
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendCast(this, color, duration);
 #endif
 		}
 	}

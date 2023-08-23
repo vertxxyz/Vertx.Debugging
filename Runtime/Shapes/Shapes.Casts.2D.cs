@@ -32,21 +32,21 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				var originMin = new float3(Origin.x, Origin.y, MinDepth);
 				if (MaxDepth - MinDepth < 0.001f)
@@ -90,21 +90,21 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				var aMin = new float3(PointA.x, PointA.y, MinDepth);
 				var bMin = new float3(PointB.x, PointB.y, MinDepth);
@@ -147,23 +147,23 @@ namespace Vertx.Debugging
 				: this(origin, direction, results, results.Count, distance, minDepth, maxDepth) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				D.raw(Raycast, castColor, hitColor, duration);
+				Raycast.Draw(ref commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
 					D.raw(Results[i], hitColor, duration);
 			}
@@ -187,23 +187,23 @@ namespace Vertx.Debugging
 				: this(pointA, pointB, results, results.Count, minDepth, maxDepth) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				D.raw(commandBuilder, Linecast, castColor, hitColor, duration);
+				Linecast.Draw(ref commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
 					D.raw(Results[i], hitColor, duration);
 			}
@@ -232,46 +232,46 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				float maxDistance = GetClampedMaxDistance(MaxDistance);
 				float3 originMin = new float3(Origin.x, Origin.y, MinDepth);
 				float3 offset = (Direction * maxDistance).xy0();
 				if (MaxDepth - MinDepth < 0.001f)
 				{
-					new Circle(originMin, quaternion.identity, Radius).Draw(commandBuilder, castColor, duration);
-					new Capsule2D(originMin, originMin + offset, Radius).Draw(commandBuilder, castColor, duration);
+					new Circle(originMin, quaternion.identity, Radius).Draw(ref commandBuilder, castColor, duration);
+					new Capsule2D(originMin, originMin + offset, Radius).Draw(ref commandBuilder, castColor, duration);
 				}
 				else
 				{
-					new Circle(originMin, quaternion.identity, Radius).Draw(commandBuilder, castColor, duration);
-					new Capsule2D(originMin, originMin + offset, Radius).Draw(commandBuilder, castColor, duration);
+					new Circle(originMin, quaternion.identity, Radius).Draw(ref commandBuilder, castColor, duration);
+					new Capsule2D(originMin, originMin + offset, Radius).Draw(ref commandBuilder, castColor, duration);
 
 					float3 originMax = new float3(Origin.x, Origin.y, MaxDepth);
 
-					new Circle(originMax, quaternion.identity, Radius).Draw(commandBuilder, castColor, duration);
-					new Capsule2D(originMax, originMax + offset, Radius).Draw(commandBuilder, castColor, duration);
+					new Circle(originMax, quaternion.identity, Radius).Draw(ref commandBuilder, castColor, duration);
+					new Capsule2D(originMax, originMax + offset, Radius).Draw(ref commandBuilder, castColor, duration);
 				}
 
 				if (!Hit.HasValue || !Hit.Value)
 					return;
 
 				float2 hitPoint = Origin + Direction * Hit.Value.distance;
-				new Circle(new float3(hitPoint.x, hitPoint.y, Hit.Value.transform.position.z), quaternion.identity, Radius).Draw(commandBuilder, hitColor, duration);
+				new Circle(new float3(hitPoint.x, hitPoint.y, Hit.Value.transform.position.z), quaternion.identity, Radius).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -293,28 +293,28 @@ namespace Vertx.Debugging
 				: this(origin, radius, direction, results, results.Count, maxDistance, minDepth, maxDepth) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				CircleCast.Draw(commandBuilder, castColor, hitColor, duration);
+				CircleCast.Draw(ref commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
 				{
 					RaycastHit2D result = Results[i];
 					float2 hitPoint = CircleCast.Origin + CircleCast.Direction * result.distance;
-					new Circle(new float3(hitPoint.x, hitPoint.y, result.transform.position.z), quaternion.identity, CircleCast.Radius).Draw(commandBuilder, hitColor, duration);
+					new Circle(new float3(hitPoint.x, hitPoint.y, result.transform.position.z), quaternion.identity, CircleCast.Radius).Draw(ref commandBuilder, hitColor, duration);
 				}
 			}
 #endif
@@ -340,29 +340,29 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				float maxDistance = GetClampedMaxDistance(Distance);
 
 				bool hasMax = MaxDepth - MinDepth > 0.001f;
 
-				Box.Draw(commandBuilder, castColor, duration);
+				Box.Draw(ref commandBuilder, castColor, duration);
 				if (hasMax)
-					Box.GetWithZ(MaxDepth).Draw(commandBuilder, castColor, duration);
+					Box.GetWithZ(MaxDepth).Draw(ref commandBuilder, castColor, duration);
 
 				float3 offset = (Direction * maxDistance).xy0();
 
@@ -430,7 +430,7 @@ namespace Vertx.Debugging
 				if (!Hit.HasValue || !Hit.Value)
 					return;
 
-				Box.GetTranslatedWithZ(Direction * Hit.Value.distance, Hit.Value.transform.position.z).Draw(commandBuilder, hitColor, duration);
+				Box.GetTranslatedWithZ(Direction * Hit.Value.distance, Hit.Value.transform.position.z).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -452,27 +452,27 @@ namespace Vertx.Debugging
 				: this(origin, size, angleDegrees, direction, results, results.Count, distance, minDepth, maxDepth) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				BoxCast.Draw(commandBuilder, castColor, hitColor, duration);
+				BoxCast.Draw(ref commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
 				{
 					RaycastHit2D result = Results[i];
-					BoxCast.Box.GetTranslatedWithZ(BoxCast.Direction * result.distance, result.transform.position.z).Draw(commandBuilder, hitColor, duration);
+					BoxCast.Box.GetTranslatedWithZ(BoxCast.Direction * result.distance, result.transform.position.z).Draw(ref commandBuilder, hitColor, duration);
 				}
 			}
 #endif
@@ -498,27 +498,27 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				bool hasMax = MaxDepth - MinDepth > 0.001f;
 
-				Capsule.Draw(commandBuilder, castColor, duration);
+				Capsule.Draw(ref commandBuilder, castColor, duration);
 				if (hasMax)
-					Capsule.GetWithZ(MaxDepth).Draw(commandBuilder, castColor, duration);
+					Capsule.GetWithZ(MaxDepth).Draw(ref commandBuilder, castColor, duration);
 
 				float maxDistance = GetClampedMaxDistance(Distance);
 
@@ -581,7 +581,7 @@ namespace Vertx.Debugging
 				if (!Hit.HasValue || !Hit.Value)
 					return;
 				
-				Capsule.GetTranslatedWithZ(Direction * Hit.Value.distance, Hit.Value.transform.position.z).Draw(commandBuilder, hitColor, duration);
+				Capsule.GetTranslatedWithZ(Direction * Hit.Value.distance, Hit.Value.transform.position.z).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -604,27 +604,27 @@ namespace Vertx.Debugging
 
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
-				=> Draw(commandBuilder, castColor, hitColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				CapsuleCast.Draw(commandBuilder, castColor, hitColor, duration);
+				CapsuleCast.Draw(ref commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
 				{
 					RaycastHit2D result = Results[i];
-					CapsuleCast.Capsule.GetTranslated(CapsuleCast.Direction * result.distance).Draw(commandBuilder, hitColor, duration);
+					CapsuleCast.Capsule.GetTranslated(CapsuleCast.Direction * result.distance).Draw(ref commandBuilder, hitColor, duration);
 				}
 			}
 #endif

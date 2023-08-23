@@ -14,8 +14,7 @@ namespace Vertx.Debugging
 		public enum UpdateState
 		{
 			Update,
-			CapturingGizmos,
-			Ignore
+			CapturingGizmos
 		}
 
 		public static UpdateState State { get; private set; }

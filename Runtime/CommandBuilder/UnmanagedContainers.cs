@@ -1,6 +1,6 @@
-﻿using JetBrains.Annotations;
+﻿#if UNITY_EDITOR
+using JetBrains.Annotations;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace Vertx.Debugging
 {
@@ -82,3 +82,4 @@ namespace Vertx.Debugging
 		}
 	}
 }
+#endif

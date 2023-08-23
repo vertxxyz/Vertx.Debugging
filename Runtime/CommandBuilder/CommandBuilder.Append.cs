@@ -1,23 +1,13 @@
 #if UNITY_EDITOR
 using System;
-using System.Runtime.CompilerServices;
-using Unity.Mathematics;
 using UnityEngine;
 using Vertx.Debugging.Internal;
 
 namespace Vertx.Debugging
 {
 	// ReSharper disable once ClassCannotBeInstantiated
-	public sealed partial class CommandBuilder
+	internal sealed partial class CommandBuilder
 	{
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static bool IsInFixedUpdate()
-#if UNITY_2020_3_OR_NEWER
-			=> Time.inFixedTimeStep;
-#else
-			=> Time.deltaTime == Time.fixedDeltaTime;
-#endif
-
 		private class PauseCapture
 		{
 			private float _lastPausedTime;
@@ -49,7 +39,7 @@ namespace Vertx.Debugging
 					}
 
 					// Calls from FixedUpdate should hang around until the next FixedUpdate, at minimum.
-					if (IsInFixedUpdate())
+					if (Time.inFixedTimeStep)
 					{
 						float fixedDeltaTime = Time.fixedDeltaTime;
 						if (duration < fixedDeltaTime)
@@ -73,97 +63,11 @@ namespace Vertx.Debugging
 					_ = DrawRuntimeBehaviour.Instance;
 					group = _gizmosGroup;
 					break;
-				case UpdateContext.UpdateState.Ignore:
-					group = null;
-					return false;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 
 			return true;
-		}
-
-		public void AppendRay(in Shape.Ray ray, Color color, float duration) => AppendLine(new Shape.Line(ray), color, duration);
-
-		public void AppendLine(in Shape.Line line, Color color, float duration)
-		{
-			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
-			group.Lines.Add(
-				new LineGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
-						? new Shape.Line(Gizmos.matrix.MultiplyPoint3x4(line.A), Gizmos.matrix.MultiplyPoint3x4(line.B))
-						: line,
-					new float4(color.r, color.g, color.b, color.a)
-				),
-				duration
-			);
-		}
-		
-		public void AppendDashedLine(in Shape.DashedLine line, Color color, float duration)
-		{
-			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
-			group.DashedLines.Add(
-				new DashedLineGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
-						? new Shape.DashedLine(Gizmos.matrix.MultiplyPoint3x4(line.A), Gizmos.matrix.MultiplyPoint3x4(line.B))
-						: line,
-					new float4(color.r, color.g, color.b, color.a)
-				),
-				duration
-			);
-		}
-
-		public void AppendArc(in Shape.Arc arc, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
-		{
-			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
-			group.Arcs.Add(
-				new ArcGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Arc(math.mul(Gizmos.matrix, arc.Matrix), arc.Angle) : arc,
-					new float4(color.r, color.g, color.b, color.a),
-					modifications
-				),
-				duration
-			);
-		}
-
-		public void AppendBox(in Shape.Box box, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
-		{
-			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
-			group.Boxes.Add(
-				new BoxGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Box(math.mul(Gizmos.matrix, box.Matrix)) : box,
-					new float4(color.r, color.g, color.b, color.a),
-					modifications
-				),
-				duration
-			);
-		}
-
-		internal void AppendOutline(in Shape.Outline outline, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
-		{
-			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
-			group.Outlines.Add(
-				new OutlineGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos
-						? new Shape.Outline(Gizmos.matrix.MultiplyPoint3x4(outline.A), Gizmos.matrix.MultiplyPoint3x4(outline.B), Gizmos.matrix.MultiplyPoint3x4(outline.C))
-						: outline,
-					new float4(color.r, color.g, color.b, color.a),
-					modifications
-				),
-				duration
-			);
-		}
-
-		internal void AppendCast(in Shape.Cast cast, Color color, float duration)
-		{
-			if (!InitialiseAndGetGroup(ref duration, out var group)) return;
-			group.Casts.Add(
-				new CastGroup(
-					UpdateContext.State == UpdateContext.UpdateState.CapturingGizmos ? new Shape.Cast(math.mul(Gizmos.matrix, cast.Matrix), Gizmos.matrix.MultiplyPoint3x4(cast.Vector)) : cast,
-					new float4(color.r, color.g, color.b, color.a)
-				),
-				duration
-			);
 		}
 
 		public void AppendText(in Shape.Text text, Color backgroundColor, Color textColor, float duration)

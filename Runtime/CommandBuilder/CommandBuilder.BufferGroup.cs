@@ -8,30 +8,31 @@ using UnityEngine.Rendering;
 
 namespace Vertx.Debugging
 {
-	public sealed partial class CommandBuilder
+	internal sealed partial class CommandBuilder
 	{
 		private sealed class BufferGroup : IDisposable
 		{
 			private readonly string _commandBufferName;
-			public readonly ShapeBuffersWithData<LineGroup> Lines;
-			public readonly ShapeBuffersWithData<DashedLineGroup> DashedLines;
-			public readonly ShapeBuffersWithData<ArcGroup> Arcs;
-			public readonly ShapeBuffersWithData<BoxGroup> Boxes;
-			public readonly ShapeBuffersWithData<OutlineGroup> Outlines;
-			public readonly ShapeBuffersWithData<CastGroup> Casts;
+			public readonly ShapeBuffer<LineGroup> Lines;
+			public readonly ShapeBuffer<DashedLineGroup> DashedLines;
+			public readonly ShapeBuffer<ArcGroup> Arcs;
+			public readonly ShapeBuffer<BoxGroup> Boxes;
+			public readonly ShapeBuffer<OutlineGroup> Outlines;
+			public readonly ShapeBuffer<CastGroup> Casts;
 			public readonly TextDataLists Texts = new TextDataLists();
 			public readonly ScreenTextDataLists ScreenTexts = new ScreenTextDataLists();
-			private readonly IShape[] _shapes;
 			private readonly int[] _counters;
 
 			private enum ShapeIndex
 			{
-				Line,
-				DashedLine,
-				Arc,
-				Box,
-				Outline,
-				Cast
+				Line = 0,
+				DashedLine = 1,
+				Arc = 2,
+				Box = 3,
+				Outline = 4,
+				Cast = 5,
+				// -------
+				Length = 6
 			}
 
 			// Command buffer only used by the Built-in render pipeline.
@@ -39,17 +40,16 @@ namespace Vertx.Debugging
 
 			private BufferGroup() { }
 
-			public BufferGroup(bool usesDurations, string commandBufferName)
+			public BufferGroup(string commandBufferName)
 			{
 				_commandBufferName = commandBufferName;
-				Lines = new ShapeBuffersWithData<LineGroup>("line_buffer", usesDurations);
-				DashedLines = new ShapeBuffersWithData<DashedLineGroup>("dashed_line_buffer", usesDurations);
-				Arcs = new ShapeBuffersWithData<ArcGroup>("arc_buffer", usesDurations);
-				Boxes = new ShapeBuffersWithData<BoxGroup>("box_buffer", usesDurations);
-				Outlines = new ShapeBuffersWithData<OutlineGroup>("outline_buffer", usesDurations);
-				Casts = new ShapeBuffersWithData<CastGroup>("cast_buffer", usesDurations);
-				_shapes = new IShape[] { Lines, DashedLines, Arcs, Boxes, Outlines, Casts };
-				_counters = new int[_shapes.Length];
+				Lines = new ShapeBuffer<LineGroup>("line_buffer");
+				DashedLines = new ShapeBuffer<DashedLineGroup>("dashed_line_buffer");
+				Arcs = new ShapeBuffer<ArcGroup>("arc_buffer");
+				Boxes = new ShapeBuffer<BoxGroup>("box_buffer");
+				Outlines = new ShapeBuffer<OutlineGroup>("outline_buffer");
+				Casts = new ShapeBuffer<CastGroup>("cast_buffer");
+				_counters = new int[(int)ShapeIndex.Length];
 			}
 
 			/// <summary>
@@ -69,12 +69,7 @@ namespace Vertx.Debugging
 
 			public void Clear()
 			{
-				Lines.Clear();
-				DashedLines.Clear();
-				Arcs.Clear();
-				Boxes.Clear();
-				Outlines.Clear();
-				Casts.Clear();
+				UnmanagedCommandBuilder.Instance.Data.Clear();
 				Texts.Clear();
 				ScreenTexts.Clear();
 			}
@@ -87,38 +82,79 @@ namespace Vertx.Debugging
 				Boxes.Dispose();
 				Outlines.Dispose();
 				Casts.Dispose();
+				UnmanagedCommandBuilder.Instance.Data.Dispose();
 				_commandBuffer?.Dispose();
 			}
 
-			public void RemoveByDeltaTime(float deltaTime, JobHandle? dependency)
+			public void RemoveByDeltaTime(float deltaTime, ref UnmanagedCommandGroup group)
 			{
 				Texts.RemoveByDeltaTime(deltaTime);
 				ScreenTexts.RemoveByDeltaTime(deltaTime);
 
 				JobHandle? coreHandle = null;
-				_counters[(int)ShapeIndex.Line] = QueueRemovalJob<LineGroup, RemovalJob<LineGroup>>(Lines, dependency, ref coreHandle);
-				_counters[(int)ShapeIndex.DashedLine] = QueueRemovalJob<DashedLineGroup, RemovalJob<DashedLineGroup>>(DashedLines, dependency, ref coreHandle);
-				_counters[(int)ShapeIndex.Arc] = QueueRemovalJob<ArcGroup, RemovalJob<ArcGroup>>(Arcs, dependency, ref coreHandle);
-				_counters[(int)ShapeIndex.Box] = QueueRemovalJob<BoxGroup, RemovalJob<BoxGroup>>(Boxes, dependency, ref coreHandle);
-				_counters[(int)ShapeIndex.Outline] = QueueRemovalJob<OutlineGroup, RemovalJob<OutlineGroup>>(Outlines, dependency, ref coreHandle);
-				_counters[(int)ShapeIndex.Cast] = QueueRemovalJob<CastGroup, RemovalJob<CastGroup>>(Casts, dependency, ref coreHandle);
-
-				if (!coreHandle.HasValue)
-					coreHandle = dependency;
+				_counters[(int)ShapeIndex.Line] = QueueRemovalJob<LineGroup, RemovalJob<LineGroup>>(ref group.Lines, ref coreHandle);
+				_counters[(int)ShapeIndex.DashedLine] = QueueRemovalJob<DashedLineGroup, RemovalJob<DashedLineGroup>>(ref group.DashedLines, ref coreHandle);
+				_counters[(int)ShapeIndex.Arc] = QueueRemovalJob<ArcGroup, RemovalJob<ArcGroup>>(ref group.Arcs, ref coreHandle);
+				_counters[(int)ShapeIndex.Box] = QueueRemovalJob<BoxGroup, RemovalJob<BoxGroup>>(ref group.Boxes, ref coreHandle);
+				_counters[(int)ShapeIndex.Outline] = QueueRemovalJob<OutlineGroup, RemovalJob<OutlineGroup>>(ref group.Outlines, ref coreHandle);
+				_counters[(int)ShapeIndex.Cast] = QueueRemovalJob<CastGroup, RemovalJob<CastGroup>>(ref group.Casts, ref coreHandle);
 
 				if (coreHandle.HasValue)
 				{
 					coreHandle.Value.Complete();
 
-					for (int i = 0; i < _shapes.Length; i++)
+					for (ShapeIndex i = 0; i < ShapeIndex.Length; i++)
 					{
-						IShape shape = _shapes[i];
-						if(shape.Count == _counters[i]) continue;
-						shape.ChangedAfterRemoval();
+                        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+						switch (i)
+						{
+							case ShapeIndex.Line:
+							{
+								ref var g = ref group.Lines;
+								if (g.Count == _counters[(int)i]) continue;
+								g.ChangedAfterRemoval();
+								continue;
+							}
+							case ShapeIndex.DashedLine:
+							{
+								ref var g = ref group.DashedLines;
+								if (g.Count == _counters[(int)i]) continue;
+								g.ChangedAfterRemoval();
+								continue;
+							}
+							case ShapeIndex.Arc:
+							{
+								ref var g = ref group.Arcs;
+								if (g.Count == _counters[(int)i]) continue;
+								g.ChangedAfterRemoval();
+								continue;
+							}
+							case ShapeIndex.Box:
+							{
+								ref var g = ref group.Boxes;
+								if (g.Count == _counters[(int)i]) continue;
+								g.ChangedAfterRemoval();
+								continue;
+							}
+							case ShapeIndex.Outline:
+							{
+								ref var g = ref group.Outlines;
+								if (g.Count == _counters[(int)i]) continue;
+								g.ChangedAfterRemoval();
+								continue;
+							}
+							case ShapeIndex.Cast:
+							{
+								ref var g = ref group.Casts;
+								if (g.Count == _counters[(int)i]) continue;
+								g.ChangedAfterRemoval();
+								continue;
+							}
+						}
 					}
 				}
 
-				int QueueRemovalJob<T, TJob>(ShapeBuffersWithData<T> data, JobHandle? handleIn, ref JobHandle? handleOut)
+				int QueueRemovalJob<T, TJob>(ref UnmanagedCommandContainer<T> data, ref JobHandle? handleOut)
 					where T : unmanaged
 					where TJob : struct, IRemovalJob<T>
 				{
@@ -130,13 +166,13 @@ namespace Vertx.Debugging
 					{
 						var removalJob = new TJob();
 						removalJob.Configure(
-							data.InternalList,
-							data.DurationsInternalList,
+							data.Values,
+							data.Durations,
 							deltaTime
 						);
 						handleOut = !handleOut.HasValue
-							? removalJob.Schedule(handleIn ?? default)
-							: JobHandle.CombineDependencies(handleOut.Value, removalJob.Schedule(handleIn ?? default));
+							? removalJob.Schedule()
+							: JobHandle.CombineDependencies(handleOut.Value, removalJob.Schedule());
 						return length;
 					}
 

@@ -4,7 +4,6 @@
 #endif
 using System;
 using System.Collections.Generic;
-using Unity.Burst;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
@@ -12,7 +11,6 @@ using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 #if VERTX_URP
 using UnityEngine.Rendering.Universal;
-using Vertx.Debugging.Internal;
 #endif
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -25,19 +23,20 @@ namespace Vertx.Debugging.PlayerLoop
 
 namespace Vertx.Debugging
 {
-	public sealed partial class CommandBuilder
+	internal sealed partial class CommandBuilder
 	{
 		internal const string Name = "Vertx.Debugging";
 		internal const string GizmosName = Name + ".Gizmos";
 
 		internal static CommandBuilder Instance { get; }
 
-		private static readonly int _unityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
-		private static readonly int _zWriteKey = Shader.PropertyToID("_ZWrite");
-		private static readonly int _zTestKey = Shader.PropertyToID("_ZTest");
+		private static readonly int s_UnityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
+		private static readonly int s_ZWriteKey = Shader.PropertyToID("_ZWrite");
+		private static readonly int s_ZTestKey = Shader.PropertyToID("_ZTest");
 
-		private readonly BufferGroup _defaultGroup = new BufferGroup(true, Name);
-		private readonly BufferGroup _gizmosGroup = new BufferGroup(false, GizmosName);
+		private readonly BufferGroup _defaultGroup = new BufferGroup(Name);
+		private readonly BufferGroup _gizmosGroup = new BufferGroup(GizmosName);
+		
 #if VERTX_URP
 		private VertxDebuggingRenderPass _pass;
 #endif
@@ -55,6 +54,14 @@ namespace Vertx.Debugging
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
+		[InitializeOnLoadMethod]
+		private static void Initialise()
+		{
+			InitialiseUpdate();
+			_ = Instance;
+			UnmanagedCommandBuilder.Instance.Data.Initialise();
+		}
+		
 		private CommandBuilder()
 		{
 			Camera.onPostRender += OnPostRender;
@@ -145,7 +152,8 @@ namespace Vertx.Debugging
 
 			Profiler.BeginSample(Name);
 			CommandBuffer commandBuffer = null;
-			if (!SharedRenderingDetails(camera, _defaultGroup, ref commandBuffer, type))
+			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
+			if (!SharedRenderingDetails(camera, unmanaged.Standard, _defaultGroup, ref commandBuffer, type))
 			{
 				Profiler.EndSample();
 				return;
@@ -163,7 +171,8 @@ namespace Vertx.Debugging
 			else
 				type |= RenderingType.Game;
 
-			SharedRenderingDetails(camera, _defaultGroup, ref commandBuffer, type);
+			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
+			SharedRenderingDetails(camera, unmanaged.Standard, _defaultGroup, ref commandBuffer, type);
 		}
 
 		/// <summary>
@@ -179,7 +188,8 @@ namespace Vertx.Debugging
 			type |= RenderingType.Gizmos;
 
 			CommandBuffer commandBuffer = null;
-			if (!SharedRenderingDetails(camera, _gizmosGroup, ref commandBuffer, type))
+			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
+			if (!SharedRenderingDetails(camera, unmanaged.Gizmos, _gizmosGroup, ref commandBuffer, type))
 				return;
 			Graphics.ExecuteCommandBuffer(commandBuffer);
 		}
@@ -203,7 +213,7 @@ namespace Vertx.Debugging
 			GizmosAndGame = Gizmos | Game
 		}
 
-		private bool SharedRenderingDetails(Camera camera, BufferGroup group, ref CommandBuffer commandBuffer, RenderingType renderingType)
+		private bool SharedRenderingDetails(Camera camera, UnmanagedCommandGroup commandGroup, BufferGroup bufferGroup, ref CommandBuffer commandBuffer, RenderingType renderingType)
 		{
 			_pauseCapture.CommitCurrentPausedFrame();
 			_lastRenderingCamera = camera;
@@ -212,8 +222,8 @@ namespace Vertx.Debugging
 			if (!ShouldRenderCamera(camera, renderingType))
 				return false;
 
-			group.ReadyResources(ref commandBuffer);
-			return FillCommandBuffer(commandBuffer, camera, group, renderingType);
+			bufferGroup.ReadyResources(ref commandBuffer);
+			return FillCommandBuffer(commandBuffer, camera, commandGroup, bufferGroup, renderingType);
 		}
 
 		private static bool ShouldRenderCamera(Camera camera, RenderingType renderingType)
@@ -238,15 +248,15 @@ namespace Vertx.Debugging
 		/// The core rendering loop.
 		/// </summary>
 		/// <returns>True if relevant rendering commands were issued.</returns>
-		private bool FillCommandBuffer(CommandBuffer commandBuffer, Camera camera, BufferGroup group, RenderingType renderingType)
+		private bool FillCommandBuffer(CommandBuffer commandBuffer, Camera camera, UnmanagedCommandGroup commandGroup, BufferGroup group, RenderingType renderingType)
 		{
 			bool render;
 			if (renderingType == RenderingType.GizmosAndGame)
 			{
-				Matrix4x4 oldMatrix = Shader.GetGlobalMatrix(_unityMatrixVPKey);
-				commandBuffer.SetGlobalMatrix(_unityMatrixVPKey, GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix);
+				Matrix4x4 oldMatrix = Shader.GetGlobalMatrix(s_UnityMatrixVPKey);
+				commandBuffer.SetGlobalMatrix(s_UnityMatrixVPKey, GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix);
 				RenderShapes();
-				commandBuffer.SetGlobalMatrix(_unityMatrixVPKey, oldMatrix);
+				commandBuffer.SetGlobalMatrix(s_UnityMatrixVPKey, oldMatrix);
 			}
 			else
 			{
@@ -260,20 +270,20 @@ namespace Vertx.Debugging
 				DebuggingSettings settings = DebuggingSettings.instance;
 				bool depthTest = ((int)settings.DepthTest & (int)renderingType) != 0;
 				bool depthWrite = ((int)settings.DepthWrite & (int)renderingType) != 0;
-				render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, group.Lines, 128); // 256 vert target, 2 verts per line. 128 lines.
-				render |= RenderShape(AssetsUtility.Line, AssetsUtility.DashedLineMaterial, group.DashedLines, 128); // 256 vert target, 2 verts per line. 128 lines.
-				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, group.Arcs, 4); // 256 vert target, 64 verts per circle. 4 circles.
-				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, group.Boxes, 11); // 256 vert target, 12 edges, 2 verts each. 11 boxes.
-				render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, group.Outlines, 128);
-				render |= RenderShape(AssetsUtility.Line, AssetsUtility.CastMaterial, group.Casts, 128);
+				render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, commandGroup.Lines, group.Lines, 128); // 256 vert target, 2 verts per line. 128 lines.
+				render |= RenderShape(AssetsUtility.Line, AssetsUtility.DashedLineMaterial, commandGroup.DashedLines, group.DashedLines, 128); // 256 vert target, 2 verts per line. 128 lines.
+				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, commandGroup.Arcs, group.Arcs, 4); // 256 vert target, 64 verts per circle. 4 circles.
+				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, commandGroup.Boxes, group.Boxes, 11); // 256 vert target, 12 edges, 2 verts each. 11 boxes.
+				render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, commandGroup.Outlines, group.Outlines, 128);
+				render |= RenderShape(AssetsUtility.Line, AssetsUtility.CastMaterial, commandGroup.Casts, group.Casts, 128);
 
-				bool RenderShape<T>(
-					AssetsUtility.Asset<Mesh> mesh,
+				bool RenderShape<T>(AssetsUtility.Asset<Mesh> mesh,
 					AssetsUtility.MaterialAsset material,
-					ShapeBuffersWithData<T> shape,
+					UnmanagedCommandContainer<T> elements,
+					ShapeBuffer<T> buffer,
 					int groupCount = 1) where T : unmanaged
 				{
-					int shapeCount = shape.Count;
+					int shapeCount = elements.Count;
 					if (shapeCount <= 0)
 						return false;
 
@@ -295,12 +305,12 @@ namespace Vertx.Debugging
 					if (isCompiling)
 						return false;
 
-					MaterialPropertyBlock propertyBlock = shape.PropertyBlock;
+					MaterialPropertyBlock propertyBlock = buffer.PropertyBlock;
 					// Set the buffers to be used by the property block
 					// Synchronise the GraphicsBuffer with the data in the shape buffer.
-					shape.Set(commandBuffer, propertyBlock);
-					mat.SetFloat(_zWriteKey, depthWrite ? 1f : 0f);
-					mat.SetFloat(_zTestKey, (float)(depthTest ? CompareFunction.LessEqual : CompareFunction.Always));
+					buffer.Set(commandBuffer, propertyBlock, elements.Values, elements.Dirty);
+					mat.SetFloat(s_ZWriteKey, depthWrite ? 1f : 0f);
+					mat.SetFloat(s_ZTestKey, (float)(depthTest ? CompareFunction.LessEqual : CompareFunction.Always));
 					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, depthTest ? -1 : 1, (int)math.ceil(shapeCount / (float)groupCount), propertyBlock);
 					return true;
 				}

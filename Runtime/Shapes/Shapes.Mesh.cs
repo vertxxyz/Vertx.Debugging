@@ -31,10 +31,10 @@ namespace Vertx.Debugging
 				: this(mesh, transform.localToWorldMatrix, arrowLength) { }
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (Mesh == null)
 					return;
@@ -61,7 +61,7 @@ namespace Vertx.Debugging
 					meshData.GetVertices(vertices);
 					meshData.GetNormals(normals);
 					for (int j = 0; j < meshData.vertexCount; j++)
-						new Arrow(matrix.MultiplyPoint(vertices[j]), unscaledMatrix.MultiplyVector(normals[j]) * ArrowLength).Draw(commandBuilder, color, duration);
+						new Arrow(matrix.MultiplyPoint(vertices[j]), unscaledMatrix.MultiplyVector(normals[j]) * ArrowLength).Draw(ref commandBuilder, color, duration);
 				}
 #else
 				using (ListPool<Vector3>.Get(out List<Vector3> vertices))
@@ -70,7 +70,7 @@ namespace Vertx.Debugging
 					Mesh.GetVertices(vertices);
 					Mesh.GetNormals(normals);
 					for (int i = 0; i < vertices.Count; i++)
-						new Arrow(matrix.MultiplyPoint(vertices[i]), unscaledMatrix.MultiplyVector(normals[i]) * ArrowLength).Draw(commandBuilder, color, duration);
+						new Arrow(matrix.MultiplyPoint(vertices[i]), unscaledMatrix.MultiplyVector(normals[i]) * ArrowLength).Draw(ref commandBuilder, color, duration);
 				}
 #endif
 			}

@@ -30,16 +30,16 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
 
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
-				=> Draw(commandBuilder, backgroundColor, textColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> Draw(ref commandBuilder, backgroundColor, textColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
 				=> CommandBuilder.Instance.AppendText(this, backgroundColor, textColor, duration);
 #endif
 		}
@@ -74,16 +74,16 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
 			
-			void IDrawableCast.Draw(UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
-				=> Draw(commandBuilder, backgroundColor, textColor, duration);
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> Draw(ref commandBuilder, backgroundColor, textColor, duration);
 			
-			internal void Draw(UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
 			{
 				if (ActiveViews == View.None) return;
 				CommandBuilder.Instance.AppendScreenText(this, backgroundColor, textColor, duration);

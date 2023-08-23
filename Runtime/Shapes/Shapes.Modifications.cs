@@ -19,6 +19,7 @@ namespace Vertx.Debugging
 		internal static float2 xy(this Vector2Int value) => new float2(value.x, value.y);
 
 		private static float4 GetRow(this float4x4 matrix, int row) => new float4(matrix.c0[row], matrix.c1[row], matrix.c2[row], matrix.c3[row]);
+        
 		private static void SetRow(this float4x4 matrix, int row, float4 value)
 		{
 			matrix.c0[row] = value[0];
