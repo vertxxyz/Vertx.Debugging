@@ -43,7 +43,14 @@ namespace Vertx.Debugging
 #endif
 			}
 			
-			public unsafe NativeArray<T> AsArray(UnsafeList<T> list) => NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(list.Ptr, list.Length, Allocator.None);
+			public unsafe NativeArray<T> AsArray(UnsafeList<T> list)
+			{
+				NativeArray<T> array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(list.Ptr, list.Length, Allocator.None);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+				NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, AtomicSafetyHandle.GetTempMemoryHandle());
+#endif
+				return array;
+			}
 
 			public void SetBufferToPropertyBlock(MaterialPropertyBlock propertyBlock) => propertyBlock.SetBuffer(_bufferId, _buffer);
 

@@ -41,7 +41,12 @@ namespace Vertx.Debugging
 			SceneView.duringSceneGui += OnDuringSceneGUI;
 		}
 
-		public static void ForceStateToUpdate() => State = UpdateState.Update;
+		public static void ForceStateToUpdate()
+		{
+			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.State = UnmanagedCommandBuilder.UpdateState.Update;
+			State = UpdateState.Update;
+		}
 
 		private static void OnDuringSceneGUI(SceneView obj)
 		{
@@ -52,10 +57,8 @@ namespace Vertx.Debugging
 				return;
 			if (State == UpdateState.CapturingGizmos)
 				CommandBuilder.Instance.RenderGizmosGroup(true);
-			
-			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
-			builder.State = UnmanagedCommandBuilder.UpdateState.Update;
-			State = UpdateState.Update;
+
+			ForceStateToUpdate();
 		}
 
 		public static void OnGUI()
@@ -69,10 +72,8 @@ namespace Vertx.Debugging
 			
 			if (State == UpdateState.CapturingGizmos)
 				CommandBuilder.Instance.RenderGizmosGroup(false);
-			
-			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
-			builder.State = UnmanagedCommandBuilder.UpdateState.Update;
-			State = UpdateState.Update;
+
+			ForceStateToUpdate();
 		}
 	}
 }

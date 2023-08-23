@@ -36,6 +36,7 @@ namespace Vertx.Debugging
 			_values = new UnsafeList<T>(InitialListCapacity, Allocator.Persistent);
 			_durations = usesDurations ? new UnsafeList<float>(InitialListCapacity, Allocator.Persistent) : default;
 			Dirty = true;
+			_initialised = true;
 		}
 
 		public void Add(T value, float duration)
@@ -126,8 +127,7 @@ namespace Vertx.Debugging
 		public enum UpdateState
 		{
 			Update,
-			Gizmos,
-			Ignore
+			Gizmos
 		}
 
 		public UpdateState State { get; internal set; }
@@ -141,65 +141,96 @@ namespace Vertx.Debugging
 			Gizmos.Initialise(false);
 		}
 
-		private readonly bool TryGetGroup(out UnmanagedCommandGroup group)
+		public void AppendLine(in Shape.Line line, Color color, float duration)
 		{
 			switch (State)
 			{
 				case UpdateState.Update:
-					group = Standard;
-					return true;
+					Standard.Lines.Add(new LineGroup(line, color.ToFloat4()), duration);
+					break;
 				case UpdateState.Gizmos:
-					group = Gizmos;
-					return true;
-				case UpdateState.Ignore:
+					Gizmos.Lines.Add(new LineGroup(line, color.ToFloat4()), duration);
+					break;
 				default:
-					group = default;
-					return false;
+					throw new ArgumentOutOfRangeException();
 			}
-		}
-
-		public void AppendLine(in Shape.Line line, Color color, float duration)
-		{
-			if (!TryGetGroup(out var group))
-				return;
-			group.Lines.Add(new LineGroup(line, color.ToFloat4()), duration);
 		}
 
 		public void AppendRay(in Shape.Ray ray, Color color, float duration) => AppendLine(new Shape.Line(ray), color, duration);
 
 		public void AppendArc(in Shape.Arc arc, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
 		{
-			if (!TryGetGroup(out var group))
-				return;
-			group.Arcs.Add(new ArcGroup(arc, color.ToFloat4(), modifications), duration);
-		}
+			switch (State)
+			{
+				case UpdateState.Update:
+					Standard.Arcs.Add(new ArcGroup(arc, color.ToFloat4(), modifications), duration);
+					break;
+				case UpdateState.Gizmos:
+					Gizmos.Arcs.Add(new ArcGroup(arc, color.ToFloat4(), modifications), duration);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
+        }
 
 		public void AppendDashedLine(in Shape.DashedLine dashedLine, Color color, float duration)
 		{
-			if (!TryGetGroup(out var group))
-				return;
-			group.DashedLines.Add(new DashedLineGroup(dashedLine, color.ToFloat4()), duration);
+			switch (State)
+			{
+				case UpdateState.Update:
+					Standard.DashedLines.Add(new DashedLineGroup(dashedLine, color.ToFloat4()), duration);
+					break;
+				case UpdateState.Gizmos:
+					Gizmos.DashedLines.Add(new DashedLineGroup(dashedLine, color.ToFloat4()), duration);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		public void AppendOutline(in Shape.Outline outline, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
 		{
-			if (!TryGetGroup(out var group))
-				return;
-			group.Outlines.Add(new OutlineGroup(outline, color.ToFloat4(), modifications), duration);
+			switch (State)
+			{
+				case UpdateState.Update:
+					Standard.Outlines.Add(new OutlineGroup(outline, color.ToFloat4(), modifications), duration);
+					break;
+				case UpdateState.Gizmos:
+					Gizmos.Outlines.Add(new OutlineGroup(outline, color.ToFloat4(), modifications), duration);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		public void AppendBox(in Shape.Box box, Color color, float duration, Shape.DrawModifications modifications = Shape.DrawModifications.None)
 		{
-			if (!TryGetGroup(out var group))
-				return;
-			group.Boxes.Add(new BoxGroup(box, color.ToFloat4(), modifications), duration);
+			switch (State)
+			{
+				case UpdateState.Update:
+					Standard.Boxes.Add(new BoxGroup(box, color.ToFloat4(), modifications), duration);
+					break;
+				case UpdateState.Gizmos:
+					Gizmos.Boxes.Add(new BoxGroup(box, color.ToFloat4(), modifications), duration);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		public void AppendCast(in Shape.Cast cast, Color color, float duration)
 		{
-			if (!TryGetGroup(out var group))
-				return;
-			group.Casts.Add(new CastGroup(cast, color.ToFloat4()), duration);
+			switch (State)
+			{
+				case UpdateState.Update:
+					Standard.Casts.Add(new CastGroup(cast, color.ToFloat4()), duration);
+					break;
+				case UpdateState.Gizmos:
+					Gizmos.Casts.Add(new CastGroup(cast, color.ToFloat4()), duration);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		public void Dispose()

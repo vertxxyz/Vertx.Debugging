@@ -16,11 +16,6 @@ namespace Vertx.Debugging
 #endif
 	public static partial class Shape
 	{
-#if UNITY_EDITOR
-		private static CircleCache CircleCache => s_circleCache ?? (s_circleCache = new CircleCache());
-		private static CircleCache s_circleCache;
-#endif
-
 		static Shape()
 		{
 #if UNITY_EDITOR

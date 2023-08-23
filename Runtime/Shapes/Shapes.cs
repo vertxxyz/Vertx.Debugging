@@ -202,15 +202,16 @@ namespace Vertx.Debugging
 
 				void DoDrawArrowHead(float3 center, float3 normal, float radius)
 				{
-					float2[] circle = CircleCache.GetCircle(segments);
-					float3 tangent = GetValidPerpendicular(normal);
+					const float max = math.PI * 2;
+                    float3 tangent = GetValidPerpendicular(normal);
 					float3 bitangent = math.cross(normal, tangent);
 					tangent *= radius;
 					bitangent *= radius;
 					float3 lastPos = center + tangent;
 					for (int i = 1; i <= segments; i++)
 					{
-						float2 c = circle[i];
+						float angle = i * (1 / (segments * max));
+						float2 c = new float2(math.cos(angle), math.sin(angle));
 						float3 nextPos = center + tangent * c.x + bitangent * c.y;
 						commandBuilder.AppendLine(new Line(lastPos, nextPos), color, duration);
 						commandBuilder.AppendLine(new Line(lastPos, arrowPoint), color, duration);

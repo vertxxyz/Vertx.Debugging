@@ -99,11 +99,13 @@ namespace Vertx.Debugging
 				case PlayModeStateChange.ExitingEditMode:
 					_defaultGroup.Clear();
 					_gizmosGroup.Clear();
+					UnmanagedCommandBuilder.Instance.Data.Clear();
 					_isPlaying = true;
 					break;
 				case PlayModeStateChange.ExitingPlayMode:
 					_defaultGroup.Clear();
 					_gizmosGroup.Clear();
+					UnmanagedCommandBuilder.Instance.Data.Clear();
 					_isPlaying = false;
 					break;
 				case PlayModeStateChange.EnteredPlayMode:
@@ -194,7 +196,11 @@ namespace Vertx.Debugging
 			Graphics.ExecuteCommandBuffer(commandBuffer);
 		}
 
-		internal void ClearGizmoGroup() => _gizmosGroup.Clear();
+		internal void ClearGizmoGroup()
+		{
+			_gizmosGroup.Clear();
+			UnmanagedCommandBuilder.Instance.Data.Gizmos.Clear();
+		}
 
 		/// <summary>
 		/// This must match <see cref="DebuggingSettings.Location"/>'s Scene and Game
@@ -223,7 +229,7 @@ namespace Vertx.Debugging
 				return false;
 
 			bufferGroup.ReadyResources(ref commandBuffer);
-			return FillCommandBuffer(commandBuffer, camera, commandGroup, bufferGroup, renderingType);
+			return FillCommandBuffer(commandBuffer, camera, ref commandGroup, bufferGroup, renderingType);
 		}
 
 		private static bool ShouldRenderCamera(Camera camera, RenderingType renderingType)
@@ -248,24 +254,24 @@ namespace Vertx.Debugging
 		/// The core rendering loop.
 		/// </summary>
 		/// <returns>True if relevant rendering commands were issued.</returns>
-		private bool FillCommandBuffer(CommandBuffer commandBuffer, Camera camera, UnmanagedCommandGroup commandGroup, BufferGroup group, RenderingType renderingType)
+		private bool FillCommandBuffer(CommandBuffer commandBuffer, Camera camera, ref UnmanagedCommandGroup commandGroup, BufferGroup group, RenderingType renderingType)
 		{
 			bool render;
 			if (renderingType == RenderingType.GizmosAndGame)
 			{
 				Matrix4x4 oldMatrix = Shader.GetGlobalMatrix(s_UnityMatrixVPKey);
 				commandBuffer.SetGlobalMatrix(s_UnityMatrixVPKey, GL.GetGPUProjectionMatrix(camera.projectionMatrix, false) * camera.worldToCameraMatrix);
-				RenderShapes();
+				RenderShapes(ref commandGroup);
 				commandBuffer.SetGlobalMatrix(s_UnityMatrixVPKey, oldMatrix);
 			}
 			else
 			{
-				RenderShapes();
+				RenderShapes(ref commandGroup);
 			}
 
 			// commandBuffer.SetGlobalDepthBias(-1, -1);
 
-			void RenderShapes()
+			void RenderShapes(ref UnmanagedCommandGroup commandGroup)
 			{
 				DebuggingSettings settings = DebuggingSettings.instance;
 				bool depthTest = ((int)settings.DepthTest & (int)renderingType) != 0;

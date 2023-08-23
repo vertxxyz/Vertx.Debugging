@@ -69,7 +69,6 @@ namespace Vertx.Debugging
 
 			public void Clear()
 			{
-				UnmanagedCommandBuilder.Instance.Data.Clear();
 				Texts.Clear();
 				ScreenTexts.Clear();
 			}
