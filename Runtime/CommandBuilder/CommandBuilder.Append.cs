@@ -28,15 +28,23 @@ namespace Vertx.Debugging
 		
 		private bool InitialiseAndGetGroup(ref float duration, out BufferGroup group)
 		{
+			group = UpdateContext.State switch
+			{
+				UpdateContext.UpdateState.Update => _defaultGroup,
+				UpdateContext.UpdateState.CapturingGizmos => _gizmosGroup,
+				_ => throw new ArgumentOutOfRangeException()
+			};
+			return TryGetAdjustedDuration(ref duration);
+		}
+
+		public bool TryGetAdjustedDuration(ref float duration)
+		{
 			switch (UpdateContext.State)
 			{
 				case UpdateContext.UpdateState.Update:
 					// Don't append while we're paused.
 					if (_isPlaying && _isPaused && _pauseCapture.IsSamePausedFrame(_timeThisFrame))
-					{
-						group = null;
 						return false;
-					}
 
 					// Calls from FixedUpdate should hang around until the next FixedUpdate, at minimum.
 					if (Time.inFixedTimeStep)
@@ -49,25 +57,12 @@ namespace Vertx.Debugging
 							duration += (Time.fixedTime + fixedDeltaTime) - _timeThisFrame;
 						}
 					}
-					
-					if (duration < 0)
-					{
-						group = null;
-						return false;
-					}
-
-					group = _defaultGroup;
-					break;
+					return duration > 0;
 				case UpdateContext.UpdateState.CapturingGizmos:
-					// Force the runtime object to exist
-					_ = DrawRuntimeBehaviour.Instance;
-					group = _gizmosGroup;
-					break;
+					return true;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-
-			return true;
 		}
 
 		public void AppendText(in Shape.Text text, Color backgroundColor, Color textColor, float duration)

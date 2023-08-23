@@ -43,11 +43,12 @@ namespace Vertx.Debugging
 		{
 			_values.Add(value);
 			if (UsesDurations)
+			{
 				_durations.Add(duration);
+				if (duration > 0)
+					HasNonZeroDuration = true;
+			}
 			Dirty = true;
-
-			if (duration > 0)
-				HasNonZeroDuration = true;
 		}
 
 		public void Dispose()

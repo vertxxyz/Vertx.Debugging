@@ -29,7 +29,6 @@ namespace Vertx.Debugging
 			
 			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
 			builder.State = UnmanagedCommandBuilder.UpdateState.Gizmos;
-			builder.Gizmos.Clear();
 			
 			CommandBuilder.Instance.ClearGizmoGroup();
 		}
