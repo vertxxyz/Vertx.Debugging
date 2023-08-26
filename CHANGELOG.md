@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Minimum Unity version is now 2020.3.
 - Added dependencies on `com.unity.burst` and `com.unity.mathematics`.
 - Only the API surface is now public. If you want to extend the package use Assembly References.
+- DashedLine is now backed by Line instead of two Vector3s.
 
 ### Improved
 - Added support for drawing from Jobs and Burst-compiled functions.

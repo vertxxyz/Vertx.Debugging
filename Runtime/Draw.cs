@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Unity.Burst;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -18,8 +19,6 @@ namespace Vertx.Debugging
 		public static void raw<T>(T shape, float duration = 0) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			shape.Draw(ref s_Builder, Color.white, duration);
 #endif
 		}
@@ -28,8 +27,6 @@ namespace Vertx.Debugging
 		public static void raw<T>(T shape, Color color, float duration = 0) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			shape.Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -38,8 +35,6 @@ namespace Vertx.Debugging
 		public static void raw<T>(T shape, bool hit, float duration = 0) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			shape.Draw(ref s_Builder, hit ? Shape.HitColor : Shape.CastColor, duration);
 #endif
 		}
@@ -48,19 +43,50 @@ namespace Vertx.Debugging
 		public static void raw<T>(T shape, Color castColor, Color hitColor, float duration = 0) where T : struct, IDrawableCast
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			shape.Draw(ref s_Builder, castColor, hitColor, duration);
 #endif
 		}
+		
+		// ------ Burst-discarded section for managed calls ------
+		[BurstDiscard]
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Shape.ScreenText shape, float duration = 0)
+		{
+#if UNITY_EDITOR
+			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
+				return;
+			shape.Draw(ref s_Builder, Color.white, duration);
+#endif
+		}
+
+		[BurstDiscard]
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Shape.ScreenText shape, Color backgroundColor, float duration = 0)
+		{
+#if UNITY_EDITOR
+			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
+				return;
+			shape.Draw(ref s_Builder, backgroundColor, duration);
+#endif
+		}
+
+		[BurstDiscard]
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(Shape.ScreenText shape, Color backgroundColor, Color textColor, float duration = 0)
+		{
+#if UNITY_EDITOR
+			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
+				return;
+			shape.Draw(ref s_Builder, backgroundColor, textColor, duration);
+#endif
+		}
+		
 		// ------ Conversion for Unity types ------
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray ray, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Ray(ray.origin, ray.direction).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -75,8 +101,6 @@ namespace Vertx.Debugging
 		public static void raw(Ray2D ray, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Ray(new float3(ray.origin.x, ray.origin.y, 0), new float3(ray.direction.x, ray.direction.y, 0)).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -91,8 +115,6 @@ namespace Vertx.Debugging
 		public static void raw(Vector3 position, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Point(position).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -107,8 +129,6 @@ namespace Vertx.Debugging
 		public static void raw(Vector2 position, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Point2D(position).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -123,8 +143,6 @@ namespace Vertx.Debugging
 		public static void raw(Bounds bounds, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Box(bounds).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -139,8 +157,6 @@ namespace Vertx.Debugging
 		public static void raw(BoundsInt bounds, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Box(bounds).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -155,8 +171,6 @@ namespace Vertx.Debugging
 		public static void raw(Rect rect, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Box2D(rect.center, rect.size).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -171,8 +185,6 @@ namespace Vertx.Debugging
 		public static void raw(RectInt rect, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Box2D(rect.center, rect.size.xy()).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -188,8 +200,6 @@ namespace Vertx.Debugging
 		public static void raw(RaycastHit hit, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.SurfacePoint(hit.point, hit.normal).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -205,8 +215,6 @@ namespace Vertx.Debugging
 		public static void raw(Collider collider, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			switch (collider)
 			{
 				case BoxCollider boxCollider:
@@ -254,8 +262,6 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			if (!hit)
 				return;
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
 			new Shape.Ray(new float3(hit.point.x, hit.point.y, hit.transform.position.z), new float3(hit.normal.x, hit.normal.y, 0)).Draw(ref s_Builder, color, duration);
 #endif
 		}
@@ -273,9 +279,6 @@ namespace Vertx.Debugging
 		public static void raw(Collider2D collider, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
-			
 			switch (collider)
 			{
 				case BoxCollider2D boxCollider:

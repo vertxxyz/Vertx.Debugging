@@ -28,7 +28,7 @@ namespace Vertx.Debugging
             matrix.c3[row] = value[3];
         }
 
-		private static float3 MultiplyPoint3x4(this float4x4 matrix, float3 point)
+		internal static float3 MultiplyPoint3x4(this float4x4 matrix, float3 point)
 		{
 			float3 res;
 			float4 c0 = matrix.c0;
@@ -47,7 +47,6 @@ namespace Vertx.Debugging
 			float4 c0 = matrix.c0;
 			float4 c1 = matrix.c1;
 			float4 c2 = matrix.c2;
-			float4 c3 = matrix.c3;
 			res.x = c0[0] * vector.x + c1[0] * vector.y + c2[0] * vector.z;
 			res.y = c0[1] * vector.x + c1[1] * vector.y + c2[1] * vector.z;
 			res.z = c0[2] * vector.x + c1[2] * vector.y + c2[2] * vector.z;

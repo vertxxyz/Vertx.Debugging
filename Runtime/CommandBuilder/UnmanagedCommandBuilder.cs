@@ -3,6 +3,7 @@ using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Vertx.Debugging
@@ -142,6 +143,66 @@ namespace Vertx.Debugging
 			Gizmos.Initialise(false);
 		}
 
+		[BurstDiscard]
+		private static void AdjustWithGizmosMatrix(ref Shape.Line line)
+		{
+			Matrix4x4 gizmosMatrix = UnityEngine.Gizmos.matrix;
+			if (gizmosMatrix == Matrix4x4.identity)
+				return;
+			float4x4 matrix = gizmosMatrix;
+			line = new Shape.Line(matrix.MultiplyPoint3x4(line.A), matrix.MultiplyPoint3x4(line.B));
+		}
+		
+		[BurstDiscard]
+		private static void AdjustWithGizmosMatrix(ref Shape.Arc arc)
+		{
+			Matrix4x4 gizmosMatrix = UnityEngine.Gizmos.matrix;
+			if (gizmosMatrix == Matrix4x4.identity)
+				return;
+			float4x4 matrix = gizmosMatrix;
+			arc = new Shape.Arc(math.mul(matrix, arc.Matrix), arc.Angle);
+		}
+		
+		[BurstDiscard]
+		private static void AdjustWithGizmosMatrix(ref Shape.DashedLine dashedLine)
+		{
+			Matrix4x4 gizmosMatrix = UnityEngine.Gizmos.matrix;
+			if (gizmosMatrix == Matrix4x4.identity)
+				return;
+			float4x4 matrix = gizmosMatrix;
+			dashedLine = new Shape.DashedLine(matrix.MultiplyPoint3x4(dashedLine.Line.A), matrix.MultiplyPoint3x4(dashedLine.Line.B));
+		}
+		
+		[BurstDiscard]
+		private static void AdjustWithGizmosMatrix(ref Shape.Outline outline)
+		{
+			Matrix4x4 gizmosMatrix = UnityEngine.Gizmos.matrix;
+			if (gizmosMatrix == Matrix4x4.identity)
+				return;
+			float4x4 matrix = gizmosMatrix;
+			outline = new Shape.Outline(matrix.MultiplyPoint3x4(outline.A), matrix.MultiplyPoint3x4(outline.B), matrix.MultiplyPoint3x4(outline.C));
+		}
+		
+		[BurstDiscard]
+		private static void AdjustWithGizmosMatrix(ref Shape.Box box)
+		{
+			Matrix4x4 gizmosMatrix = UnityEngine.Gizmos.matrix;
+			if (gizmosMatrix == Matrix4x4.identity)
+				return;
+			float4x4 matrix = gizmosMatrix;
+			box = new Shape.Box(math.mul(matrix, box.Matrix));
+		}
+		
+		[BurstDiscard]
+		private static void AdjustWithGizmosMatrix(ref Shape.Cast cast)
+		{
+			Matrix4x4 gizmosMatrix = UnityEngine.Gizmos.matrix;
+			if (gizmosMatrix == Matrix4x4.identity)
+				return;
+			float4x4 matrix = gizmosMatrix;
+			cast = new Shape.Cast(math.mul(matrix, cast.Matrix), matrix.MultiplyPoint3x4(cast.Vector));
+		}
+
 		public void AppendLine(in Shape.Line line, Color color, float duration)
 		{
 			switch (State)
@@ -150,7 +211,9 @@ namespace Vertx.Debugging
 					Standard.Lines.Add(new LineGroup(line, color.ToFloat4()), duration);
 					break;
 				case UpdateState.Gizmos:
-					Gizmos.Lines.Add(new LineGroup(line, color.ToFloat4()), duration);
+					var gizmosLine = line;
+					AdjustWithGizmosMatrix(ref gizmosLine);
+					Gizmos.Lines.Add(new LineGroup(gizmosLine, color.ToFloat4()), duration);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -167,7 +230,9 @@ namespace Vertx.Debugging
 					Standard.Arcs.Add(new ArcGroup(arc, color.ToFloat4(), modifications), duration);
 					break;
 				case UpdateState.Gizmos:
-					Gizmos.Arcs.Add(new ArcGroup(arc, color.ToFloat4(), modifications), duration);
+					var gizmosArc = arc;
+					AdjustWithGizmosMatrix(ref gizmosArc);
+					Gizmos.Arcs.Add(new ArcGroup(gizmosArc, color.ToFloat4(), modifications), duration);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -182,7 +247,9 @@ namespace Vertx.Debugging
 					Standard.DashedLines.Add(new DashedLineGroup(dashedLine, color.ToFloat4()), duration);
 					break;
 				case UpdateState.Gizmos:
-					Gizmos.DashedLines.Add(new DashedLineGroup(dashedLine, color.ToFloat4()), duration);
+					var gizmosDashedLine = dashedLine;
+					AdjustWithGizmosMatrix(ref gizmosDashedLine);
+					Gizmos.DashedLines.Add(new DashedLineGroup(gizmosDashedLine, color.ToFloat4()), duration);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -197,7 +264,9 @@ namespace Vertx.Debugging
 					Standard.Outlines.Add(new OutlineGroup(outline, color.ToFloat4(), modifications), duration);
 					break;
 				case UpdateState.Gizmos:
-					Gizmos.Outlines.Add(new OutlineGroup(outline, color.ToFloat4(), modifications), duration);
+					var gizmosOutline = outline;
+					AdjustWithGizmosMatrix(ref gizmosOutline);
+					Gizmos.Outlines.Add(new OutlineGroup(gizmosOutline, color.ToFloat4(), modifications), duration);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -212,7 +281,9 @@ namespace Vertx.Debugging
 					Standard.Boxes.Add(new BoxGroup(box, color.ToFloat4(), modifications), duration);
 					break;
 				case UpdateState.Gizmos:
-					Gizmos.Boxes.Add(new BoxGroup(box, color.ToFloat4(), modifications), duration);
+					var gizmosBox = box;
+					AdjustWithGizmosMatrix(ref gizmosBox);
+					Gizmos.Boxes.Add(new BoxGroup(gizmosBox, color.ToFloat4(), modifications), duration);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
@@ -227,7 +298,9 @@ namespace Vertx.Debugging
 					Standard.Casts.Add(new CastGroup(cast, color.ToFloat4()), duration);
 					break;
 				case UpdateState.Gizmos:
-					Gizmos.Casts.Add(new CastGroup(cast, color.ToFloat4()), duration);
+					var gizmosCast = cast;
+					AdjustWithGizmosMatrix(ref gizmosCast);
+					Gizmos.Casts.Add(new CastGroup(gizmosCast, color.ToFloat4()), duration);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();

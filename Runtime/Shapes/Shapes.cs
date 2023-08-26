@@ -46,19 +46,13 @@ namespace Vertx.Debugging
 
 		public readonly struct DashedLine : IDrawable
 		{
-			public readonly float3 A, B;
+			public readonly Line Line;
+			
+			public DashedLine(Line line) => Line = line;
 
-			public DashedLine(float3 a, float3 b)
-			{
-				A = a;
-				B = b;
-			}
+			public DashedLine(float3 a, float3 b) : this(new Line(a, b)) { }
 
-			public DashedLine(Ray ray)
-			{
-				A = ray.Origin;
-				B = ray.Origin + ray.Direction;
-			}
+			public DashedLine(Ray ray) : this(new Line(ray)) { }
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -67,15 +61,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendDashedLine(this, color, duration);
 #endif
 
-			public DashedLine GetShortened(float shortenBy, float minShorteningNormalised = 0)
-			{
-				float3 dir = B - A;
-				dir.EnsureNormalized(out float length);
-				float totalLength = length;
-				length = math.max(length - shortenBy, length * minShorteningNormalised);
-				length = totalLength - length;
-				return new DashedLine(A + dir * length, B - dir * length);
-			}
+			public DashedLine GetShortened(float shortenBy, float minShorteningNormalised = 0) => new DashedLine(Line.GetShortened(shortenBy, minShorteningNormalised));
 		}
 
 		public readonly struct LineStrip : IDrawable
