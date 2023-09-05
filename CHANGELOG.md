@@ -9,16 +9,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Minimum Unity version is now 2020.3.
 - Added dependencies on `com.unity.burst` and `com.unity.mathematics`.
 - Only the API surface is now public. If you want to extend the package use Assembly References.
-- DashedLine is now backed by Line instead of two Vector3s.
+- `DashedLine` is now backed by `Line` instead of two Vector3s.
 
 ### Improved
 - Added support for drawing from Jobs and Burst-compiled functions.
 
 ### Added
 - Added `[ExecuteAlways]` to Debug Collision/Trigger Events to support visualising during `Physics.Simulate`.
+- Added `RaycastHit` and `RaycastHit2D` constructors to `Shape.Ray`.
+- Added `DrawPhysicsUtility.GetFixedFrameJobDuration` for getting a corrected duration for jobs started from `FixedUpdate` or `FixedStepSimulationSystemGroup`.
+
+### Fixed
+- Fixed `D.raw(MeshCollider)` not respecting `color` and `duration`.
 
 ### Removed
-- Removed internal `CircleCache` class. If your extensions relied on it, it was removed for burst compatibility.
+- Removed the internal `CircleCache` class. If your extensions relied on it, sorry, it was removed for burst compatibility.
 
 ## [2.1.4]
 ### Added

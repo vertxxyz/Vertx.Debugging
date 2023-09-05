@@ -18,7 +18,8 @@ using UnityEngine.Rendering.Universal;
 
 namespace Vertx.Debugging.PlayerLoop
 {
-	public struct VertxDebugging { }
+	public struct VertxDebuggingInitialization { }
+	public struct VertxDebuggingFixedUpdate { }
 }
 
 namespace Vertx.Debugging

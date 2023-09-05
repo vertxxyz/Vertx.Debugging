@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Unity.Burst;
+using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -13,54 +14,109 @@ namespace Vertx.Debugging
 	{
 #if UNITY_EDITOR
 		private static ref UnmanagedCommandBuilder s_Builder => ref UnmanagedCommandBuilder.Instance.Data;
+
+		internal static void AdjustDuration(ref float duration)
+		{
+			ref UnmanagedCommandBuilder builder = ref s_Builder;
+			if (builder.State != UnmanagedCommandBuilder.UpdateState.Update)
+				return;
+
+			if (JobsUtility.IsExecutingJob)
+			{
+				// TODO handle durations within jobs.
+				// Is there a mechanism for detecting FixedUpdate jobs?
+				return;
+			}
+
+			if (!Time.inFixedTimeStep)
+			{
+				// Only FixedUpdate calls need their times adjusted.
+				return;
+			}
+
+			// Adjust the duration of calls from FixedUpdate so that they are displayed for the full duration of this fixed step, and won't be cleared
+			// by an Update occurring until that fixed step has actually passed.
+			float fixedDeltaTime = builder.FixedTimeStep;
+			if (duration < fixedDeltaTime)
+			{
+				duration +=
+					// From the current time, to the next fixed time.
+					builder.FixedTime + fixedDeltaTime
+					- builder.Time;
+			}
+		}
 #endif
 
+		/// <summary>
+		/// Draw a shape for <see cref="duration"/>.
+		/// </summary>
+		/// <param name="shape">The shape to draw.</param>
+		/// <param name="duration">The length of time to draw for. 0 will be one frame (FixedUpdate is handled correctly).</param>
+		/// <typeparam name="T">The type of shape.</typeparam>
+		/// <remarks>Don't call this function recursively within <see cref="IDrawable.Draw"/>, as duration may be adjusted twice.</remarks>
 		[Conditional("UNITY_EDITOR")]
 		public static void raw<T>(T shape, float duration = 0) where T : struct, IDrawable
-		{
-#if UNITY_EDITOR
-			shape.Draw(ref s_Builder, Color.white, duration);
-#endif
-		}
+			=> raw(shape, Color.white, duration);
 
+		/// <summary>
+		/// Draw a shape for <see cref="duration"/> with <see cref="color"/>.
+		/// </summary>
+		/// <param name="shape">The shape to draw.</param>
+		/// <param name="color">The color used to draw the shape.</param>
+		/// <param name="duration">The length of time to draw for. 0 will be one frame (FixedUpdate is handled correctly).</param>
+		/// <typeparam name="T">The type of shape.</typeparam>
+		/// <remarks>Don't call this function recursively within <see cref="IDrawable.Draw"/>, as duration may be adjusted twice.</remarks>
 		[Conditional("UNITY_EDITOR")]
 		public static void raw<T>(T shape, Color color, float duration = 0) where T : struct, IDrawable
 		{
 #if UNITY_EDITOR
+			AdjustDuration(ref duration);
 			shape.Draw(ref s_Builder, color, duration);
 #endif
 		}
 
+		/// <summary>
+		/// Draw a shape for <see cref="duration"/> with <see cref="hit"/> defining the color.<br/>
+		/// The colors used for hit/not hit can be adjusted in the preferences as Hit Color and Cast Color.
+		/// </summary>
+		/// <param name="shape">The shape to draw.</param>
+		/// <param name="hit">Whether to draw using the hit color or the cast color.</param>
+		/// <param name="duration">The length of time to draw for. 0 will be one frame (FixedUpdate is handled correctly).</param>
+		/// <typeparam name="T">The type of shape.</typeparam>
+		/// <remarks>Don't call this function recursively within <see cref="IDrawable.Draw"/>, as duration may be adjusted twice.</remarks>
 		[Conditional("UNITY_EDITOR")]
 		public static void raw<T>(T shape, bool hit, float duration = 0) where T : struct, IDrawable
-		{
-#if UNITY_EDITOR
-			shape.Draw(ref s_Builder, hit ? Shape.HitColor : Shape.CastColor, duration);
-#endif
-		}
+			=> raw(shape, hit ? Shape.HitColor : Shape.CastColor, duration);
 
+		/// <summary>
+		/// Draw a shape for <see cref="duration"/> with <see cref="castColor"/> and <see cref="hitColor"/>.
+		/// </summary>
+		/// <param name="shape">The shape to draw.</param>
+		/// <param name="castColor">The color used to draw the cast.</param>
+		/// <param name="hitColor">The color used to draw the hits associated with the cast.</param>
+		/// <param name="duration">The length of time to draw for. 0 will be one frame (FixedUpdate is handled correctly).</param>
+		/// <typeparam name="T">The type of shape.</typeparam>
+		/// <remarks>Don't call this function recursively within <see cref="IDrawable.Draw"/>, as duration may be adjusted twice.</remarks>
 		[Conditional("UNITY_EDITOR")]
 		public static void raw<T>(T shape, Color castColor, Color hitColor, float duration = 0) where T : struct, IDrawableCast
 		{
 #if UNITY_EDITOR
+			AdjustDuration(ref duration);
 			shape.Draw(ref s_Builder, castColor, hitColor, duration);
 #endif
 		}
-		
+
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(IDrawableManaged shape, float duration = 0)
-		{
-#if UNITY_EDITOR
-			shape.Draw(CommandBuilder.Instance, Color.white, duration);
-#endif
-		}
+			=> raw(shape, Color.white, duration);
 
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(IDrawableManaged shape, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
+			// Managed shapes adjust time later.
 			shape.Draw(CommandBuilder.Instance, color, duration);
 #endif
 		}
@@ -68,30 +124,30 @@ namespace Vertx.Debugging
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(IDrawableManaged shape, bool hit, float duration = 0)
-		{
-#if UNITY_EDITOR
-			shape.Draw(CommandBuilder.Instance, hit ? Shape.HitColor : Shape.CastColor, duration);
-#endif
-		}
+			=> raw(shape, hit ? Shape.HitColor : Shape.CastColor, duration);
 
+		/// <summary>
+		/// Draw a shape for <see cref="duration"/> with <see cref="castColor"/> and <see cref="hitColor"/>.<br/>
+		/// </summary>
+		/// <param name="shape">The shape to draw.</param>
+		/// <param name="castColor">The color used to draw the cast. Background color for text.</param>
+		/// <param name="hitColor">The color used to draw the hits associated with the cast. Color for text.</param>
+		/// <param name="duration">The length of time to draw for. 0 will be one frame (FixedUpdate is handled correctly).</param>
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(IDrawableCastManaged shape, Color castColor, Color hitColor, float duration = 0)
 		{
 #if UNITY_EDITOR
+			// Managed shapes adjust time later.
 			shape.Draw(CommandBuilder.Instance, castColor, hitColor, duration);
 #endif
 		}
-		
+
 		// ------ Conversion for Unity types ------
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray ray, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.Ray(ray.origin, ray.direction).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.Ray(ray.origin, ray.direction), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray ray, bool hit, float duration = 0) => raw(ray, hit ? Shape.HitColor : Shape.CastColor, duration);
@@ -101,11 +157,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray2D ray, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.Ray(new float3(ray.origin.x, ray.origin.y, 0), new float3(ray.direction.x, ray.direction.y, 0)).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.Ray(new float3(ray.origin.x, ray.origin.y, 0), new float3(ray.direction.x, ray.direction.y, 0)), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Ray2D ray, bool hit, float duration = 0) => raw(ray, hit ? Shape.HitColor : Shape.CastColor, duration);
@@ -115,11 +167,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Vector3 position, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.Point(position).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.Point(position), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Vector3 position, float duration = 0) => raw(position, Color.white, duration);
@@ -129,11 +177,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Vector2 position, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.Point2D(position).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.Point2D(position), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Vector2 position, float duration = 0) => raw(position, Color.white, duration);
@@ -143,11 +187,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Bounds bounds, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.Box(bounds).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.Box(bounds), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Bounds bounds, float duration = 0) => raw(bounds, Color.white, duration);
@@ -157,11 +197,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(BoundsInt bounds, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.Box(bounds).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.Box(bounds), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(BoundsInt bounds, float duration = 0) => raw(bounds, Color.white, duration);
@@ -171,11 +207,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Rect rect, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.Box2D(rect.center, rect.size).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.Box2D(rect.center, rect.size), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(Rect rect, float duration = 0) => raw(rect, Color.white, duration);
@@ -185,11 +217,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RectInt rect, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.Box2D(rect.center, rect.size.xy()).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.Box2D(rect.center, rect.size.xy()), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RectInt rect, float duration = 0) => raw(rect, Color.white, duration);
@@ -200,11 +228,7 @@ namespace Vertx.Debugging
 #if VERTX_PHYSICS
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RaycastHit hit, Color color, float duration = 0)
-		{
-#if UNITY_EDITOR
-			new Shape.SurfacePoint(hit.point, hit.normal).Draw(ref s_Builder, color, duration);
-#endif
-		}
+			=> raw(new Shape.SurfacePoint(hit.point, hit.normal), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RaycastHit hit, float duration = 0) => raw(hit, Shape.HitColor, duration);
@@ -220,19 +244,19 @@ namespace Vertx.Debugging
 			switch (collider)
 			{
 				case BoxCollider boxCollider:
-					new Shape.Box(boxCollider).Draw(ref s_Builder, color, duration);
+					raw(new Shape.Box(boxCollider), color, duration);
 					break;
 				case SphereCollider sphereCollider:
-					new Shape.Sphere(sphereCollider).Draw(ref s_Builder, color, duration);
+					raw(new Shape.Sphere(sphereCollider), color, duration);
 					break;
 				case CapsuleCollider capsuleCollider:
-					new Shape.Capsule(capsuleCollider).Draw(ref s_Builder, color, duration);
+					raw(new Shape.Capsule(capsuleCollider), color, duration);
 					break;
 				case CharacterController characterController:
-					new Shape.Capsule(characterController).Draw(ref s_Builder, color, duration);
+					raw(new Shape.Capsule(characterController), color, duration);
 					break;
 				case MeshCollider meshCollider:
-					raw(meshCollider.bounds);
+					raw(meshCollider.bounds, color, duration);
 					break;
 				default:
 					// Could be null
@@ -264,7 +288,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			if (!hit)
 				return;
-			new Shape.Ray(new float3(hit.point.x, hit.point.y, hit.transform.position.z), new float3(hit.normal.x, hit.normal.y, 0)).Draw(ref s_Builder, color, duration);
+			raw(new Shape.Ray(new float3(hit.point.x, hit.point.y, hit.transform.position.z), new float3(hit.normal.x, hit.normal.y, 0)), color, duration);
 #endif
 		}
 
@@ -284,13 +308,13 @@ namespace Vertx.Debugging
 			switch (collider)
 			{
 				case BoxCollider2D boxCollider:
-					new Shape.Box2DWithEdgeRadius(boxCollider).Draw(ref s_Builder, color, duration);
+					raw(new Shape.Box2DWithEdgeRadius(boxCollider), color, duration);
 					break;
 				case CircleCollider2D circleCollider2D:
-					new Shape.Circle2D(circleCollider2D).Draw(ref s_Builder, color, duration);
+					raw(new Shape.Circle2D(circleCollider2D), color, duration);
 					break;
 				case CapsuleCollider2D capsuleCollider:
-					new Shape.Capsule2D(capsuleCollider).Draw(ref s_Builder, color, duration);
+					raw(new Shape.Capsule2D(capsuleCollider), color, duration);
 					break;
 				default:
 					// Could be null

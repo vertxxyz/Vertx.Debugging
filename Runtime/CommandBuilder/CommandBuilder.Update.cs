@@ -8,7 +8,6 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
@@ -26,22 +25,22 @@ namespace Vertx.Debugging
 	{
 		private const string RemoveShapesByDurationProfilerName = Name + " " + nameof(RemoveShapesByDuration);
 
-		private float _timeThisFrame;
-		private float _deltaTimeThisFrame;
+		private static float _timeThisFrame;
+		private static float _deltaTimeThisFrame;
 
 		/// <summary>
-		/// Queues <see cref="EarlyUpdate"/> into the EarlyUpdate portion of the player loop.
+		/// Queues <see cref="FrameInitialization"/> into the <see cref="Initialization"/> portion of the player loop.
 		/// </summary>
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
 		private static void InitialiseUpdate()
 		{
 			PlayerLoopSystem playerLoop = UnityEngine.LowLevel.PlayerLoop.GetCurrentPlayerLoop();
 			PlayerLoopSystem[] subsystems = playerLoop.subSystemList.ToArray();
-			Type earlyUpdate = typeof(EarlyUpdate);
-			InjectFirstIn(earlyUpdate, typeof(VertxDebugging), Instance.EarlyUpdate);
-
+			InjectFirstIn(typeof(Initialization), typeof(VertxDebuggingInitialization), FrameInitialization);
+			InjectFirstIn(typeof(FixedUpdate), typeof(VertxDebuggingFixedUpdate), StartFixedUpdate);
 			playerLoop.subSystemList = subsystems;
 			UnityEngine.LowLevel.PlayerLoop.SetPlayerLoop(playerLoop);
+			return;
 
 			void InjectFirstIn(Type type, Type actionType, PlayerLoopSystem.UpdateFunction action)
 			{
@@ -71,7 +70,7 @@ namespace Vertx.Debugging
 			}
 		}
 
-		private void EarlyUpdate()
+		private static void FrameInitialization()
 		{
 			UpdateContext.ForceStateToUpdate();
 			// ReSharper disable once CompareOfFloatsByEqualityOperator
@@ -82,10 +81,23 @@ namespace Vertx.Debugging
 			}
 			else
 			{
-				RemoveShapesByDuration(_deltaTimeThisFrame);
+				Instance.RemoveShapesByDuration(_deltaTimeThisFrame);
 			}
-
+			
 			_timeThisFrame = Time.time;
+			ref var builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.Time = _timeThisFrame;
+		}
+
+		private static double lastTime;
+		
+		private static void StartFixedUpdate()
+		{
+			float fixedTime = Time.fixedTime;
+			float fixedTimeStep = Time.fixedDeltaTime;
+			ref var builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.FixedTime = fixedTime;
+			builder.FixedTimeStep = fixedTimeStep;
 		}
 
 		/// <summary>

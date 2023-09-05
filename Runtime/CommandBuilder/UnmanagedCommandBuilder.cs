@@ -57,8 +57,13 @@ namespace Vertx.Debugging
 			Gizmos
 		}
 
+		// State
 		public UpdateState State { get; internal set; }
+		public float Time { get; internal set; }
+		public float FixedTime { get; internal set; }
+		public float FixedTimeStep { get; internal set; }
 
+		// Groups
 		public UnmanagedCommandGroup Standard;
 		public UnmanagedCommandGroup Gizmos;
 
@@ -77,7 +82,7 @@ namespace Vertx.Debugging
 			float4x4 matrix = gizmosMatrix;
 			line = new Shape.Line(matrix.MultiplyPoint3x4(line.A), matrix.MultiplyPoint3x4(line.B));
 		}
-		
+
 		[BurstDiscard]
 		private static void AdjustWithGizmosMatrix(ref Shape.Arc arc)
 		{
@@ -87,7 +92,7 @@ namespace Vertx.Debugging
 			float4x4 matrix = gizmosMatrix;
 			arc = new Shape.Arc(math.mul(matrix, arc.Matrix), arc.Angle);
 		}
-		
+
 		[BurstDiscard]
 		private static void AdjustWithGizmosMatrix(ref Shape.DashedLine dashedLine)
 		{
@@ -97,7 +102,7 @@ namespace Vertx.Debugging
 			float4x4 matrix = gizmosMatrix;
 			dashedLine = new Shape.DashedLine(matrix.MultiplyPoint3x4(dashedLine.Line.A), matrix.MultiplyPoint3x4(dashedLine.Line.B));
 		}
-		
+
 		[BurstDiscard]
 		private static void AdjustWithGizmosMatrix(ref Shape.Outline outline)
 		{
@@ -107,7 +112,7 @@ namespace Vertx.Debugging
 			float4x4 matrix = gizmosMatrix;
 			outline = new Shape.Outline(matrix.MultiplyPoint3x4(outline.A), matrix.MultiplyPoint3x4(outline.B), matrix.MultiplyPoint3x4(outline.C));
 		}
-		
+
 		[BurstDiscard]
 		private static void AdjustWithGizmosMatrix(ref Shape.Box box)
 		{
@@ -117,7 +122,7 @@ namespace Vertx.Debugging
 			float4x4 matrix = gizmosMatrix;
 			box = new Shape.Box(math.mul(matrix, box.Matrix));
 		}
-		
+
 		[BurstDiscard]
 		private static void AdjustWithGizmosMatrix(ref Shape.Cast cast)
 		{
@@ -162,7 +167,7 @@ namespace Vertx.Debugging
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-        }
+		}
 
 		public void AppendDashedLine(in Shape.DashedLine dashedLine, Color color, float duration)
 		{

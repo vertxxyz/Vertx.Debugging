@@ -276,7 +276,7 @@ namespace Vertx.Debugging
 #if VERTX_PHYSICS_2D
 			/// <summary>
 			/// Creates a box using a <see cref="BoxCollider2D"/>.
-			/// This does not support <see cref="BoxCollider2D.edgeRadius"/>, though <see cref="D.raw(Collider2D, Color, float)"/> does.<br/>
+			/// This does not support <see cref="BoxCollider2D.edgeRadius"/>, though <see cref="D.raw(Collider2D, Color, float)"/> and <see cref="Box2DWithEdgeRadius"/> does.<br/>
 			/// </summary>
 			public Box2D(BoxCollider2D boxCollider)
 			{

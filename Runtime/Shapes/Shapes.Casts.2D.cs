@@ -68,7 +68,7 @@ namespace Vertx.Debugging
 				if (!Result.HasValue)
 					return;
 
-				D.raw(Result.Value, hitColor, duration);
+				new Ray(Result.Value).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -125,7 +125,7 @@ namespace Vertx.Debugging
 				if (!Result.HasValue)
 					return;
 
-				D.raw(Result.Value, hitColor, duration);
+				new Ray(Result.Value).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -165,7 +165,7 @@ namespace Vertx.Debugging
 			{
 				Raycast.Draw(ref commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
-					D.raw(Results[i], hitColor, duration);
+					new Ray(Results[i]).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -205,7 +205,7 @@ namespace Vertx.Debugging
 			{
 				Linecast.Draw(ref commandBuilder, castColor, hitColor, duration);
 				for (int i = 0; i < ResultCount; i++)
-					D.raw(Results[i], hitColor, duration);
+					new Ray(Results[i]).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}

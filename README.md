@@ -4,7 +4,8 @@ Uses instanced rendering to draw shapes efficiently.
 > **Note**  
 > Unity 2020.1+  
 > Should support all render pipelines.  
-> Supports drawing from jobs and burst. This package depends on **Burst** and **Mathematics**.
+> Supports drawing from jobs and burst. This package depends on **Burst** and **Mathematics**.  
+> All shapes are wireframe. There is currently no support for solid shapes planned.
 
 https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-9316-78f7d4fbea1a.mp4
 
@@ -149,9 +150,10 @@ using static Vertx.Debugging.Shape;
 
 ### Extensions
   
-The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+The `Shape` class is partial. You can add `IDrawable` or `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
 
-Use the `UnmanagedCommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
+Use the `UnmanagedCommandBuilder` `Append` functions to create your own shapes, or combine other shapes by directly calling their `Draw` functions.  
+Don't recursively call `D.raw` from inside of `IDrawable/IDrawableCast.Draw`, as it will cause issues with `FixedUpdate` drawing.
 
 </td></tr></table>
 </details>
@@ -172,6 +174,12 @@ Components to draw physics events and common object attributes.
 | Debug Mesh Normals     | Draws normals for a (read/write) Mesh.              |
 
 </details>
+
+## Drawing from jobs
+Drawing from jobs is supported (parallel, and bursted).  
+Note that drawing from jobs scheduled from a fixed timestep context like `FixedUpdate` or `FixedStepSimulationSystemGroup` is not time-adjusted which may cause flickering based on the framerate,
+you must manually call `DrawPhysicsUtility.GetFixedFrameJobDuration` to get a time-adjusted duration, and pass it to `D.raw` to draw shapes correctly in this context.  
+Calls that are not jobified
 
 ## Installation
 [![openupm](https://img.shields.io/npm/v/com.vertx.debugging?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.vertx.debugging/)
