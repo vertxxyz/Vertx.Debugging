@@ -31,6 +31,7 @@ namespace Vertx.Debugging
 
 		internal static CommandBuilder Instance { get; }
 
+		internal static readonly int s_InstanceCountKey = Shader.PropertyToID("_InstanceCount");
 		private static readonly int s_UnityMatrixVPKey = Shader.PropertyToID("unity_MatrixVP");
 		private static readonly int s_ZWriteKey = Shader.PropertyToID("_ZWrite");
 		private static readonly int s_ZTestKey = Shader.PropertyToID("_ZTest");
@@ -55,6 +56,7 @@ namespace Vertx.Debugging
 
 		static CommandBuilder() => Instance = new CommandBuilder();
 
+
 		[InitializeOnLoadMethod]
 		private static void Initialise()
 		{
@@ -62,7 +64,7 @@ namespace Vertx.Debugging
 			_ = Instance;
 			UnmanagedCommandBuilder.Instance.Data.Initialise();
 		}
-		
+
 		private CommandBuilder()
 		{
 			Camera.onPostRender += OnPostRender;
@@ -92,6 +94,7 @@ namespace Vertx.Debugging
 		}
 
 		private void EditorApplicationOnPauseStateChanged(PauseState obj) => _isPaused = obj == PauseState.Paused;
+
 
 		private void EditorApplicationOnPlayModeStateChanged(PlayModeStateChange obj)
 		{

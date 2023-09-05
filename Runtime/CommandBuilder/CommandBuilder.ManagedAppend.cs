@@ -43,7 +43,7 @@ namespace Vertx.Debugging
 			{
 				case UpdateContext.UpdateState.Update:
 					// Don't append while we're paused.
-					if (_isPlaying && _isPaused && _pauseCapture.IsSamePausedFrame(_timeThisFrame))
+					if (_isPlaying && _isPaused && _pauseCapture.IsSamePausedFrame(s_TimeThisFrame))
 						return false;
 
 					// Calls from FixedUpdate should hang around until the next FixedUpdate, at minimum.
@@ -54,7 +54,7 @@ namespace Vertx.Debugging
 						{
 							// Time from the last 
 							// ReSharper disable once ArrangeRedundantParentheses
-							duration += (Time.fixedTime + fixedDeltaTime) - _timeThisFrame;
+							duration += (Time.fixedTime + fixedDeltaTime) - s_TimeThisFrame;
 						}
 					}
 					return duration > 0;

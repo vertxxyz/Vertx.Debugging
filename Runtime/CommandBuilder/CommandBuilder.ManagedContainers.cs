@@ -2,12 +2,8 @@
 #if UNITY_2021_1_OR_NEWER
 #define HAS_SET_BUFFER_DATA
 #endif
-using System;
 using System.Collections.Generic;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
@@ -16,51 +12,6 @@ namespace Vertx.Debugging
 	// ReSharper disable once ClassCannotBeInstantiated
 	internal sealed partial class CommandBuilder
 	{
-		private static readonly int s_InstanceCountKey = Shader.PropertyToID("_InstanceCount");
-		
-		private sealed class BufferWrapper<T> where T : unmanaged
-		{
-			private readonly int _bufferId;
-			private GraphicsBuffer _buffer;
-
-			private BufferWrapper() { }
-
-			public BufferWrapper(string bufferName) => _bufferId = Shader.PropertyToID(bufferName);
-
-			public void SetBufferData(CommandBuffer commandBuffer, UnsafeList<T> data)
-			{
-				if (_buffer == null || _buffer.count < data.Capacity)
-				{
-					// Expand graphics buffer to encompass the capacity of the list.
-					_buffer?.Dispose();
-					_buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, data.Capacity, UnsafeUtility.SizeOf<T>());
-				}
-
-#if HAS_SET_BUFFER_DATA
-				commandBuffer.SetBufferData(_buffer, AsArray(data), 0, 0, data.Length);
-#else
-				_buffer.SetData(AsArray(data), 0, 0, data.Length);
-#endif
-			}
-			
-			public unsafe NativeArray<T> AsArray(UnsafeList<T> list)
-			{
-				NativeArray<T> array = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray<T>(list.Ptr, list.Length, Allocator.None);
-#if ENABLE_UNITY_COLLECTIONS_CHECKS
-				NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref array, AtomicSafetyHandle.GetTempMemoryHandle());
-#endif
-				return array;
-			}
-
-			public void SetBufferToPropertyBlock(MaterialPropertyBlock propertyBlock) => propertyBlock.SetBuffer(_bufferId, _buffer);
-
-			public void Dispose()
-			{
-				_buffer?.Dispose();
-				_buffer = null;
-			}
-		}
-
 		internal sealed class TextDataLists : TextDataLists<Shape.TextData>
 		{
 			public void Add(in Shape.Text text, Color backgroundColor, Color textColor, float duration)
@@ -179,25 +130,6 @@ namespace Vertx.Debugging
 					_isDirty = true;
 				}
 			}
-		}
-		
-		private sealed class ShapeBuffer<T> : IDisposable where T : unmanaged
-		{
-			private readonly BufferWrapper<T> _elements;
-			private MaterialPropertyBlock _propertyBlock;
-			public MaterialPropertyBlock PropertyBlock => _propertyBlock ?? (_propertyBlock = new MaterialPropertyBlock());
-			public ShapeBuffer(string bufferName) => _elements = new BufferWrapper<T>(bufferName);
-
-			public void Set(CommandBuffer commandBuffer, MaterialPropertyBlock propertyBlock, UnsafeList<T> elements, bool elementsDirty)
-			{
-				if (elementsDirty)
-					_elements.SetBufferData(commandBuffer, elements);
-
-				_elements.SetBufferToPropertyBlock(propertyBlock);
-				propertyBlock.SetInt(s_InstanceCountKey, elements.Length);
-			}
-
-			public void Dispose() => _elements.Dispose();
 		}
 	}
 }
