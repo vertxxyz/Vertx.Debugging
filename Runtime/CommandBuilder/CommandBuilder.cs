@@ -271,17 +271,20 @@ namespace Vertx.Debugging
 
 			// commandBuffer.SetGlobalDepthBias(-1, -1);
 
+			return render;
+
 			void RenderShapes(ref UnmanagedCommandGroup commandGroup)
 			{
 				DebuggingSettings settings = DebuggingSettings.instance;
 				bool depthTest = ((int)settings.DepthTest & (int)renderingType) != 0;
 				bool depthWrite = ((int)settings.DepthWrite & (int)renderingType) != 0;
 				render = RenderShape(AssetsUtility.Line, AssetsUtility.LineMaterial, commandGroup.Lines, group.Lines, 128); // 256 vert target, 2 verts per line. 128 lines.
-				render |= RenderShape(AssetsUtility.Line, AssetsUtility.DashedLineMaterial, commandGroup.DashedLines, group.DashedLines, 128); // 256 vert target, 2 verts per line. 128 lines.
-				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, commandGroup.Arcs, group.Arcs, 4); // 256 vert target, 64 verts per circle. 4 circles.
-				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, commandGroup.Boxes, group.Boxes, 11); // 256 vert target, 12 edges, 2 verts each. 11 boxes.
+				render |= RenderShape(AssetsUtility.Line, AssetsUtility.DashedLineMaterial, commandGroup.DashedLines, group.DashedLines, 128);
 				render |= RenderShape(AssetsUtility.Line, AssetsUtility.OutlineMaterial, commandGroup.Outlines, group.Outlines, 128);
 				render |= RenderShape(AssetsUtility.Line, AssetsUtility.CastMaterial, commandGroup.Casts, group.Casts, 128);
+				render |= RenderShape(AssetsUtility.Circle, AssetsUtility.ArcMaterial, commandGroup.Arcs, group.Arcs, 4); // 256 vert target, 64 verts per circle. 4 circles.
+				render |= RenderShape(AssetsUtility.Box, AssetsUtility.BoxMaterial, commandGroup.Boxes, group.Boxes, 11); // 256 vert target, 12 edges, 2 verts each. 11 boxes.
+				return;
 
 				bool RenderShape<T>(AssetsUtility.Asset<Mesh> mesh,
 					AssetsUtility.MaterialAsset material,
@@ -292,10 +295,11 @@ namespace Vertx.Debugging
 					int shapeCount = elements.Count;
 					if (shapeCount <= 0)
 						return false;
-
+					
+					Material mat = material.Value;
+					
 					// Don't render this shape until it's compiled.
 					// (It looks very strange to the user when a cyan box appears for a millisecond at 0,0,0)
-					Material mat = material.Value;
 					int passCount = mat.passCount;
 					bool isCompiling = false;
 					for (int i = 0; i < passCount; i++)
@@ -321,8 +325,6 @@ namespace Vertx.Debugging
 					return true;
 				}
 			}
-
-			return render;
 		}
 
 		/// <summary>

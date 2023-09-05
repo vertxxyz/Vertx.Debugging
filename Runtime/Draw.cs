@@ -47,37 +47,39 @@ namespace Vertx.Debugging
 #endif
 		}
 		
-		// ------ Burst-discarded section for managed calls ------
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Shape.ScreenText shape, float duration = 0)
+		public static void raw(IDrawableManaged shape, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
-			shape.Draw(ref s_Builder, Color.white, duration);
+			shape.Draw(CommandBuilder.Instance, Color.white, duration);
 #endif
 		}
 
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Shape.ScreenText shape, Color backgroundColor, float duration = 0)
+		public static void raw(IDrawableManaged shape, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
-			shape.Draw(ref s_Builder, backgroundColor, duration);
+			shape.Draw(CommandBuilder.Instance, color, duration);
 #endif
 		}
 
 		[BurstDiscard]
 		[Conditional("UNITY_EDITOR")]
-		public static void raw(Shape.ScreenText shape, Color backgroundColor, Color textColor, float duration = 0)
+		public static void raw(IDrawableManaged shape, bool hit, float duration = 0)
 		{
 #if UNITY_EDITOR
-			if (!CommandBuilder.Instance.TryGetAdjustedDuration(ref duration))
-				return;
-			shape.Draw(ref s_Builder, backgroundColor, textColor, duration);
+			shape.Draw(CommandBuilder.Instance, hit ? Shape.HitColor : Shape.CastColor, duration);
+#endif
+		}
+
+		[BurstDiscard]
+		[Conditional("UNITY_EDITOR")]
+		public static void raw(IDrawableCastManaged shape, Color castColor, Color hitColor, float duration = 0)
+		{
+#if UNITY_EDITOR
+			shape.Draw(CommandBuilder.Instance, castColor, hitColor, duration);
 #endif
 		}
 		
@@ -326,6 +328,20 @@ namespace Vertx.Debugging
 	{
 #if UNITY_EDITOR
 		internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration);
+#endif
+	}
+
+	public interface IDrawableManaged
+	{
+#if UNITY_EDITOR
+		internal void Draw(CommandBuilder commandBuilder, Color color, float duration);
+#endif
+	}
+
+	public interface IDrawableCastManaged : IDrawableManaged
+	{
+#if UNITY_EDITOR
+		internal void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration);
 #endif
 	}
 }

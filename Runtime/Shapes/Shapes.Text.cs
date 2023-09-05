@@ -13,7 +13,7 @@ namespace Vertx.Debugging
 		/// <summary>
 		/// Text drawn at a 3D position in the scene.
 		/// </summary>
-		public readonly struct Text : IDrawableCast
+		public readonly struct Text : IDrawableCastManaged
 		{
 			public readonly Vector3 Position;
 			public readonly object Value;
@@ -30,17 +30,17 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(ref commandBuilder, color, duration);
+			void IDrawableManaged.Draw(CommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, duration);
 			
-			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(ref commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
+			internal void Draw(CommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
 
-			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
-				=> Draw(ref commandBuilder, backgroundColor, textColor, duration);
+			void IDrawableCastManaged.Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> Draw(commandBuilder, backgroundColor, textColor, duration);
 			
-			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
-				=> CommandBuilder.Instance.AppendText(this, backgroundColor, textColor, duration);
+			internal void Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> commandBuilder.AppendText(this, backgroundColor, textColor, duration);
 #endif
 		}
 
@@ -57,7 +57,7 @@ namespace Vertx.Debugging
 		/// Text drawn in the top left.<br/>
 		/// Drawn in the Scene view using an Overlay for versions that support it.
 		/// </summary>
-		public readonly struct ScreenText : IDrawableCast
+		public readonly struct ScreenText : IDrawableCastManaged
 		{
 			public readonly object Value;
 			public readonly Object Context;
@@ -74,19 +74,19 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(ref commandBuilder, color, duration);
+			void IDrawableManaged.Draw(CommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, duration);
 			
-			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
-				=> Draw(ref commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
+			internal void Draw(CommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(commandBuilder, color, color == Color.white ? Color.black : Color.white, duration);
+
+			void IDrawableCastManaged.Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+				=> Draw(commandBuilder, backgroundColor, textColor, duration);
 			
-			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
-				=> Draw(ref commandBuilder, backgroundColor, textColor, duration);
-			
-			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
+			internal void Draw(CommandBuilder commandBuilder, Color backgroundColor, Color textColor, float duration)
 			{
 				if (ActiveViews == View.None) return;
-				CommandBuilder.Instance.AppendScreenText(this, backgroundColor, textColor, duration);
+				commandBuilder.AppendScreenText(this, backgroundColor, textColor, duration);
 			}
 #endif
 		}

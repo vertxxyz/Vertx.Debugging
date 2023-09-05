@@ -4,6 +4,9 @@ using Unity.Mathematics;
 
 namespace Vertx.Debugging
 {
+	/// <summary>
+	/// float3 + float3, float4
+	/// </summary>
 	internal readonly struct LineGroup
 	{
 		[UsedImplicitly] public readonly Shape.Line Line;
@@ -16,6 +19,9 @@ namespace Vertx.Debugging
 		}
 	}
 
+	/// <summary>
+	/// float3 + float3, float4
+	/// </summary>
 	internal readonly struct DashedLineGroup
 	{
 		[UsedImplicitly] public readonly Shape.DashedLine Line;
@@ -28,6 +34,9 @@ namespace Vertx.Debugging
 		}
 	}
 
+	/// <summary>
+	/// float4x4 + float, float4, int
+	/// </summary>
 	internal readonly struct ArcGroup
 	{
 		[UsedImplicitly] public readonly Shape.Arc Arc;
@@ -42,6 +51,9 @@ namespace Vertx.Debugging
 		}
 	}
 
+	/// <summary>
+	/// float4x4, float4, int
+	/// </summary>
 	internal readonly struct BoxGroup
 	{
 		[UsedImplicitly] public readonly float4x4 Box;
@@ -56,6 +68,9 @@ namespace Vertx.Debugging
 		}
 	}
 
+	/// <summary>
+	/// float3 + float3 + float3, float4, int
+	/// </summary>
 	internal readonly struct OutlineGroup
 	{
 		[UsedImplicitly] public readonly Shape.Outline Outline;
@@ -70,6 +85,9 @@ namespace Vertx.Debugging
 		}
 	}
 
+	/// <summary>
+	/// float4x4 + float3, float4
+	/// </summary>
 	internal readonly struct CastGroup
 	{
 		[UsedImplicitly] public readonly Shape.Cast Cast;
