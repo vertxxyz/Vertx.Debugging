@@ -826,7 +826,7 @@ namespace Vertx.Debugging
 			public readonly Matrix4x4 Matrix;
 			public readonly bool Shade3D;
 
-			internal Box(Matrix4x4 matrix, bool shade3D = true)
+			public Box(Matrix4x4 matrix, bool shade3D = true)
 			{
 				Matrix = matrix;
 				Shade3D = shade3D;
