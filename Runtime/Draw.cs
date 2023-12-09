@@ -1,6 +1,11 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
+#if !UNITY_2021_1_OR_NEWER
+using Vertx.Debugging.Internal;
+#else
+using UnityEngine.Pool;
+#endif
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
@@ -232,6 +237,23 @@ namespace Vertx.Debugging
 					break;
 				case CapsuleCollider2D capsuleCollider:
 					new Shape.Capsule2D(capsuleCollider).Draw(s_Builder, color, duration);
+					break;
+				case PolygonCollider2D polygonCollider:
+					Transform transform = polygonCollider.transform;
+					using (ListPool<Vector3>.Get(out var points))
+					using (ListPool<Vector2>.Get(out var points2d))
+					{
+						for (var i = 0; i < polygonCollider.pathCount; i++)
+						{
+							polygonCollider.GetPath(i, points2d);
+							if (points2d.Count == 0) continue;
+							points.Clear();
+							foreach (var p in points2d)
+								points.Add(transform.TransformPoint(p));
+							points.Add(points[0]);
+							new Shape.LineStrip(points).Draw(s_Builder, color, duration);
+						}
+					}
 					break;
 				default:
 					// Could be null
