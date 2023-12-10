@@ -3,6 +3,7 @@
 #define FACE_CAMERA 1 << 2
 #define CUSTOM 1 << 3
 #define CUSTOM2 1 << 4
+#define CUSTOM3 1 << 5
 #define Z_GREATER_FADE 0.2
 
 int _InstanceCount;
@@ -12,6 +13,7 @@ bool has_normal_fade(int value) { return (value & NORMAL_FADE) != 0; }
 bool has_face_camera(int value) { return (value & FACE_CAMERA) != 0; }
 bool has_custom(int value) { return (value & CUSTOM) != 0; }
 bool has_custom2(int value) { return (value & CUSTOM2) != 0; }
+bool has_custom3(int value) { return (value & CUSTOM3) != 0; }
 
 bool is_orthographic() { return unity_OrthoParams.w == 1; }
 
