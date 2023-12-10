@@ -323,7 +323,7 @@ namespace Vertx.Debugging
 					break;
 				case PolygonCollider2D polygonCollider:
 					Transform transform = polygonCollider.transform;
-					using (ListPool<Vector3>.Get(out var points))
+					using (ListPool<float3>.Get(out var points))
 					using (ListPool<Vector2>.Get(out var points2d))
 					{
 						for (var i = 0; i < polygonCollider.pathCount; i++)
@@ -331,10 +331,10 @@ namespace Vertx.Debugging
 							polygonCollider.GetPath(i, points2d);
 							if (points2d.Count == 0) continue;
 							points.Clear();
-							foreach (var p in points2d)
+							foreach (Vector2 p in points2d)
 								points.Add(transform.TransformPoint(p));
 							points.Add(points[0]);
-							new Shape.LineStrip(points).Draw(s_Builder, color, duration);
+							new Shape.LineStrip(points).Draw(ref s_Builder, color, duration);
 						}
 					}
 					break;

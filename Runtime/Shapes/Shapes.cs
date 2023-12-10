@@ -1106,8 +1106,8 @@ namespace Vertx.Debugging
 		/// </summary>
 		public readonly struct Cone : IDrawable
 		{
-			public readonly Vector3 PointBase;
-			public readonly Quaternion Rotation;
+			public readonly float3 PointBase;
+			public readonly quaternion Rotation;
 			public readonly float Height;
 			public readonly float RadiusBase;
 			/// <summary>
@@ -1115,38 +1115,38 @@ namespace Vertx.Debugging
 			/// </summary>
 			public readonly float RadiusTip;
 
-			public Cone(Vector3 pointBase, Vector3 pointTip, float radiusBase, float radiusTip = 0)
+			public Cone(float3 pointBase, float3 pointTip, float radiusBase, float radiusTip = 0)
 			{
 				PointBase = pointBase;
 				RadiusBase = radiusBase;
 				RadiusTip = radiusTip;
-				Vector3 up = pointTip - PointBase;
+				float3 up = pointTip - PointBase;
 				up.EnsureNormalized(out Height);
 				if (Height == 0)
-					Rotation = Quaternion.identity;
+					Rotation = quaternion.identity;
 				else
 				{
-					Vector3 perpendicular = GetValidPerpendicular(up);
-					Rotation = Quaternion.LookRotation(up, perpendicular);
+					float3 perpendicular = GetValidPerpendicular(up);
+					Rotation = quaternion.LookRotation(up, perpendicular);
 				}
 			}
 
-			public Cone(Vector3 pointBase, Vector3 direction, float height, float radiusBase, float radiusTip = 0)
+			public Cone(float3 pointBase, float3 direction, float height, float radiusBase, float radiusTip = 0)
 			{
 				PointBase = pointBase;
 				RadiusBase = radiusBase;
 				RadiusTip = radiusTip;
 				Height = height;
 				if (Height == 0)
-					Rotation = Quaternion.identity;
+					Rotation = quaternion.identity;
 				else
 				{
-					Vector3 perpendicular = GetValidPerpendicular(direction);
-					Rotation = Quaternion.LookRotation(direction, perpendicular);
+					float3 perpendicular = GetValidPerpendicular(direction);
+					Rotation = quaternion.LookRotation(direction, perpendicular);
 				}
 			}
 
-			public Cone(Vector3 pointBase, Quaternion rotation, float height, float radiusBase, float radiusTip = 0)
+			public Cone(float3 pointBase, quaternion rotation, float height, float radiusBase, float radiusTip = 0)
 			{
 				PointBase = pointBase;
 				RadiusBase = radiusBase;
@@ -1156,9 +1156,12 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
-				Vector3 pointTip = PointBase + Rotation * new Vector3(0, 0, Height);
+				float3 pointTip = PointBase + math.mul(Rotation, new float3(0, 0, Height));
 
 				if (RadiusBase == 0 && RadiusTip == 0)
 				{
@@ -1168,24 +1171,24 @@ namespace Vertx.Debugging
 				}
 
 				if (RadiusBase != 0)
-					new Circle(PointBase, Rotation, RadiusBase).Draw(commandBuilder, color, duration);
+					new Circle(PointBase, Rotation, RadiusBase).Draw(ref commandBuilder, color, duration);
 				if (RadiusTip != 0)
-					new Circle(pointTip, Rotation, RadiusTip).Draw(commandBuilder, color, duration);
+					new Circle(pointTip, Rotation, RadiusTip).Draw(ref commandBuilder, color, duration);
 
 				if (Height == 0)
 					return;
 
 
-				Vector3 perpendicularX = Rotation * new Vector3(RadiusBase, 0, 0);
-				Vector3 perpendicularY = Rotation * new Vector3(0, RadiusBase, 0);
-				Vector3 perpendicularXTip = Rotation * new Vector3(RadiusTip, 0, 0);
-				Vector3 perpendicularYTip = Rotation * new Vector3(0, RadiusTip, 0);
+				float3 perpendicularX = math.mul(Rotation, new float3(RadiusBase, 0, 0));
+				float3 perpendicularY = math.mul(Rotation, new float3(0, RadiusBase, 0));
+				float3 perpendicularXTip = math.mul(Rotation, new float3(RadiusTip, 0, 0));
+				float3 perpendicularYTip = math.mul(Rotation, new float3(0, RadiusTip, 0));
 
 
-				Vector3 normalX = Rotation * new Vector3(Height, 0, RadiusBase - RadiusTip).normalized;
-				Vector3 normalXNegated = Rotation * new Vector3(-Height, 0, RadiusBase - RadiusTip).normalized;
-				Vector3 normalY = Rotation * new Vector3(0, Height, RadiusBase - RadiusTip).normalized;
-				Vector3 normalYNegated = Rotation * new Vector3(0, -Height, RadiusBase - RadiusTip).normalized;
+				float3 normalX = math.mul(Rotation, math.normalize(new float3(Height, 0, RadiusBase - RadiusTip)));
+				float3 normalXNegated = math.mul(Rotation, math.normalize(new float3(-Height, 0, RadiusBase - RadiusTip)));
+				float3 normalY = math.mul(Rotation, math.normalize(new float3(0, Height, RadiusBase - RadiusTip)));
+				float3 normalYNegated = math.mul(Rotation, math.normalize(new float3(0, -Height, RadiusBase - RadiusTip)));
 
 				commandBuilder.AppendOutline(new Outline(PointBase + perpendicularX, pointTip + perpendicularXTip, normalX), color, duration, DrawModifications.NormalFade);
 				commandBuilder.AppendOutline(new Outline(PointBase - perpendicularX, pointTip - perpendicularXTip, normalXNegated), color, duration, DrawModifications.NormalFade);
@@ -1202,9 +1205,9 @@ namespace Vertx.Debugging
 		public readonly struct Frustum : IDrawable
 		{
 			private static readonly Vector3[] _corners = new Vector3[4];
-			public readonly Matrix4x4 Matrix;
+			public readonly float4x4 Matrix;
 
-			public Frustum(Matrix4x4 matrix) => Matrix = matrix;
+			public Frustum(float4x4 matrix) => Matrix = matrix;
 
 			public Frustum(Camera camera, Camera.MonoOrStereoscopicEye eye = Camera.MonoOrStereoscopicEye.Mono)
 			{
@@ -1226,25 +1229,43 @@ namespace Vertx.Debugging
 
 				Matrix = camera.cameraToWorldMatrix * projectionMatrix.inverse;
 			}
-
+			
 			public Frustum(
-				Vector3 position,
-				Quaternion rotation,
-				float fieldOfView,
+				float3 position,
+				quaternion rotation,
+				float fieldOfViewDegrees,
 				float aspect,
 				float nearClipPlane,
 				float farClipPlane
 			)
 			{
-				Matrix4x4 cameraMatrix = Matrix4x4.TRS(position, rotation, Vector3.one);
+				float4x4 cameraMatrix = float4x4.TRS(position, rotation, new float3(1));
 				for (int i = 0; i < 3; i++)
-					cameraMatrix[i, 2] = -cameraMatrix[i, 2];
-				Matrix = cameraMatrix * Matrix4x4.Perspective(fieldOfView, aspect, nearClipPlane, farClipPlane).inverse;
+					cameraMatrix.c2[i] = -cameraMatrix.c2[i];
+				Matrix = math.mul(cameraMatrix, math.inverse(float4x4.PerspectiveFov(math.radians(fieldOfViewDegrees), aspect, nearClipPlane, farClipPlane)));
+			}
+
+			public Frustum(
+				float3 position,
+				quaternion rotation,
+				Angle fieldOfView,
+				float aspect,
+				float nearClipPlane,
+				float farClipPlane
+			)
+			{
+				float4x4 cameraMatrix = float4x4.TRS(position, rotation, new float3(1));
+				for (int i = 0; i < 3; i++)
+					cameraMatrix.c2[i] = -cameraMatrix.c2[i];
+				Matrix = math.mul(cameraMatrix, math.inverse(float4x4.PerspectiveFov(fieldOfView.Radians, aspect, nearClipPlane, farClipPlane)));
 			}
 
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(new Box(Matrix), color, duration);
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(new Box(Matrix), color, duration);
 #endif
 		}
 
@@ -1253,14 +1274,14 @@ namespace Vertx.Debugging
 		/// </summary>
 		public readonly struct Pyramid : IDrawable
 		{
-			public readonly Vector3 PointBase;
-			public readonly Quaternion Rotation;
-			public readonly Vector3 Size;
+			public readonly float3 PointBase;
+			public readonly quaternion Rotation;
+			public readonly float3 Size;
 
 			public Pyramid(
-				Vector3 pointBase,
-				Quaternion rotation,
-				Vector3 size
+				float3 pointBase,
+				quaternion rotation,
+				float3 size
 			)
 			{
 				PointBase = pointBase;
@@ -1269,14 +1290,17 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
-				Vector3 point = PointBase + Rotation * new Vector3(0, 0, Size.z);
-				new Box2D(PointBase, Rotation, new Vector2(Size.x * 2, Size.y * 2)).Draw(commandBuilder, color, duration);
-				commandBuilder.AppendLine(new Line(PointBase + Rotation * new Vector3(Size.x, Size.y), point), color, duration);
-				commandBuilder.AppendLine(new Line(PointBase + Rotation * new Vector3(-Size.x, Size.y), point), color, duration);
-				commandBuilder.AppendLine(new Line(PointBase + Rotation * new Vector3(Size.x, -Size.y), point), color, duration);
-				commandBuilder.AppendLine(new Line(PointBase + Rotation * new Vector3(-Size.x, -Size.y), point), color, duration);
+				float3 point = PointBase + math.mul(Rotation, new float3(0, 0, Size.z));
+				new Box2D(PointBase, Rotation, new float2(Size.x * 2, Size.y * 2)).Draw(ref commandBuilder, color, duration);
+				commandBuilder.AppendLine(new Line(PointBase + math.mul(Rotation, new float3(Size.x, Size.y, 0)), point), color, duration);
+				commandBuilder.AppendLine(new Line(PointBase + math.mul(Rotation, new float3(-Size.x, Size.y, 0)), point), color, duration);
+				commandBuilder.AppendLine(new Line(PointBase + math.mul(Rotation, new float3(Size.x, -Size.y, 0)), point), color, duration);
+				commandBuilder.AppendLine(new Line(PointBase + math.mul(Rotation, new float3(-Size.x, -Size.y, 0)), point), color, duration);
 			}
 #endif
 		}
@@ -1326,9 +1350,9 @@ namespace Vertx.Debugging
 			}
 #endif
 
-			public static Vector3 Intersection(UnityEngine.Plane a, UnityEngine.Plane b, UnityEngine.Plane c)
+			public static float3 Intersection(UnityEngine.Plane a, UnityEngine.Plane b, UnityEngine.Plane c)
 			{
-				float det = Vector3.Dot(a.normal, Vector3.Cross(b.normal, c.normal));
+				float det = math.dot(a.normal, math.cross(b.normal, c.normal));
 				/*float det = a.normal[0] * b.normal[1] * c.normal[2]
 				            - a.normal[0] * b.normal[2] * c.normal[1]
 				            - a.normal[1] * b.normal[0] * c.normal[2]
@@ -1337,10 +1361,10 @@ namespace Vertx.Debugging
 				            - a.normal[2] * b.normal[1] * c.normal[0];*/
 
 				if (Math.Abs(det) < 1e-4f)
-					return Vector3.zero;
+					return float3.zero;
 
 				return (
-					a.distance * Vector3.Cross(b.normal, c.normal) + b.distance * Vector3.Cross(c.normal, a.normal) + c.distance * Vector3.Cross(a.normal, b.normal)
+					a.distance * math.cross(b.normal, c.normal) + b.distance * math.cross(c.normal, a.normal) + c.distance * math.cross(a.normal, b.normal)
 				) / -det;
 			}
 		}
