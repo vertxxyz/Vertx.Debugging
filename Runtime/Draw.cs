@@ -4,6 +4,11 @@ using Unity.Burst;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
+#if !UNITY_2021_1_OR_NEWER
+using Vertx.Debugging.Internal;
+#else
+using UnityEngine.Pool;
+#endif
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
@@ -298,7 +303,7 @@ namespace Vertx.Debugging
 
 		/// <summary>
 		/// Draws a <see cref="Collider2D"/>.<br/>
-		/// Currently supported colliders are <see cref="BoxCollider2D"/>, <see cref="CircleCollider2D"/>, and <see cref="CapsuleCollider2D"/>.<br/>
+		/// Currently supported colliders are <see cref="BoxCollider2D"/>, <see cref="CircleCollider2D"/>, <see cref="CapsuleCollider2D"/>, and <see cref="PolygonCollider2D"/>.<br/>
 		/// <see cref="BoxCollider2D.edgeRadius"/> does not support skew.
 		/// </summary>
 		[Conditional("UNITY_EDITOR")]
@@ -315,6 +320,23 @@ namespace Vertx.Debugging
 					break;
 				case CapsuleCollider2D capsuleCollider:
 					raw(new Shape.Capsule2D(capsuleCollider), color, duration);
+					break;
+				case PolygonCollider2D polygonCollider:
+					Transform transform = polygonCollider.transform;
+					using (ListPool<Vector3>.Get(out var points))
+					using (ListPool<Vector2>.Get(out var points2d))
+					{
+						for (var i = 0; i < polygonCollider.pathCount; i++)
+						{
+							polygonCollider.GetPath(i, points2d);
+							if (points2d.Count == 0) continue;
+							points.Clear();
+							foreach (var p in points2d)
+								points.Add(transform.TransformPoint(p));
+							points.Add(points[0]);
+							new Shape.LineStrip(points).Draw(s_Builder, color, duration);
+						}
+					}
 					break;
 				default:
 					// Could be null

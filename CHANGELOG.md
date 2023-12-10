@@ -25,6 +25,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Removed
 - Removed the internal `CircleCache` class. If your extensions relied on it, sorry, it was removed for burst compatibility.
 
+## [2.2.0]
+### Added
+- Added PolygonCollider2D support to Shape drawing.
+- Added `Shape.Cone`.
+- Added `Shape.Frustum`.
+- Added `Shape.Pyramid`.
+
+### Improved
+-  Box Matrix4x4 constructor is now public.
+
 ## [2.1.4]
 ### Added
 - Added `Shape.Annulus`.

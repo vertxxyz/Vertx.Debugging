@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -881,7 +882,7 @@ namespace Vertx.Debugging
 			public readonly float4x4 Matrix;
 			public readonly bool Shade3D;
 
-			internal Box(float4x4 matrix, bool shade3D = true)
+			public Box(float4x4 matrix, bool shade3D = true)
 			{
 				Matrix = matrix;
 				Shade3D = shade3D;
@@ -1100,6 +1101,186 @@ namespace Vertx.Debugging
 #endif
 		}
 
+		/// <summary>
+		/// <see cref="Cone"/> faces in the Z direction, with its point towards Z+.
+		/// </summary>
+		public readonly struct Cone : IDrawable
+		{
+			public readonly Vector3 PointBase;
+			public readonly Quaternion Rotation;
+			public readonly float Height;
+			public readonly float RadiusBase;
+			/// <summary>
+			/// If <see cref="RadiusTip"/> is not 0, this may be a conical frustum, not a cone ;)
+			/// </summary>
+			public readonly float RadiusTip;
+
+			public Cone(Vector3 pointBase, Vector3 pointTip, float radiusBase, float radiusTip = 0)
+			{
+				PointBase = pointBase;
+				RadiusBase = radiusBase;
+				RadiusTip = radiusTip;
+				Vector3 up = pointTip - PointBase;
+				up.EnsureNormalized(out Height);
+				if (Height == 0)
+					Rotation = Quaternion.identity;
+				else
+				{
+					Vector3 perpendicular = GetValidPerpendicular(up);
+					Rotation = Quaternion.LookRotation(up, perpendicular);
+				}
+			}
+
+			public Cone(Vector3 pointBase, Vector3 direction, float height, float radiusBase, float radiusTip = 0)
+			{
+				PointBase = pointBase;
+				RadiusBase = radiusBase;
+				RadiusTip = radiusTip;
+				Height = height;
+				if (Height == 0)
+					Rotation = Quaternion.identity;
+				else
+				{
+					Vector3 perpendicular = GetValidPerpendicular(direction);
+					Rotation = Quaternion.LookRotation(direction, perpendicular);
+				}
+			}
+
+			public Cone(Vector3 pointBase, Quaternion rotation, float height, float radiusBase, float radiusTip = 0)
+			{
+				PointBase = pointBase;
+				RadiusBase = radiusBase;
+				RadiusTip = radiusTip;
+				Height = height;
+				Rotation = rotation;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Vector3 pointTip = PointBase + Rotation * new Vector3(0, 0, Height);
+
+				if (RadiusBase == 0 && RadiusTip == 0)
+				{
+					if (Height != 0)
+						commandBuilder.AppendLine(new Line(PointBase, pointTip), color, duration);
+					return;
+				}
+
+				if (RadiusBase != 0)
+					new Circle(PointBase, Rotation, RadiusBase).Draw(commandBuilder, color, duration);
+				if (RadiusTip != 0)
+					new Circle(pointTip, Rotation, RadiusTip).Draw(commandBuilder, color, duration);
+
+				if (Height == 0)
+					return;
+
+
+				Vector3 perpendicularX = Rotation * new Vector3(RadiusBase, 0, 0);
+				Vector3 perpendicularY = Rotation * new Vector3(0, RadiusBase, 0);
+				Vector3 perpendicularXTip = Rotation * new Vector3(RadiusTip, 0, 0);
+				Vector3 perpendicularYTip = Rotation * new Vector3(0, RadiusTip, 0);
+
+
+				Vector3 normalX = Rotation * new Vector3(Height, 0, RadiusBase - RadiusTip).normalized;
+				Vector3 normalXNegated = Rotation * new Vector3(-Height, 0, RadiusBase - RadiusTip).normalized;
+				Vector3 normalY = Rotation * new Vector3(0, Height, RadiusBase - RadiusTip).normalized;
+				Vector3 normalYNegated = Rotation * new Vector3(0, -Height, RadiusBase - RadiusTip).normalized;
+
+				commandBuilder.AppendOutline(new Outline(PointBase + perpendicularX, pointTip + perpendicularXTip, normalX), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(PointBase - perpendicularX, pointTip - perpendicularXTip, normalXNegated), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(PointBase + perpendicularY, pointTip + perpendicularYTip, normalY), color, duration, DrawModifications.NormalFade);
+				commandBuilder.AppendOutline(new Outline(PointBase - perpendicularY, pointTip - perpendicularYTip, normalYNegated), color, duration, DrawModifications.NormalFade);
+
+				// Someone figure this one out lol
+				// commandBuilder.AppendOutline(new Outline(point1, point2, _radiusTip, RadiusBase), color, duration, DrawModifications.Custom3);
+				// commandBuilder.AppendOutline(new Outline(point2, point1, RadiusBase, _radiusTip), color, duration, DrawModifications.Custom3);
+			}
+#endif
+		}
+
+		public readonly struct Frustum : IDrawable
+		{
+			private static readonly Vector3[] _corners = new Vector3[4];
+			public readonly Matrix4x4 Matrix;
+
+			public Frustum(Matrix4x4 matrix) => Matrix = matrix;
+
+			public Frustum(Camera camera, Camera.MonoOrStereoscopicEye eye = Camera.MonoOrStereoscopicEye.Mono)
+			{
+				Matrix4x4 projectionMatrix;
+				switch (eye)
+				{
+					case Camera.MonoOrStereoscopicEye.Left:
+						projectionMatrix = camera.GetStereoProjectionMatrix(Camera.StereoscopicEye.Left);
+						break;
+					case Camera.MonoOrStereoscopicEye.Right:
+						projectionMatrix = camera.GetStereoProjectionMatrix(Camera.StereoscopicEye.Right);
+						break;
+					case Camera.MonoOrStereoscopicEye.Mono:
+						projectionMatrix = camera.projectionMatrix;
+						break;
+					default:
+						throw new ArgumentOutOfRangeException(nameof(eye), eye, null);
+				}
+
+				Matrix = camera.cameraToWorldMatrix * projectionMatrix.inverse;
+			}
+
+			public Frustum(
+				Vector3 position,
+				Quaternion rotation,
+				float fieldOfView,
+				float aspect,
+				float nearClipPlane,
+				float farClipPlane
+			)
+			{
+				Matrix4x4 cameraMatrix = Matrix4x4.TRS(position, rotation, Vector3.one);
+				for (int i = 0; i < 3; i++)
+					cameraMatrix[i, 2] = -cameraMatrix[i, 2];
+				Matrix = cameraMatrix * Matrix4x4.Perspective(fieldOfView, aspect, nearClipPlane, farClipPlane).inverse;
+			}
+
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(new Box(Matrix), color, duration);
+#endif
+		}
+
+		/// <summary>
+		/// <see cref="Pyramid"/> faces in the Z direction, with its point towards Z+.
+		/// </summary>
+		public readonly struct Pyramid : IDrawable
+		{
+			public readonly Vector3 PointBase;
+			public readonly Quaternion Rotation;
+			public readonly Vector3 Size;
+
+			public Pyramid(
+				Vector3 pointBase,
+				Quaternion rotation,
+				Vector3 size
+			)
+			{
+				PointBase = pointBase;
+				Rotation = rotation;
+				Size = size;
+			}
+
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Vector3 point = PointBase + Rotation * new Vector3(0, 0, Size.z);
+				new Box2D(PointBase, Rotation, new Vector2(Size.x * 2, Size.y * 2)).Draw(commandBuilder, color, duration);
+				commandBuilder.AppendLine(new Line(PointBase + Rotation * new Vector3(Size.x, Size.y), point), color, duration);
+				commandBuilder.AppendLine(new Line(PointBase + Rotation * new Vector3(-Size.x, Size.y), point), color, duration);
+				commandBuilder.AppendLine(new Line(PointBase + Rotation * new Vector3(Size.x, -Size.y), point), color, duration);
+				commandBuilder.AppendLine(new Line(PointBase + Rotation * new Vector3(-Size.x, -Size.y), point), color, duration);
+			}
+#endif
+		}
+
 		public readonly struct Plane : IDrawable
 		{
 			public readonly UnityEngine.Plane Value;
@@ -1144,6 +1325,24 @@ namespace Vertx.Debugging
 				new Arrow(PointOnPlane, rotation).Draw(ref commandBuilder, color, duration);
 			}
 #endif
+
+			public static Vector3 Intersection(UnityEngine.Plane a, UnityEngine.Plane b, UnityEngine.Plane c)
+			{
+				float det = Vector3.Dot(a.normal, Vector3.Cross(b.normal, c.normal));
+				/*float det = a.normal[0] * b.normal[1] * c.normal[2]
+				            - a.normal[0] * b.normal[2] * c.normal[1]
+				            - a.normal[1] * b.normal[0] * c.normal[2]
+				            + a.normal[1] * b.normal[2] * c.normal[0]
+				            + a.normal[2] * b.normal[0] * c.normal[1]
+				            - a.normal[2] * b.normal[1] * c.normal[0];*/
+
+				if (Math.Abs(det) < 1e-4f)
+					return Vector3.zero;
+
+				return (
+					a.distance * Vector3.Cross(b.normal, c.normal) + b.distance * Vector3.Cross(c.normal, a.normal) + c.distance * Vector3.Cross(a.normal, b.normal)
+				) / -det;
+			}
 		}
 
 		/// <summary>
@@ -1161,6 +1360,13 @@ namespace Vertx.Debugging
 				A = a;
 				B = b;
 				C = new float3(radius, 0, 0);
+			}
+
+			public Outline(float3 a, float3 b, float radiusA, float radiusB)
+			{
+				A = a;
+				B = b;
+				C = new float3(radiusA, radiusB, 0);
 			}
 
 			public Outline(float3 a, float3 b, float3 c)
