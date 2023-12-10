@@ -73,7 +73,12 @@ namespace Vertx.Debugging
 			/// - Arc: Will create a full circle, but it spirals inwards using the turns parameter as an inner radius multiplier.
 			/// - Outline: Corrects sides appropriately for a boxcast.
 			/// </summary>
-			Custom2 = 1 << 4
+			Custom2 = 1 << 4,
+			/// <summary>
+			/// A custom modification that can be implemented by a shape.<br/>
+			/// - Outline: Standard perpendicular outline, but with two radii, one in C.x and another in C.y.
+			/// </summary>
+			Custom3 = 1 << 5
 		}
 	}
 }
