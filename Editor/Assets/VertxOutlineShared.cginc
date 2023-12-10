@@ -1,7 +1,7 @@
 // #include "UnityCG.cginc"
 #include "VertxDebuggingShared.cginc"
 
-struct Outine
+struct Outline
 {
     float3 A, B;
     // C can either be (radius, 0, 0)
@@ -10,14 +10,14 @@ struct Outine
     float3 C;
 };
 
-struct OutineGroup
+struct OutlineGroup
 {
-    Outine A;
+    Outline A;
     float4 Color;
     int Modifications;
 };
 
-StructuredBuffer<OutineGroup> outline_buffer;
+StructuredBuffer<OutlineGroup> outline_buffer;
 
 struct vertInput
 {
@@ -168,8 +168,8 @@ v2f vert(vertInput input)
         return o;
     }
 
-    OutineGroup og = outline_buffer[index];
-    Outine outline = og.A;
+    OutlineGroup og = outline_buffer[index];
+    Outline outline = og.A;
     int modifications = og.Modifications;
     o.color = og.Color;
     if (has_normal_fade(modifications))
@@ -202,7 +202,21 @@ v2f vert(vertInput input)
         return o;
     }
 
-    float radius = length(outline.C);
+    float radius;
+    float3 c;
+    if (has_custom3(modifications))
+    {
+        if (input.vertexID % 2 == 0)
+            radius = outline.C.x;
+        else
+            radius = outline.C.y;
+        c = float3(radius, 0, 0);
+    }
+    else
+    {
+        radius = length(outline.C);
+        c = outline.C;
+    }
 
     float3 originWorld = input.vertexID % 2 == 0 ? outline.A : outline.B;
     float3 direction = normalize(outline.B - outline.A);
@@ -217,7 +231,7 @@ v2f vert(vertInput input)
 
         if (has_custom(modifications))
         {
-            if (dot(outline.C, right) < 0)
+            if (dot(c, right) < 0)
             {
                 o.color.a = 0;
                 o.position = 0;
@@ -259,7 +273,7 @@ v2f vert(vertInput input)
         if (has_custom(modifications))
         {
             // Clip against the hemisphere that makes up a capsule.
-            if (dot(outline.C, intersection - originWorld) < 0)
+            if (dot(c, intersection - originWorld) < 0)
             {
                 o.color.a = 0;
                 o.position = 0;

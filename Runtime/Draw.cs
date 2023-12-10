@@ -192,7 +192,7 @@ namespace Vertx.Debugging
 
 		/// <summary>
 		/// Draws a <see cref="Collider2D"/>.<br/>
-		/// Currently supported colliders are <see cref="BoxCollider2D"/>, <see cref="CircleCollider2D"/>, and <see cref="CapsuleCollider2D"/>.<br/>
+		/// Currently supported colliders are <see cref="BoxCollider2D"/>, <see cref="CircleCollider2D"/>, <see cref="CapsuleCollider2D"/>, and <see cref="PolygonCollider2D"/>.<br/>
 		/// <see cref="BoxCollider2D.edgeRadius"/> does not support skew.
 		/// </summary>
 		[Conditional("UNITY_EDITOR")]
