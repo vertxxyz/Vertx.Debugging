@@ -658,6 +658,7 @@ namespace Vertx.Debugging
 
 			public static float GetRadius(in Angle angle, float chordLength) => chordLength / (2 * math.sin(0.5f * angle.Radians));
 			public static Angle GetAngle(float radius, float chordLength) => Angle.FromRadians(math.asin(chordLength / (2f * radius)) * 2);
+			public static float GetChordLength(in Angle angle, float radius) => 2f * radius * math.sin(angle.Radians * 0.5f);
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -1154,6 +1155,8 @@ namespace Vertx.Debugging
 				Height = height;
 				Rotation = rotation;
 			}
+			
+			public Cone Flip() => new Cone(PointBase + math.mul(Rotation, new float3(0, 0, Height)), math.mul(Rotation, quaternion.AxisAngle(math.up(), 180)), Height, RadiusBase, RadiusTip);
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -1204,7 +1207,6 @@ namespace Vertx.Debugging
 
 		public readonly struct Frustum : IDrawable
 		{
-			private static readonly Vector3[] _corners = new Vector3[4];
 			public readonly float4x4 Matrix;
 
 			public Frustum(float4x4 matrix) => Matrix = matrix;
@@ -1268,6 +1270,80 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(new Box(Matrix), color, duration);
 #endif
 		}
+		
+		public readonly struct FieldOfView : IDrawable
+		{
+			public readonly float3 Position;
+			public readonly quaternion Rotation;
+			public readonly Angle HorizontalAngle;
+			public readonly Angle VerticalAngle;
+			public readonly float Distance;
+			
+			public FieldOfView(
+				float3 position,
+				quaternion rotation,
+				Angle horizontalAngle,
+				Angle verticalAngle,
+				float distance
+			)
+			{
+				Position = position;
+				Rotation = rotation;
+				HorizontalAngle = horizontalAngle;
+				VerticalAngle = verticalAngle;
+				Distance = distance;
+			}
+
+			public static Angle VerticalFieldOfViewWithAspectToHorizontalFieldOfView(Angle verticalFieldOfView, float aspect) => Angle.FromRadians(2 * math.atan(math.tan(verticalFieldOfView.Radians * 0.5f) * aspect));
+			
+#if UNITY_EDITOR
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			{
+				quaternion arcRotationV = quaternion.AxisAngle(math.up(), -math.PIHALF);
+				quaternion arcRotationH = math.mul(quaternion.AxisAngle(math.up(), -math.PIHALF), quaternion.AxisAngle(math.right(), math.PIHALF));
+
+				float angleHorizontal = HorizontalAngle.Radians;
+				float angleVertical = VerticalAngle.Radians;
+
+				float verticalRadians = VerticalAngle.Radians;
+				float horizontalRadians = HorizontalAngle.Radians;
+				float y = math.tan(verticalRadians * 0.5f) * Distance;
+				float x = y * GetAspect(horizontalRadians, verticalRadians);
+				float h = math.length(new float3(x, y, Distance));
+				
+				Angle vert = Angle.FromRadians(math.asin(y / h) * 2);
+				Angle horz = Angle.FromRadians(math.asin(x / h) * 2);
+
+				// Center vertical
+				commandBuilder.AppendArc(new Arc(Position, math.mul(Rotation, arcRotationV), Distance, VerticalAngle), color, duration, DrawModifications.NormalFade);
+				// Center horizontal
+				commandBuilder.AppendArc(new Arc(Position, math.mul(Rotation, arcRotationH), Distance, HorizontalAngle), color, duration, DrawModifications.NormalFade);
+				// Right vertical
+				var rightVertical = new Arc(Position, math.mul(math.mul(Rotation, quaternion.AxisAngle(math.up(), angleHorizontal * 0.5f)), arcRotationV), Distance, vert);
+				commandBuilder.AppendArc(rightVertical, color, duration);
+				var leftVertical = new Arc(Position, math.mul(math.mul(Rotation, quaternion.AxisAngle(math.up(), -angleHorizontal * 0.5f)), arcRotationV), Distance, vert);
+				commandBuilder.AppendArc(leftVertical, color, duration);
+				var topHorizontal = new Arc(Position, math.mul(math.mul(Rotation, quaternion.AxisAngle(math.right(), -angleVertical * 0.5f)), arcRotationH), Distance, horz);
+				commandBuilder.AppendArc(topHorizontal, color, duration);
+				var bottomHorizontal = new Arc(Position, math.mul(math.mul(Rotation, quaternion.AxisAngle(math.right(), angleVertical * 0.5f)), arcRotationH), Distance, horz);
+				commandBuilder.AppendArc(bottomHorizontal, color, duration);
+
+				float length = Distance * math.cos(horz.Radians * 0.5f) * math.cos(VerticalAngle.Radians * 0.5f);
+
+				var size = new float3(Arc.GetChordLength(horz, Distance) * 0.5f, Arc.GetChordLength(vert, Distance) * 0.5f, length);
+				commandBuilder.AppendLine(new Line(Position, Position + math.mul(Rotation, new float3(size.x, size.y, size.z))), color, duration);
+				commandBuilder.AppendLine(new Line(Position, Position + math.mul(Rotation, new float3(-size.x, size.y, size.z))), color, duration);
+				commandBuilder.AppendLine(new Line(Position, Position + math.mul(Rotation, new float3(size.x, -size.y, size.z))), color, duration);
+				commandBuilder.AppendLine(new Line(Position, Position + math.mul(Rotation, new float3(-size.x, -size.y, size.z))), color, duration);
+				
+				return;
+				static float GetAspect(float hFov, float vFov) => math.tan(hFov * 0.5f) / math.tan(vFov * 0.5f);
+			}
+#endif
+		}
 
 		/// <summary>
 		/// <see cref="Pyramid"/> faces in the Z direction, with its point towards Z+.
@@ -1288,6 +1364,8 @@ namespace Vertx.Debugging
 				Rotation = rotation;
 				Size = size;
 			}
+
+			public Pyramid Flip() => new Pyramid(PointBase + math.mul(Rotation, new float3(0, 0, Size.z)), math.mul(Rotation, quaternion.AxisAngle(new float3(0, 1, 0), 180)), Size);
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
