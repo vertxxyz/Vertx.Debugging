@@ -45,11 +45,11 @@ namespace Vertx.Debugging
 
 		internal static void SyncColors()
 		{
-			var settings = DebuggingSettings.instance;
-			DebuggingSettings.ColorGroup colors = settings.Colors;
+			var settings = DebuggingPreferences.instance;
+			DebuggingPreferences.ColorGroup colors = settings.Colors;
 			if (colors == null)
 			{
-				colors = new DebuggingSettings.ColorGroup();
+				colors = new DebuggingPreferences.ColorGroup();
 				settings.Colors = colors;
 			}
 

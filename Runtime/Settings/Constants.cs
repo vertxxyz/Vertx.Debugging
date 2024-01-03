@@ -15,5 +15,12 @@ namespace Vertx.Debugging
 		public static readonly Color XColor = new Color(1, 0.1f, 0.2f);
 		public static readonly Color YColor = new Color(0.3f, 1, 0.1f);
 		public static readonly Color ZColor = new Color(0.1f, 0.4f, 1);
+		
+		public const int AllocatedLines = 50000;
+		public const int AllocatedDashedLines = 10000;
+		public const int AllocatedArcs = 50000;
+		public const int AllocatedBoxes = 30000;
+		public const int AllocatedOutlines = 20000;
+		public const int AllocatedCasts = 20000;
 	}
 }

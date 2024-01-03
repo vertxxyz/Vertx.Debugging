@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Minimum Unity version is now 2020.3.
 - Added dependencies on `com.unity.burst` and `com.unity.mathematics`.
 - Only the API surface is now public. If you want to extend the package use Assembly References.
+- Shapes are now pre-allocated. Change the number of allocations via the Project Settings.
+- Axis colors are now in Preferences.
 - `DashedLine` is now backed by `Line` instead of two Vector3s.
 
 ### Improved
@@ -17,6 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Added `[ExecuteAlways]` to Debug Collision/Trigger Events to support visualising during `Physics.Simulate`.
 - Added `RaycastHit` and `RaycastHit2D` constructors to `Shape.Ray`.
+- Added `Shape.FieldOfView`.
+- Added a `Flip` function to `Shape.Cone` and `Pyramid`.
 - Added `DrawPhysicsUtility.GetFixedFrameJobDuration` for getting a corrected duration for jobs started from `FixedUpdate` or `FixedStepSimulationSystemGroup`.
 
 ### Fixed

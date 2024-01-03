@@ -17,11 +17,7 @@ namespace Vertx.Debugging
 			if (_meshFilter == null)
 				return false;
 			Mesh mesh = _meshFilter.sharedMesh;
-#if !UNITY_2020_1_OR_NEWER
-			return mesh != null && mesh.isReadable;
-#else
 			return mesh != null;
-#endif
 		}
 
 		protected override void Draw()
