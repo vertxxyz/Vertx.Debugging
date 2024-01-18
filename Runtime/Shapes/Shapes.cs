@@ -615,6 +615,7 @@ namespace Vertx.Debugging
 
 			public static float GetRadius(in Angle angle, float chordLength) => chordLength / (2 * Mathf.Sin(0.5f * angle.Radians));
 			public static Angle GetAngle(float radius, float chordLength) => Angle.FromRadians(Mathf.Asin(chordLength / (2f * radius)) * 2);
+			public static float GetChordLength(in Angle angle, float radius) => 2f * radius * Mathf.Sin(angle.Radians * 0.5f);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -912,8 +913,21 @@ namespace Vertx.Debugging
 				float radiusScale = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
 				Radius = collider.radius * radiusScale;
 				Vector3 center = transform.TransformPoint(collider.center);
-				float offsetY = Mathf.Max(collider.height * 0.5f * Mathf.Abs(scale.y), Radius) - Radius;
-				Vector3 offset = transform.TransformDirection(new Vector3(0, offsetY, 0));
+				float offsetScalar = Mathf.Max(collider.height * 0.5f * Mathf.Abs(scale.y), Radius) - Radius;
+				Vector3 offset;
+				// ReSharper disable once ConvertSwitchStatementToSwitchExpression
+				switch (collider.direction)
+				{
+					case 0:
+						offset = transform.TransformDirection(new Vector3(offsetScalar, 0, 0));
+						break;
+					case 2:
+						offset = transform.TransformDirection(new Vector3(0, 0, offsetScalar));
+						break;
+					default:
+						offset = transform.TransformDirection(new Vector3(0, offsetScalar, 0));
+						break;
+				}
 				SpherePosition1 = center - offset;
 				SpherePosition2 = center + offset;
 			}
@@ -1090,6 +1104,8 @@ namespace Vertx.Debugging
 				Height = height;
 				Rotation = rotation;
 			}
+			
+			public Cone Flip() => new Cone(PointBase + Rotation * new Vector3(0, 0, Height), Rotation * Quaternion.AngleAxis(180, Vector3.up), Height, RadiusBase, RadiusTip);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
@@ -1183,6 +1199,77 @@ namespace Vertx.Debugging
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(new Box(Matrix), color, duration);
 #endif
 		}
+		
+		public readonly struct FieldOfView : IDrawable
+		{
+			public readonly Vector3 Position;
+			public readonly Quaternion Rotation;
+			public readonly Angle HorizontalAngle;
+			public readonly Angle VerticalAngle;
+			public readonly float Distance;
+			
+			public FieldOfView(
+				Vector3 position,
+				Quaternion rotation,
+				Angle horizontalAngle,
+				Angle verticalAngle,
+				float distance
+			)
+			{
+				Position = position;
+				Rotation = rotation;
+				HorizontalAngle = horizontalAngle;
+				VerticalAngle = verticalAngle;
+				Distance = distance;
+			}
+
+			public static Angle VerticalFieldOfViewWithAspectToHorizontalFieldOfView(Angle verticalFieldOfView, float aspect) => Angle.FromRadians(2 * Mathf.Atan(Mathf.Tan(verticalFieldOfView.Radians * 0.5f) * aspect));
+			
+#if UNITY_EDITOR
+			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			{
+				Quaternion arcRotationV = Quaternion.AngleAxis(-90, Vector3.up);
+				Quaternion arcRotationH = Quaternion.AngleAxis(-90, Vector3.up) * Quaternion.AngleAxis(90, Vector3.right);
+
+				float angleHorizontal = HorizontalAngle.Degrees;
+				float angleVertical = VerticalAngle.Degrees;
+
+				float verticalRadians = VerticalAngle.Radians;
+				float horizontalRadians = HorizontalAngle.Radians;
+				float y = Mathf.Tan(verticalRadians * 0.5f) * Distance;
+				float x = y * GetAspect(horizontalRadians, verticalRadians);
+				float h = new Vector3(x, y, Distance).magnitude;
+				
+				Angle vert = Angle.FromRadians(Mathf.Asin(y / h) * 2);
+				Angle horz = Angle.FromRadians(Mathf.Asin(x / h) * 2);
+
+				// Center vertical
+				commandBuilder.AppendArc(new Arc(Position, Rotation * arcRotationV, Distance, VerticalAngle), color, duration, DrawModifications.NormalFade);
+				// Center horizontal
+				commandBuilder.AppendArc(new Arc(Position, Rotation * arcRotationH, Distance, HorizontalAngle), color, duration, DrawModifications.NormalFade);
+				// Right vertical
+				var rightVertical = new Arc(Position, Rotation * Quaternion.AngleAxis(angleHorizontal * 0.5f, Vector3.up) * arcRotationV, Distance, vert);
+				commandBuilder.AppendArc(rightVertical, color, duration);
+				var leftVertical = new Arc(Position, Rotation * Quaternion.AngleAxis(-angleHorizontal * 0.5f, Vector3.up) * arcRotationV, Distance, vert);
+				commandBuilder.AppendArc(leftVertical, color, duration);
+				var topHorizontal = new Arc(Position, Rotation * Quaternion.AngleAxis(-angleVertical * 0.5f, Vector3.right) * arcRotationH, Distance, horz);
+				commandBuilder.AppendArc(topHorizontal, color, duration);
+				var bottomHorizontal = new Arc(Position, Rotation * Quaternion.AngleAxis(angleVertical * 0.5f, Vector3.right) * arcRotationH, Distance, horz);
+				commandBuilder.AppendArc(bottomHorizontal, color, duration);
+
+				float length = Distance * Mathf.Cos(horz.Radians * 0.5f) * Mathf.Cos(VerticalAngle.Radians * 0.5f);
+
+				var size = new Vector3(Arc.GetChordLength(horz, Distance) * 0.5f, Arc.GetChordLength(vert, Distance) * 0.5f, length);
+				commandBuilder.AppendLine(new Line(Position, Position + Rotation * new Vector3(size.x, size.y, size.z)), color, duration);
+				commandBuilder.AppendLine(new Line(Position, Position + Rotation * new Vector3(-size.x, size.y, size.z)), color, duration);
+				commandBuilder.AppendLine(new Line(Position, Position + Rotation * new Vector3(size.x, -size.y, size.z)), color, duration);
+				commandBuilder.AppendLine(new Line(Position, Position + Rotation * new Vector3(-size.x, -size.y, size.z)), color, duration);
+				
+				return;
+				static float GetAspect(float hFov, float vFov) => Mathf.Tan(hFov * 0.5f) / Mathf.Tan(vFov * 0.5f);
+			}
+#endif
+		}
 
 		/// <summary>
 		/// <see cref="Pyramid"/> faces in the Z direction, with its point towards Z+.
@@ -1203,6 +1290,8 @@ namespace Vertx.Debugging
 				Rotation = rotation;
 				Size = size;
 			}
+
+			public Pyramid Flip() => new Pyramid(PointBase + Rotation * new Vector3(0, 0, Size.z), Rotation * Quaternion.AngleAxis(180, Vector3.up), Size);
 
 #if UNITY_EDITOR
 			public void Draw(CommandBuilder commandBuilder, Color color, float duration)

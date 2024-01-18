@@ -429,14 +429,14 @@ namespace Vertx.Debugging
 				Vector2 radius2D = transform.TransformVector(
 					collider.direction == CapsuleDirection2D.Vertical
 						? new Vector3(size.x, 0, 0)
-						: new Vector3(0, size.x, 0)
+						: new Vector3(0, size.y, 0)
 				);
 				_radius = radius2D.magnitude;
 
 				Vector2 offset = transform.TransformVector(
 					collider.direction == CapsuleDirection2D.Vertical
 						? new Vector3(0, size.y, 0)
-						: new Vector3(size.y, 0, 0)
+						: new Vector3(size.x, 0, 0)
 				);
 				offset.EnsureNormalized(out float magnitude);
 				offset *= Mathf.Max(magnitude - _radius, 0);
