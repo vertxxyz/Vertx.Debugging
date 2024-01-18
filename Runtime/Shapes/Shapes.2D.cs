@@ -516,14 +516,14 @@ namespace Vertx.Debugging
 				float2 radius2D = transform.TransformVector(
 					collider.direction == CapsuleDirection2D.Vertical
 						? new float3(size.x, 0, 0)
-						: new float3(0, size.x, 0)
+						: new float3(0, size.y, 0)
 				).xy();
 				_radius = math.length(radius2D);
 
 				float2 offset = transform.TransformVector(
 					collider.direction == CapsuleDirection2D.Vertical
 						? new float3(0, size.y, 0)
-						: new float3(size.y, 0, 0)
+						: new float3(size.x, 0, 0)
 				).xy();
 				offset.EnsureNormalized(out float magnitude);
 				offset *= math.max(magnitude - _radius, 0);

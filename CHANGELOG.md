@@ -19,8 +19,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Added `[ExecuteAlways]` to Debug Collision/Trigger Events to support visualising during `Physics.Simulate`.
 - Added `RaycastHit` and `RaycastHit2D` constructors to `Shape.Ray`.
-- Added `Shape.FieldOfView`.
-- Added a `Flip` function to `Shape.Cone` and `Pyramid`.
 - Added `DrawPhysicsUtility.GetFixedFrameJobDuration` for getting a corrected duration for jobs started from `FixedUpdate` or `FixedStepSimulationSystemGroup`.
 
 ### Fixed
@@ -28,6 +26,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 - Removed the internal `CircleCache` class. If your extensions relied on it, sorry, it was removed for burst compatibility.
+
+## [2.3.0]
+### Added
+- Added `Shape.FieldOfView`.
+- Added a `Flip` function to `Shape.Cone` and `Pyramid`.
+
+### Fixed
+- Added missing axis support for CapsuleCollider drawing.
+- Fixed incorrect calculations for Horizontal CapsuleCollider2D drawing.
 
 ## [2.2.0]
 ### Added

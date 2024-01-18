@@ -971,8 +971,21 @@ namespace Vertx.Debugging
 				float radiusScale = math.max(math.abs(scale.x), math.abs(scale.z));
 				Radius = collider.radius * radiusScale;
 				float3 center = transform.TransformPoint(collider.center);
-				float offsetY = math.max(collider.height * 0.5f * math.abs(scale.y), Radius) - Radius;
-				float3 offset = transform.TransformDirection(new float3(0, offsetY, 0));
+				float offsetScalar = math.max(collider.height * 0.5f * math.abs(scale.y), Radius) - Radius;
+				float3 offset;
+				// ReSharper disable once ConvertSwitchStatementToSwitchExpression
+				switch (collider.direction)
+				{
+					case 0:
+						offset = transform.TransformDirection(new float3(offsetScalar, 0, 0));
+						break;
+					case 2:
+						offset = transform.TransformDirection(new float3(0, 0, offsetScalar));
+						break;
+					default:
+						offset = transform.TransformDirection(new float3(0, offsetScalar, 0));
+						break;
+				}
 				SpherePosition1 = center - offset;
 				SpherePosition2 = center + offset;
 			}
