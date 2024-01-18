@@ -103,6 +103,11 @@ using static Vertx.Debugging.Shape;
 | `DashedLine`                                                 | A dashed line.                                                                                   |
 | `HalfArrow`                                                  | An arrow with only one side of its head. Commonly used to represent the HalfEdge data structure. |
 | `Arrow2DFromNormal`                                          | An 2D arrow aligned in 3D space using a normal vector perpendicular to the direction.            |
+| `Plane`                                                      | A 3D rect drawn around a point on the plane.                                                     |
+| `Cone`                                                       | A cone (with adjustable end radius, making a conical frustum).                                   |
+| `Pyramid`                                                    | A pyramid.                                                                                       |
+| `Frustum`                                                    | A camera frustum.                                                                                |
+| `FieldOfView`                                                | A 3D field of view, a spherical sector.                                                          |
 | `MeshNormals`                                                | The normals of a mesh.                                                                           |
 | `Ray`                                                        | A line from a position and a direction vector.                                                   |
 | `Ray` (Built-in)                                             | Fallback to `Ray`.                                                                               |
