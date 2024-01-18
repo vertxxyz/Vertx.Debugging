@@ -79,12 +79,12 @@ namespace Vertx.Debugging
 			{
 				Instance.RemoveShapesByDuration(s_DeltaTimeThisFrame);
 			}
-			
+
 			s_TimeThisFrame = Time.time;
 			ref var builder = ref UnmanagedCommandBuilder.Instance.Data;
 			builder.Time = s_TimeThisFrame;
 		}
-		
+
 		private static void StartFixedUpdate()
 		{
 			ref var builder = ref UnmanagedCommandBuilder.Instance.Data;

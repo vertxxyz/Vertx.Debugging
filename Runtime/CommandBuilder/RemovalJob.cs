@@ -6,27 +6,23 @@ using Unity.Jobs;
 
 namespace Vertx.Debugging
 {
-	internal interface IRemovalJob<T> : IJob where T : unmanaged
-	{
-		void Configure(
-			UnsafeList<T> elements,
-			UnsafeList<float> durations,
-			float deltaTime
-		);
-	}
-	
 	[BurstCompile]
-	internal struct RemovalJob<T> : IRemovalJob<T> where T : unmanaged
+	internal struct RemovalJob<T> : IJob where T : unmanaged
 	{
-		public UnsafeList<float> Durations;
-		public UnsafeList<T> Elements;
+		[NativeDisableUnsafePtrRestriction]
+		public UnsafeArray<float> Durations;
+		[NativeDisableUnsafePtrRestriction]
+		public UnsafeArray<T> Elements;
 		[ReadOnly]
 		public float DeltaTime;
 
-		public void Configure(UnsafeList<T> elements, UnsafeList<float> durations, float deltaTime)
+		public NativeReference<int> Length;
+
+		public RemovalJob(UnmanagedCommandContainer<T> group, float deltaTime)
 		{
-			Elements = elements;
-			Durations = durations;
+			Durations = group.Durations;
+			Elements = group.Values;
+			Length = group.LengthForJob;
 			DeltaTime = deltaTime;
 		}
 
@@ -36,8 +32,8 @@ namespace Vertx.Debugging
 		/// </summary>
 		public void Execute()
 		{
-			int endIndex = Durations.Length;
-			for (int index = Elements.Length - 1; index >= 0; index--)
+			int endIndex = Length.Value;
+			for (int index = Length.Value - 1; index >= 0; index--)
 			{
 				float newDuration = Durations[index] - DeltaTime;
 				if (newDuration > 0)
@@ -53,23 +49,7 @@ namespace Vertx.Debugging
 				Elements[index] = Elements[endIndex];
 			}
 
-#if VERTX_COLLECTIONS_1_0_0_PRE_4_OR_NEWER
-			int totalRemoved = Durations.Length - endIndex;
-				
-			// This check is required for earlier versions of collections.
-			if (totalRemoved == 0)
-				return;
-				
-			Durations.RemoveRange(endIndex, totalRemoved);
-			Elements.RemoveRange(endIndex, totalRemoved);
-#else
-				if (Durations.Length == endIndex)
-					return;
-
-				int last = Durations.Length;
-				Durations.RemoveRange(endIndex, last);
-				Elements.RemoveRange(endIndex, last);
-#endif
+			Length.Value = endIndex;
 		}
 	}
 }

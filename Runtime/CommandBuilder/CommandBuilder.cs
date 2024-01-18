@@ -19,6 +19,7 @@ using UnityEngine.Rendering.Universal;
 namespace Vertx.Debugging.PlayerLoop
 {
 	public struct VertxDebuggingInitialization { }
+
 	public struct VertxDebuggingFixedUpdate { }
 }
 
@@ -38,7 +39,7 @@ namespace Vertx.Debugging
 
 		private readonly BufferGroup _defaultGroup = new BufferGroup(Name);
 		private readonly BufferGroup _gizmosGroup = new BufferGroup(GizmosName);
-		
+
 #if VERTX_URP
 		private VertxDebuggingRenderPass _pass;
 #endif
@@ -159,7 +160,7 @@ namespace Vertx.Debugging
 			Profiler.BeginSample(Name);
 			CommandBuffer commandBuffer = null;
 			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
-			if (!SharedRenderingDetails(camera, unmanaged.Standard, _defaultGroup, ref commandBuffer, type))
+			if (!SharedRenderingDetails(camera, ref unmanaged.Standard, _defaultGroup, ref commandBuffer, type))
 			{
 				Profiler.EndSample();
 				return;
@@ -178,7 +179,7 @@ namespace Vertx.Debugging
 				type |= RenderingType.Game;
 
 			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
-			SharedRenderingDetails(camera, unmanaged.Standard, _defaultGroup, ref commandBuffer, type);
+			SharedRenderingDetails(camera, ref unmanaged.Standard, _defaultGroup, ref commandBuffer, type);
 		}
 
 		/// <summary>
@@ -195,7 +196,7 @@ namespace Vertx.Debugging
 
 			CommandBuffer commandBuffer = null;
 			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
-			if (!SharedRenderingDetails(camera, unmanaged.Gizmos, _gizmosGroup, ref commandBuffer, type))
+			if (!SharedRenderingDetails(camera, ref unmanaged.Gizmos, _gizmosGroup, ref commandBuffer, type))
 				return;
 			Graphics.ExecuteCommandBuffer(commandBuffer);
 		}
@@ -223,7 +224,7 @@ namespace Vertx.Debugging
 			GizmosAndGame = Gizmos | Game
 		}
 
-		private bool SharedRenderingDetails(Camera camera, UnmanagedCommandGroup commandGroup, BufferGroup bufferGroup, ref CommandBuffer commandBuffer, RenderingType renderingType)
+		private bool SharedRenderingDetails(Camera camera, ref UnmanagedCommandGroup commandGroup, BufferGroup bufferGroup, ref CommandBuffer commandBuffer, RenderingType renderingType)
 		{
 			_pauseCapture.CommitCurrentPausedFrame();
 			_lastRenderingCamera = camera;
@@ -299,9 +300,9 @@ namespace Vertx.Debugging
 					int shapeCount = elements.Count;
 					if (shapeCount <= 0)
 						return false;
-					
+
 					Material mat = material.Value;
-					
+
 					// Don't render this shape until it's compiled.
 					// (It looks very strange to the user when a cyan box appears for a millisecond at 0,0,0)
 					int passCount = mat.passCount;
@@ -322,7 +323,7 @@ namespace Vertx.Debugging
 					MaterialPropertyBlock propertyBlock = buffer.PropertyBlock;
 					// Set the buffers to be used by the property block
 					// Synchronise the GraphicsBuffer with the data in the shape buffer.
-					buffer.Set(commandBuffer, propertyBlock, elements.Values, elements.Dirty);
+					buffer.Set(commandBuffer, propertyBlock, elements.Values, shapeCount, elements.Dirty);
 					mat.SetFloat(s_ZWriteKey, depthWrite ? 1f : 0f);
 					mat.SetFloat(s_ZTestKey, (float)(depthTest ? CompareFunction.LessEqual : CompareFunction.Always));
 					commandBuffer.DrawMeshInstancedProcedural(mesh.Value, 0, mat, depthTest ? -1 : 1, (int)math.ceil(shapeCount / (float)groupCount), propertyBlock);

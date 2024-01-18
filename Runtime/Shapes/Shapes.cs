@@ -1155,13 +1155,13 @@ namespace Vertx.Debugging
 				Height = height;
 				Rotation = rotation;
 			}
-			
+
 			public Cone Flip() => new Cone(PointBase + math.mul(Rotation, new float3(0, 0, Height)), math.mul(Rotation, quaternion.AxisAngle(math.up(), 180)), Height, RadiusBase, RadiusTip);
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3 pointTip = PointBase + math.mul(Rotation, new float3(0, 0, Height));
@@ -1231,7 +1231,7 @@ namespace Vertx.Debugging
 
 				Matrix = camera.cameraToWorldMatrix * projectionMatrix.inverse;
 			}
-			
+
 			public Frustum(
 				float3 position,
 				quaternion rotation,
@@ -1266,11 +1266,11 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => commandBuilder.AppendBox(new Box(Matrix), color, duration);
 #endif
 		}
-		
+
 		public readonly struct FieldOfView : IDrawable
 		{
 			public readonly float3 Position;
@@ -1278,7 +1278,7 @@ namespace Vertx.Debugging
 			public readonly Angle HorizontalAngle;
 			public readonly Angle VerticalAngle;
 			public readonly float Distance;
-			
+
 			public FieldOfView(
 				float3 position,
 				quaternion rotation,
@@ -1295,11 +1295,11 @@ namespace Vertx.Debugging
 			}
 
 			public static Angle VerticalFieldOfViewWithAspectToHorizontalFieldOfView(Angle verticalFieldOfView, float aspect) => Angle.FromRadians(2 * math.atan(math.tan(verticalFieldOfView.Radians * 0.5f) * aspect));
-			
+
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				quaternion arcRotationV = quaternion.AxisAngle(math.up(), -math.PIHALF);
@@ -1313,7 +1313,7 @@ namespace Vertx.Debugging
 				float y = math.tan(verticalRadians * 0.5f) * Distance;
 				float x = y * GetAspect(horizontalRadians, verticalRadians);
 				float h = math.length(new float3(x, y, Distance));
-				
+
 				Angle vert = Angle.FromRadians(math.asin(y / h) * 2);
 				Angle horz = Angle.FromRadians(math.asin(x / h) * 2);
 
@@ -1338,7 +1338,7 @@ namespace Vertx.Debugging
 				commandBuilder.AppendLine(new Line(Position, Position + math.mul(Rotation, new float3(-size.x, size.y, size.z))), color, duration);
 				commandBuilder.AppendLine(new Line(Position, Position + math.mul(Rotation, new float3(size.x, -size.y, size.z))), color, duration);
 				commandBuilder.AppendLine(new Line(Position, Position + math.mul(Rotation, new float3(-size.x, -size.y, size.z))), color, duration);
-				
+
 				return;
 				static float GetAspect(float hFov, float vFov) => math.tan(hFov * 0.5f) / math.tan(vFov * 0.5f);
 			}
@@ -1370,7 +1370,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3 point = PointBase + math.mul(Rotation, new float3(0, 0, Size.z));

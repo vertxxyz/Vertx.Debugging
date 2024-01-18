@@ -14,13 +14,13 @@ namespace Vertx.Debugging
 		public MaterialPropertyBlock PropertyBlock => _propertyBlock ?? (_propertyBlock = new MaterialPropertyBlock());
 		public ShapeBuffer(string bufferName) => _elements = new BufferWrapper<T>(bufferName);
 
-		public void Set(CommandBuffer commandBuffer, MaterialPropertyBlock propertyBlock, UnsafeList<T> elements, bool elementsDirty)
+		public void Set(CommandBuffer commandBuffer, MaterialPropertyBlock propertyBlock, UnsafeArray<T> elements, int length, bool elementsDirty)
 		{
 			if (elementsDirty)
 				_elements.SetBufferData(commandBuffer, elements);
 
 			_elements.SetBufferToPropertyBlock(propertyBlock);
-			propertyBlock.SetInt(CommandBuilder.s_InstanceCountKey, elements.Length);
+			propertyBlock.SetInt(CommandBuilder.s_InstanceCountKey, length);
 		}
 
 		public void Dispose() => _elements.Dispose();

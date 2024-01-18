@@ -35,14 +35,14 @@ namespace Vertx.Debugging
 			Casts.Dispose();
 		}
 
-		public void Initialise(bool usesDurations)
+		public void Initialise(bool usesDurations, DebuggingSettings.Allocations allocations)
 		{
-			Lines.Initialise(usesDurations);
-			DashedLines.Initialise(usesDurations);
-			Arcs.Initialise(usesDurations);
-			Boxes.Initialise(usesDurations);
-			Outlines.Initialise(usesDurations);
-			Casts.Initialise(usesDurations);
+			Lines.Initialise(allocations.Lines, usesDurations);
+			DashedLines.Initialise(allocations.DashedLines, usesDurations);
+			Arcs.Initialise(allocations.Arcs, usesDurations);
+			Boxes.Initialise(allocations.Boxes, usesDurations);
+			Outlines.Initialise(allocations.Outlines, usesDurations);
+			Casts.Initialise(allocations.Casts, usesDurations);
 		}
 	}
 
@@ -69,8 +69,9 @@ namespace Vertx.Debugging
 
 		public void Initialise()
 		{
-			Standard.Initialise(true);
-			Gizmos.Initialise(false);
+			DebuggingSettings settings = DebuggingSettings.instance;
+			Standard.Initialise(true, settings.AllocationsWithDurations);
+			Gizmos.Initialise(false, settings.AllocationsForGizmos);
 		}
 
 		[BurstDiscard]

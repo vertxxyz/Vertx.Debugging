@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine.Rendering;
 
@@ -79,7 +80,6 @@ namespace Vertx.Debugging
 			Boxes.Dispose();
 			Outlines.Dispose();
 			Casts.Dispose();
-			UnmanagedCommandBuilder.Instance.Data.Dispose();
 			_commandBuffer?.Dispose();
 		}
 
@@ -89,71 +89,73 @@ namespace Vertx.Debugging
 			ScreenTexts.RemoveByDeltaTime(deltaTime);
 
 			JobHandle? coreHandle = null;
-			_counters[(int)ShapeIndex.Line] = QueueRemovalJob<LineGroup, RemovalJob<LineGroup>>(ref group.Lines, ref coreHandle);
-			_counters[(int)ShapeIndex.DashedLine] = QueueRemovalJob<DashedLineGroup, RemovalJob<DashedLineGroup>>(ref group.DashedLines, ref coreHandle);
-			_counters[(int)ShapeIndex.Arc] = QueueRemovalJob<ArcGroup, RemovalJob<ArcGroup>>(ref group.Arcs, ref coreHandle);
-			_counters[(int)ShapeIndex.Box] = QueueRemovalJob<BoxGroup, RemovalJob<BoxGroup>>(ref group.Boxes, ref coreHandle);
-			_counters[(int)ShapeIndex.Outline] = QueueRemovalJob<OutlineGroup, RemovalJob<OutlineGroup>>(ref group.Outlines, ref coreHandle);
-			_counters[(int)ShapeIndex.Cast] = QueueRemovalJob<CastGroup, RemovalJob<CastGroup>>(ref group.Casts, ref coreHandle);
+			_counters[(int)ShapeIndex.Line] = QueueRemovalJob(ref group.Lines, new RemovalJob<LineGroup>(group.Lines, deltaTime), ref coreHandle);
+			_counters[(int)ShapeIndex.DashedLine] = QueueRemovalJob(ref group.DashedLines, new RemovalJob<DashedLineGroup>(group.DashedLines, deltaTime), ref coreHandle);
+			_counters[(int)ShapeIndex.Arc] = QueueRemovalJob(ref group.Arcs, new RemovalJob<ArcGroup>(group.Arcs, deltaTime), ref coreHandle);
+			_counters[(int)ShapeIndex.Box] = QueueRemovalJob(ref group.Boxes, new RemovalJob<BoxGroup>(group.Boxes, deltaTime), ref coreHandle);
+			_counters[(int)ShapeIndex.Outline] = QueueRemovalJob(ref group.Outlines, new RemovalJob<OutlineGroup>(group.Outlines, deltaTime), ref coreHandle);
+			_counters[(int)ShapeIndex.Cast] = QueueRemovalJob(ref group.Casts, new RemovalJob<CastGroup>(group.Casts, deltaTime), ref coreHandle);
 
-			if (coreHandle.HasValue)
+			if (!coreHandle.HasValue)
+				return;
+
+			coreHandle.Value.Complete();
+
+			for (ShapeIndex i = 0; i < ShapeIndex.Length; i++)
 			{
-				coreHandle.Value.Complete();
-
-				for (ShapeIndex i = 0; i < ShapeIndex.Length; i++)
+				int oldCount = _counters[(int)i];
+				// ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+				switch (i)
 				{
-					// ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
-					switch (i)
+					case ShapeIndex.Line:
 					{
-						case ShapeIndex.Line:
-						{
-							ref var g = ref group.Lines;
-							if (g.Count == _counters[(int)i]) continue;
-							g.ChangedAfterRemoval();
-							continue;
-						}
-						case ShapeIndex.DashedLine:
-						{
-							ref var g = ref group.DashedLines;
-							if (g.Count == _counters[(int)i]) continue;
-							g.ChangedAfterRemoval();
-							continue;
-						}
-						case ShapeIndex.Arc:
-						{
-							ref var g = ref group.Arcs;
-							if (g.Count == _counters[(int)i]) continue;
-							g.ChangedAfterRemoval();
-							continue;
-						}
-						case ShapeIndex.Box:
-						{
-							ref var g = ref group.Boxes;
-							if (g.Count == _counters[(int)i]) continue;
-							g.ChangedAfterRemoval();
-							continue;
-						}
-						case ShapeIndex.Outline:
-						{
-							ref var g = ref group.Outlines;
-							if (g.Count == _counters[(int)i]) continue;
-							g.ChangedAfterRemoval();
-							continue;
-						}
-						case ShapeIndex.Cast:
-						{
-							ref var g = ref group.Casts;
-							if (g.Count == _counters[(int)i]) continue;
-							g.ChangedAfterRemoval();
-							continue;
-						}
+						ref var g = ref group.Lines;
+						if (g.LengthForJob.Value == oldCount) continue;
+						g.ChangedAfterRemoval();
+						continue;
+					}
+					case ShapeIndex.DashedLine:
+					{
+						ref var g = ref group.DashedLines;
+						if (g.LengthForJob.Value == oldCount) continue;
+						g.ChangedAfterRemoval();
+						continue;
+					}
+					case ShapeIndex.Arc:
+					{
+						ref var g = ref group.Arcs;
+						if (g.LengthForJob.Value == oldCount) continue;
+						g.ChangedAfterRemoval();
+						continue;
+					}
+					case ShapeIndex.Box:
+					{
+						ref var g = ref group.Boxes;
+						if (g.LengthForJob.Value == oldCount) continue;
+						g.ChangedAfterRemoval();
+						continue;
+					}
+					case ShapeIndex.Outline:
+					{
+						ref var g = ref group.Outlines;
+						if (g.LengthForJob.Value == oldCount) continue;
+						g.ChangedAfterRemoval();
+						continue;
+					}
+					case ShapeIndex.Cast:
+					{
+						ref var g = ref group.Casts;
+						if (g.LengthForJob.Value == oldCount) continue;
+						g.ChangedAfterRemoval();
+						continue;
 					}
 				}
 			}
 
-			int QueueRemovalJob<T, TJob>(ref UnmanagedCommandContainer<T> data, ref JobHandle? handleOut)
+			return;
+
+			int QueueRemovalJob<T>(ref UnmanagedCommandContainer<T> data, RemovalJob<T> job, ref JobHandle? handleOut)
 				where T : unmanaged
-				where TJob : struct, IRemovalJob<T>
 			{
 				int length = data.Count;
 				if (length == 0)
@@ -161,15 +163,11 @@ namespace Vertx.Debugging
 
 				if (data.HasNonZeroDuration)
 				{
-					var removalJob = new TJob();
-					removalJob.Configure(
-						data.Values,
-						data.Durations,
-						deltaTime
-					);
+					NativeReference<int> lengthForJob = data.LengthForJob;
+					lengthForJob.Value = data.Count;
 					handleOut = !handleOut.HasValue
-						? removalJob.Schedule()
-						: JobHandle.CombineDependencies(handleOut.Value, removalJob.Schedule());
+						? job.Schedule()
+						: JobHandle.CombineDependencies(handleOut.Value, job.Schedule());
 					return length;
 				}
 

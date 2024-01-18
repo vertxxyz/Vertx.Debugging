@@ -30,18 +30,26 @@ namespace Vertx.Debugging
 		         "Under specific versions of some render pipelines you may find depth testing is resolved upside-down in the game view.\nSome do not depth test properly at all.")]
 		public Location DepthTest = Location.All;
 
-		[Min(0)]
-		public int AllocatedLines = Constants.AllocatedLines;
-		[Min(0)]
-		public int AllocatedDashedLines = Constants.AllocatedDashedLines;
-		[Min(0)]
-		public int AllocatedArcs = Constants.AllocatedArcs;
-		[Min(0)]
-		public int AllocatedBoxes = Constants.AllocatedBoxes;
-		[Min(0)]
-		public int AllocatedOutlines = Constants.AllocatedOutlines;
-		[Min(0)]
-		public int AllocatedCasts = Constants.AllocatedCasts;
+		[Serializable]
+		public class Allocations
+		{
+			[Min(0)]
+			public int Lines = Constants.AllocatedLines;
+			[Min(0)]
+			public int DashedLines = Constants.AllocatedDashedLines;
+			[Min(0)]
+			public int Arcs = Constants.AllocatedArcs;
+			[Min(0)]
+			public int Boxes = Constants.AllocatedBoxes;
+			[Min(0)]
+			public int Outlines = Constants.AllocatedOutlines;
+			[Min(0)]
+			public int Casts = Constants.AllocatedCasts;
+		}
+
+		public Allocations 
+			AllocationsForGizmos,
+			AllocationsWithDurations;
 
 		public void Save() => Save(true);
 	}

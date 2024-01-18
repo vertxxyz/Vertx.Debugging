@@ -27,7 +27,7 @@ namespace Vertx.Debugging
 				element.TextColor = textColor;
 			}
 		}
-		
+
 		internal sealed class ScreenTextDataLists : TextDataLists<Shape.ScreenTextData>
 		{
 			public void Add(in Shape.ScreenText text, Color backgroundColor, Color textColor, float duration)
