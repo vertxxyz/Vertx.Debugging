@@ -1,7 +1,10 @@
 #if UNITY_EDITOR
 #if VERTX_URP
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
 namespace Vertx.Debugging
@@ -15,8 +18,65 @@ namespace Vertx.Debugging
 #else
 		private static readonly RenderTargetIdentifier k_CurrentActive = new RenderTargetIdentifier(BuiltinRenderTextureType.CurrentActive);
 #endif
-		
+
 		private readonly ProfilingSampler _defaultProfilingSampler = new ProfilingSampler(CommandBuilder.Name);
+
+		private class PassData
+		{
+			public Camera Camera;
+
+			public Stack<UnsafeCommandBufferWrapper> Wrappers;
+			// public TextureHandle Color;
+			// public TextureHandle Depth;
+		}
+
+		private static readonly Stack<UnsafeCommandBufferWrapper> s_wrappers = new();
+
+		public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
+		{
+			var commandBuilder = CommandBuilder.Instance;
+			BufferGroup bufferGroup = commandBuilder.GetDefaultBufferGroup();
+			BufferHandle linesHandle = renderGraph.ImportBuffer(bufferGroup.Lines.Buffer);
+			BufferHandle dashedLinesHandle = renderGraph.ImportBuffer(bufferGroup.DashedLines.Buffer);
+			BufferHandle arcsHandle = renderGraph.ImportBuffer(bufferGroup.Arcs.Buffer);
+			BufferHandle boxesHandle = renderGraph.ImportBuffer(bufferGroup.Boxes.Buffer);
+			BufferHandle outlinesHandle = renderGraph.ImportBuffer(bufferGroup.Outlines.Buffer);
+			BufferHandle castsHandle = renderGraph.ImportBuffer(bufferGroup.Casts.Buffer);
+
+			using (var builder = renderGraph.AddUnsafePass(CommandBuilder.Name, out PassData passData))
+			{
+				var cameraData = frameData.Get<UniversalCameraData>();
+				// var resourceData = frameData.Get<UniversalResourceData>();
+				passData.Camera = cameraData.camera;
+				passData.Wrappers = s_wrappers;
+				// passData.Color = resourceData.activeColorTexture;
+				// passData.Depth = resourceData.activeDepthTexture;
+
+				builder.UseBuffer(linesHandle, AccessFlags.ReadWrite);
+				builder.UseBuffer(dashedLinesHandle, AccessFlags.ReadWrite);
+				builder.UseBuffer(arcsHandle, AccessFlags.ReadWrite);
+				builder.UseBuffer(boxesHandle, AccessFlags.ReadWrite);
+				builder.UseBuffer(outlinesHandle, AccessFlags.ReadWrite);
+				builder.UseBuffer(castsHandle, AccessFlags.ReadWrite);
+
+				// builder.UseTexture(passData.Color, AccessFlags.Write);
+				// builder.UseTexture(passData.Depth, AccessFlags.Write);
+
+				builder.AllowPassCulling(false);
+
+				builder.SetRenderFunc((PassData data, UnsafeGraphContext context) =>
+				{
+					if (!passData.Wrappers.TryPop(out UnsafeCommandBufferWrapper wrapper))
+						wrapper = new UnsafeCommandBufferWrapper(context.cmd);
+					else
+						wrapper.OverrideCommandBuffer(context.cmd);
+
+					// context.cmd.SetRenderTarget(data.Color, data.Depth);
+					CommandBuilder.Instance.ExecuteDrawRenderPass(wrapper, data.Camera);
+					passData.Wrappers.Push(wrapper);
+				});
+			}
+		}
 
 		/// <summary>
 		/// This method is called by the renderer before executing the render pass.
@@ -24,37 +84,30 @@ namespace Vertx.Debugging
 		/// If a render pass doesn't override this method, this render pass renders to the active Camera's render target.
 		/// You should never call CommandBuffer.SetRenderTarget. Instead call ConfigureTarget and ConfigureClear.
 		/// </summary>
+		[Obsolete("This rendering path is for compatibility mode only (when Render Graph is disabled). Use Render Graph API instead.", false)]
 		public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
 			=> ConfigureTarget(k_CurrentActive);
-
-		/*/// <summary>
-		/// Gets called by the renderer before executing the pass.
-		/// Can be used to configure render targets and their clearing state.
-		/// Can be user to create temporary render target textures.
-		/// If this method is not overriden, the render pass will render to the active camera render target.
-		/// </summary>
-		public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
-		{
-			
-		}*/
 
 		/// <summary>
 		/// Execute the pass. This is where custom rendering occurs. Specific details are left to the implementation
 		/// </summary>
+		[Obsolete("This rendering path is for compatibility mode only (when Render Graph is disabled). Use Render Graph API instead.", false)]
 		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
 		{
 			CommandBuffer commandBuffer = CommandBufferPool.Get(CommandBuilder.Name);
 			using (new ProfilingScope(commandBuffer, _defaultProfilingSampler))
 			{
 				commandBuffer.Clear();
-				CommandBuilder.Instance.ExecuteDrawRenderPass(context, commandBuffer, renderingData.cameraData.camera);
+				CommandBuilder.Instance.ExecuteDrawRenderPass(commandBuffer, renderingData.cameraData.camera);
 				context.ExecuteCommandBuffer(commandBuffer);
 			}
 
 			CommandBufferPool.Release(commandBuffer);
 		}
 
-		public override void FrameCleanup(CommandBuffer cmd) { }
+		public override void FrameCleanup(CommandBuffer cmd)
+		{
+		}
 	}
 }
 #endif

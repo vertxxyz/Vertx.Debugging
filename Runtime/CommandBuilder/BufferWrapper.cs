@@ -4,41 +4,46 @@
 #endif
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace Vertx.Debugging
 {
 	internal sealed class BufferWrapper<T> where T : unmanaged
 	{
+		internal GraphicsBuffer Buffer { get; set; }
+
 		private readonly int _bufferId;
-		private GraphicsBuffer _buffer;
 
 		private BufferWrapper() { }
 
-		public BufferWrapper(string bufferName) => _bufferId = Shader.PropertyToID(bufferName);
-
-		public void SetBufferData(CommandBuffer commandBuffer, UnsafeArray<T> data)
+		public BufferWrapper(string bufferName, UnmanagedCommandContainer<T> unmanagedData)
 		{
-			if (_buffer == null || _buffer.count < data.Length)
+			_bufferId = Shader.PropertyToID(bufferName);
+			Buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, unmanagedData.Capacity, UnsafeUtility.SizeOf<T>());
+		}
+
+		public void SetBufferData(ICommandBuffer commandBuffer, UnsafeArray<T> data)
+		{
+			if (Buffer == null || Buffer.count != data.Length)
 			{
+				Debug.LogWarning("Buffer changed length, this value should remain constant.");
 				// Expand graphics buffer to encompass the capacity of the list.
-				_buffer?.Dispose();
-				_buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, data.Length, UnsafeUtility.SizeOf<T>());
+				Buffer?.Dispose();
+				Buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, data.Length, UnsafeUtility.SizeOf<T>());
 			}
 
 #if HAS_SET_BUFFER_DATA
-			commandBuffer.SetBufferData(_buffer, data.AsNativeArray(), 0, 0, data.Length);
+			commandBuffer.SetBufferData(Buffer, data.AsNativeArray(), 0, 0, data.Length);
 #else
-			_buffer.SetData(data.AsNativeArray(), 0, 0, data.Length);
+			Buffer.SetData(data.AsNativeArray(), 0, 0, data.Length);
 #endif
 		}
 
-		public void SetBufferToPropertyBlock(MaterialPropertyBlock propertyBlock) => propertyBlock.SetBuffer(_bufferId, _buffer);
+		public void SetBufferToPropertyBlock(MaterialPropertyBlock propertyBlock) => propertyBlock.SetBuffer(_bufferId, Buffer);
 
 		public void Dispose()
 		{
-			_buffer?.Dispose();
-			_buffer = null;
+			Buffer?.Dispose();
+			Buffer = null;
 		}
 	}
 }

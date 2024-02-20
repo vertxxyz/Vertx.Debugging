@@ -35,19 +35,19 @@ namespace Vertx.Debugging
 		}
 
 		// Command buffer only used by the Built-in render pipeline.
-		private CommandBuffer _commandBuffer;
+		public CommandBufferWrapper BuiltInCommandBuffer { get; private set; }
 
 		private BufferGroup() { }
 
-		public BufferGroup(string commandBufferName)
+		public BufferGroup(string commandBufferName, UnmanagedCommandGroup unmanagedGroup)
 		{
 			_commandBufferName = commandBufferName;
-			Lines = new ShapeBuffer<LineGroup>("line_buffer");
-			DashedLines = new ShapeBuffer<DashedLineGroup>("dashed_line_buffer");
-			Arcs = new ShapeBuffer<ArcGroup>("arc_buffer");
-			Boxes = new ShapeBuffer<BoxGroup>("box_buffer");
-			Outlines = new ShapeBuffer<OutlineGroup>("outline_buffer");
-			Casts = new ShapeBuffer<CastGroup>("cast_buffer");
+			Lines = new ShapeBuffer<LineGroup>("line_buffer", unmanagedGroup.Lines);
+			DashedLines = new ShapeBuffer<DashedLineGroup>("dashed_line_buffer", unmanagedGroup.DashedLines);
+			Arcs = new ShapeBuffer<ArcGroup>("arc_buffer", unmanagedGroup.Arcs);
+			Boxes = new ShapeBuffer<BoxGroup>("box_buffer", unmanagedGroup.Boxes);
+			Outlines = new ShapeBuffer<OutlineGroup>("outline_buffer", unmanagedGroup.Outlines);
+			Casts = new ShapeBuffer<CastGroup>("cast_buffer", unmanagedGroup.Casts);
 			_counters = new int[(int)ShapeIndex.Length];
 		}
 
@@ -55,15 +55,15 @@ namespace Vertx.Debugging
 		/// Creates and caches a command buffer if none was passed into the function.<br/>
 		/// Buffer is cleared if it was previously cached.
 		/// </summary>
-		public void ReadyResources(ref CommandBuffer commandBuffer)
+		public void ReadyResources(ref ICommandBuffer commandBuffer)
 		{
 			if (commandBuffer != null)
 				return;
-			if (_commandBuffer == null)
-				_commandBuffer = new CommandBuffer { name = _commandBufferName };
+			if (BuiltInCommandBuffer == null)
+				BuiltInCommandBuffer = new CommandBufferWrapper(new CommandBuffer { name = _commandBufferName });
 			else
-				_commandBuffer.Clear();
-			commandBuffer = _commandBuffer;
+				BuiltInCommandBuffer.CommandBuffer.Clear();
+			commandBuffer = BuiltInCommandBuffer;
 		}
 
 		public void Clear()
@@ -80,7 +80,7 @@ namespace Vertx.Debugging
 			Boxes.Dispose();
 			Outlines.Dispose();
 			Casts.Dispose();
-			_commandBuffer?.Dispose();
+			BuiltInCommandBuffer?.Dispose();
 		}
 
 		public void RemoveByDeltaTime(float deltaTime, ref UnmanagedCommandGroup group)

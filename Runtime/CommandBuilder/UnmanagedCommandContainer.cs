@@ -101,6 +101,7 @@ namespace Vertx.Debugging
 		public NativeReference<int> LengthForJob => _lengthForJob;
 
 		public int Count => _allocations.Filled;
+		public int Capacity => _allocations.Length;
 
 		// Avoids redundantly setting internal GraphicsBuffer data.
 		public bool Dirty { get; private set; }

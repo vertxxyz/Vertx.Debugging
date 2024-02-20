@@ -37,8 +37,11 @@ namespace Vertx.Debugging
 		private static readonly int s_ZWriteKey = Shader.PropertyToID("_ZWrite");
 		private static readonly int s_ZTestKey = Shader.PropertyToID("_ZTest");
 
-		private readonly BufferGroup _defaultGroup = new BufferGroup(Name);
-		private readonly BufferGroup _gizmosGroup = new BufferGroup(GizmosName);
+		private BufferGroup _defaultGroup;
+		private BufferGroup _gizmosGroup;
+
+		internal BufferGroup GetDefaultBufferGroup() => _defaultGroup;
+		internal BufferGroup GetGizmosBufferGroup() => _gizmosGroup;
 
 #if VERTX_URP
 		private VertxDebuggingRenderPass _pass;
@@ -62,8 +65,11 @@ namespace Vertx.Debugging
 		private static void Initialise()
 		{
 			InitialiseUpdate();
-			_ = Instance;
-			UnmanagedCommandBuilder.Instance.Data.Initialise();
+			CommandBuilder instance = Instance;
+			ref UnmanagedCommandBuilder unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
+			unmanaged.Initialise();
+			instance._defaultGroup = new BufferGroup(Name, unmanaged.Standard);
+			instance._gizmosGroup = new BufferGroup(GizmosName, unmanaged.Gizmos);
 		}
 
 		private CommandBuilder()
@@ -158,19 +164,30 @@ namespace Vertx.Debugging
 				type |= RenderingType.Game;
 
 			Profiler.BeginSample(Name);
-			CommandBuffer commandBuffer = null;
 			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
-			if (!SharedRenderingDetails(camera, ref unmanaged.Standard, _defaultGroup, ref commandBuffer, type))
+			if (!SharedRenderingDetails(camera, ref unmanaged.Standard, _defaultGroup, null, type))
 			{
 				Profiler.EndSample();
 				return;
 			}
 
-			Graphics.ExecuteCommandBuffer(commandBuffer);
+			Graphics.ExecuteCommandBuffer(_defaultGroup.BuiltInCommandBuffer.CommandBuffer);
 			Profiler.EndSample();
 		}
 
-		internal void ExecuteDrawRenderPass(ScriptableRenderContext context, CommandBuffer commandBuffer, Camera camera)
+		private readonly Stack<CommandBufferWrapper> _wrappers = new();
+		
+		internal void ExecuteDrawRenderPass(CommandBuffer commandBuffer, Camera camera)
+		{
+			if (!_wrappers.TryPop(out CommandBufferWrapper wrapper))
+				wrapper = new CommandBufferWrapper(commandBuffer);
+			else
+				wrapper.OverrideCommandBuffer(commandBuffer);
+			ExecuteDrawRenderPass(wrapper, camera);
+			_wrappers.Push(wrapper);
+		}
+		
+		internal void ExecuteDrawRenderPass(ICommandBuffer commandBuffer, Camera camera)
 		{
 			RenderingType type = RenderingType.Default;
 			if (SceneView.currentDrawingSceneView != null && SceneView.currentDrawingSceneView.camera == camera)
@@ -179,7 +196,7 @@ namespace Vertx.Debugging
 				type |= RenderingType.Game;
 
 			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
-			SharedRenderingDetails(camera, ref unmanaged.Standard, _defaultGroup, ref commandBuffer, type);
+			SharedRenderingDetails(camera, ref unmanaged.Standard, _defaultGroup, commandBuffer, type);
 		}
 
 		/// <summary>
@@ -194,11 +211,10 @@ namespace Vertx.Debugging
 		{
 			type |= RenderingType.Gizmos;
 
-			CommandBuffer commandBuffer = null;
 			ref var unmanaged = ref UnmanagedCommandBuilder.Instance.Data;
-			if (!SharedRenderingDetails(camera, ref unmanaged.Gizmos, _gizmosGroup, ref commandBuffer, type))
+			if (!SharedRenderingDetails(camera, ref unmanaged.Gizmos, _gizmosGroup, null, type))
 				return;
-			Graphics.ExecuteCommandBuffer(commandBuffer);
+			Graphics.ExecuteCommandBuffer(_gizmosGroup.BuiltInCommandBuffer.CommandBuffer);
 		}
 
 		internal void ClearGizmoGroup()
@@ -224,7 +240,7 @@ namespace Vertx.Debugging
 			GizmosAndGame = Gizmos | Game
 		}
 
-		private bool SharedRenderingDetails(Camera camera, ref UnmanagedCommandGroup commandGroup, BufferGroup bufferGroup, ref CommandBuffer commandBuffer, RenderingType renderingType)
+		private bool SharedRenderingDetails(Camera camera, ref UnmanagedCommandGroup commandGroup, BufferGroup bufferGroup, ICommandBuffer commandBuffer, RenderingType renderingType)
 		{
 			_pauseCapture.CommitCurrentPausedFrame();
 			_lastRenderingCamera = camera;
@@ -259,7 +275,7 @@ namespace Vertx.Debugging
 		/// The core rendering loop.
 		/// </summary>
 		/// <returns>True if relevant rendering commands were issued.</returns>
-		private bool FillCommandBuffer(CommandBuffer commandBuffer, Camera camera, ref UnmanagedCommandGroup commandGroup, BufferGroup group, RenderingType renderingType)
+		private bool FillCommandBuffer(ICommandBuffer commandBuffer, Camera camera, ref UnmanagedCommandGroup commandGroup, BufferGroup group, RenderingType renderingType)
 		{
 			bool render;
 			if (renderingType == RenderingType.GizmosAndGame)
