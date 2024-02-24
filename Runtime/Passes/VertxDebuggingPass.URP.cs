@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
+#if VERTX_CORERP_17_0_1_OR_NEWER
+using UnityEngine.Rendering.RenderGraphModule;
+#endif
 
 namespace Vertx.Debugging
 {
@@ -21,16 +23,17 @@ namespace Vertx.Debugging
 
 		private readonly ProfilingSampler _defaultProfilingSampler = new ProfilingSampler(CommandBuilder.Name);
 
+#if VERTX_CORERP_17_0_1_OR_NEWER
 		private class PassData
 		{
 			public Camera Camera;
 
 			public Stack<UnsafeCommandBufferWrapper> Wrappers;
-			// public TextureHandle Color;
-			// public TextureHandle Depth;
+			public TextureHandle Color;
+			public TextureHandle Depth;
 		}
 
-		private static readonly Stack<UnsafeCommandBufferWrapper> s_wrappers = new();
+		private static readonly Stack<UnsafeCommandBufferWrapper> s_wrappers = new Stack<UnsafeCommandBufferWrapper>();
 
 		public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
 		{
@@ -46,11 +49,11 @@ namespace Vertx.Debugging
 			using (var builder = renderGraph.AddUnsafePass(CommandBuilder.Name, out PassData passData))
 			{
 				var cameraData = frameData.Get<UniversalCameraData>();
-				// var resourceData = frameData.Get<UniversalResourceData>();
+				var resourceData = frameData.Get<UniversalResourceData>();
 				passData.Camera = cameraData.camera;
 				passData.Wrappers = s_wrappers;
-				// passData.Color = resourceData.activeColorTexture;
-				// passData.Depth = resourceData.activeDepthTexture;
+				passData.Color = resourceData.activeColorTexture;
+				passData.Depth = resourceData.activeDepthTexture;
 
 				builder.UseBuffer(linesHandle, AccessFlags.ReadWrite);
 				builder.UseBuffer(dashedLinesHandle, AccessFlags.ReadWrite);
@@ -59,8 +62,8 @@ namespace Vertx.Debugging
 				builder.UseBuffer(outlinesHandle, AccessFlags.ReadWrite);
 				builder.UseBuffer(castsHandle, AccessFlags.ReadWrite);
 
-				// builder.UseTexture(passData.Color, AccessFlags.Write);
-				// builder.UseTexture(passData.Depth, AccessFlags.Write);
+				builder.UseTexture(passData.Color, AccessFlags.Write);
+				builder.UseTexture(passData.Depth, AccessFlags.ReadWrite);
 
 				builder.AllowPassCulling(false);
 
@@ -71,12 +74,13 @@ namespace Vertx.Debugging
 					else
 						wrapper.OverrideCommandBuffer(context.cmd);
 
-					// context.cmd.SetRenderTarget(data.Color, data.Depth);
+					// context.cmd.SetRenderTarget(data.Color, data.Depth, 0);
 					CommandBuilder.Instance.ExecuteDrawRenderPass(wrapper, data.Camera);
 					passData.Wrappers.Push(wrapper);
 				});
 			}
 		}
+#endif
 
 		/// <summary>
 		/// This method is called by the renderer before executing the render pass.
@@ -84,14 +88,18 @@ namespace Vertx.Debugging
 		/// If a render pass doesn't override this method, this render pass renders to the active Camera's render target.
 		/// You should never call CommandBuffer.SetRenderTarget. Instead call ConfigureTarget and ConfigureClear.
 		/// </summary>
+#if VERTX_CORERP_17_0_1_OR_NEWER
 		[Obsolete("This rendering path is for compatibility mode only (when Render Graph is disabled). Use Render Graph API instead.", false)]
+#endif
 		public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
 			=> ConfigureTarget(k_CurrentActive);
 
 		/// <summary>
 		/// Execute the pass. This is where custom rendering occurs. Specific details are left to the implementation
 		/// </summary>
+#if VERTX_CORERP_17_0_1_OR_NEWER
 		[Obsolete("This rendering path is for compatibility mode only (when Render Graph is disabled). Use Render Graph API instead.", false)]
+#endif
 		public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
 		{
 			CommandBuffer commandBuffer = CommandBufferPool.Get(CommandBuilder.Name);

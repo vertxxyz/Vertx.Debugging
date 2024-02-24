@@ -1,7 +1,4 @@
 ﻿#if UNITY_EDITOR
-#if UNITY_2021_1_OR_NEWER
-#define HAS_SET_BUFFER_DATA
-#endif
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
@@ -12,8 +9,6 @@ namespace Vertx.Debugging
 		internal GraphicsBuffer Buffer { get; set; }
 
 		private readonly int _bufferId;
-
-		private BufferWrapper() { }
 
 		public BufferWrapper(string bufferName, UnmanagedCommandContainer<T> unmanagedData)
 		{
@@ -31,11 +26,7 @@ namespace Vertx.Debugging
 				Buffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, data.Length, UnsafeUtility.SizeOf<T>());
 			}
 
-#if HAS_SET_BUFFER_DATA
 			commandBuffer.SetBufferData(Buffer, data.AsNativeArray(), 0, 0, data.Length);
-#else
-			Buffer.SetData(data.AsNativeArray(), 0, 0, data.Length);
-#endif
 		}
 
 		public void SetBufferToPropertyBlock(MaterialPropertyBlock propertyBlock) => propertyBlock.SetBuffer(_bufferId, Buffer);

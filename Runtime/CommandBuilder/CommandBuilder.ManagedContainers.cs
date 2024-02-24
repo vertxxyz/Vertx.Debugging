@@ -1,7 +1,4 @@
 #if UNITY_EDITOR
-#if UNITY_2021_1_OR_NEWER
-#define HAS_SET_BUFFER_DATA
-#endif
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -67,11 +64,7 @@ namespace Vertx.Debugging
 		internal abstract class TextDataLists<T> where T : class, Shape.IText, new()
 		{
 			protected sealed class TextDataPool :
-#if !UNITY_2021_1_OR_NEWER
-				Vertx.Debugging.Internal.ObjectPool<T>
-#else
 				UnityEngine.Pool.ObjectPool<T>
-#endif
 			{
 				public TextDataPool(int defaultCapacity = 10, int maxSize = 10000)
 					: base(() => new T(), null, data => data.Reset(), null, false, defaultCapacity, maxSize) { }

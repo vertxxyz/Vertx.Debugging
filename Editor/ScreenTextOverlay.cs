@@ -1,4 +1,3 @@
-#if UNITY_2021_1_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -17,10 +16,10 @@ namespace Vertx.Debugging
 	internal sealed class ScreenTextOverlay : IMGUIOverlay, ITransientOverlay
 	{
 		private const string Id = "vertx-debugging-overlay";
-		private Vector2 position;
-		private static readonly Vector2 OverlayBounds = new Vector2(5, 18);
-		private static readonly Vector2 _minSize = new Vector2(120, 50);
-		private static readonly Vector2 _maxSize = new Vector2(500, 900);
+		private Vector2 _position;
+		private static readonly Vector2 s_overlayBounds = new Vector2(5, 18);
+		private static readonly Vector2 s_minSize = new Vector2(120, 50);
+		private static readonly Vector2 s_maxSize = new Vector2(500, 900);
 		private readonly List<(Rect, string)> _layout = new List<(Rect, string)>();
 		private Rect _bounds;
 
@@ -38,8 +37,8 @@ namespace Vertx.Debugging
 		{
 #if UNITY_2022_2_OR_NEWER
 			size = new Vector2(180, 300);
-			minSize = _minSize;
-			maxSize = _maxSize;
+			minSize = s_minSize;
+			maxSize = s_maxSize;
 #endif
 		}
 
@@ -61,40 +60,40 @@ namespace Vertx.Debugging
 
 #if UNITY_2022_2_OR_NEWER
 				if (size.y > maxHeight)
-					size = new Vector2(Mathf.Min(_bounds.width + OverlayBounds.x, _maxSize.x), Mathf.Min(_bounds.height + OverlayBounds.y, maxHeight));
-				if (size.y < _minSize.y)
-					size = new Vector2(Mathf.Max(_bounds.width + OverlayBounds.x, _minSize.x), Mathf.Max(_bounds.height + OverlayBounds.y, _minSize.y));
+					size = new Vector2(Mathf.Min(_bounds.width + s_overlayBounds.x, s_maxSize.x), Mathf.Min(_bounds.height + s_overlayBounds.y, maxHeight));
+				if (size.y < s_minSize.y)
+					size = new Vector2(Mathf.Max(_bounds.width + s_overlayBounds.x, s_minSize.x), Mathf.Max(_bounds.height + s_overlayBounds.y, s_minSize.y));
 #endif
 				// If I don't perform any GUILayout then mouse click events are never sent. Hooray!
-				GUILayoutUtility.GetRect(Mathf.Clamp(_bounds.width, _minSize.x, _maxSize.x) - OverlayBounds.x + 6, Mathf.Clamp(_bounds.height, _minSize.y, maxHeight) - OverlayBounds.y);
+				GUILayoutUtility.GetRect(Mathf.Clamp(_bounds.width, s_minSize.x, s_maxSize.x) - s_overlayBounds.x + 6, Mathf.Clamp(_bounds.height, s_minSize.y, maxHeight) - s_overlayBounds.y);
 			}
 			else if (Event.current.type != EventType.Layout)
 			{
 				using (var scope = new GUI.ScrollViewScope(
 #if UNITY_2022_2_OR_NEWER
-					       new Rect(0, 0, size.x - OverlayBounds.x, size.y - OverlayBounds.y),
+					       new Rect(0, 0, size.x - s_overlayBounds.x, size.y - s_overlayBounds.y),
 #else
-					       new Rect(0, 0, Mathf.Clamp(_bounds.width, _minSize.x, _maxSize.x) - OverlayBounds.x + 6, Mathf.Clamp(_bounds.height, _minSize.y, maxHeight) - OverlayBounds.y),
+					       new Rect(0, 0, Mathf.Clamp(_bounds.width, s_minSize.x, s_maxSize.x) - s_overlayBounds.x + 6, Mathf.Clamp(_bounds.height, s_minSize.y, maxHeight) - s_overlayBounds.y),
 #endif
-					       position, _bounds)
+					       _position, _bounds)
 				      )
 				{
 					Color temp = GUI.color;
 					GUI.color = Color.white;
 					int c = DrawScreenTextLayout(commandBuilder.DefaultScreenTexts, _layout);
 					DrawScreenTextLayout(commandBuilder.GizmoScreenTexts, _layout, c);
-					position = scope.scrollPosition;
+					_position = scope.scrollPosition;
 					GUI.color = temp;
 				}
 			}
 		}
 
-		private static readonly GUIContent s_SharedContent = new GUIContent();
+		private static readonly GUIContent s_sharedContent = new GUIContent();
 		
 
 		private static Rect GetScreenTextLayout(CommandBuilder.ScreenTextDataLists list, List<(Rect, string)> layout, Rect bounds)
 		{
-			for (int i = 0; i < list.Count; i++)
+			for (var i = 0; i < list.Count; i++)
 			{
 				Shape.ScreenTextData textData = list.Elements[i];
 				if ((textData.ActiveViews & Shape.View.Scene) == 0) continue;
@@ -111,17 +110,16 @@ namespace Vertx.Debugging
 		private static int DrawScreenTextLayout(CommandBuilder.ScreenTextDataLists list, List<(Rect rect, string text)> layout, int startIndex = 0)
 		{
 			int c = startIndex;
-			for (int i = 0; i < list.Count; i++)
+			for (var i = 0; i < list.Count; i++)
 			{
 				Shape.ScreenTextData textData = list.Elements[i];
 				if ((textData.ActiveViews & Shape.View.Scene) == 0) continue;
 				(Rect rect, string text) = layout[c++];
-				s_SharedContent.text = text;
-				DrawText.DrawAtScreenPosition(rect, s_SharedContent, textData.BackgroundColor, textData.TextColor, textData.Context);
+				s_sharedContent.text = text;
+				DrawText.DrawAtScreenPosition(rect, s_sharedContent, textData.BackgroundColor, textData.TextColor, textData.Context);
 			}
 
 			return c;
 		}
 	}
 }
-#endif

@@ -1,7 +1,4 @@
 #if UNITY_EDITOR
-#if UNITY_2021_1_OR_NEWER
-#define HAS_CONTEXT_RENDERING
-#endif
 using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
@@ -76,22 +73,7 @@ namespace Vertx.Debugging
 		{
 			Camera.onPostRender += OnPostRender;
 			RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
-#if HAS_CONTEXT_RENDERING
 			RenderPipelineManager.beginContextRendering += OnBeginContextRendering;
-#else
-			RenderPipelineManager.beginFrameRendering += (context, cameras) =>
-			{
-#if !UNITY_2021_1_OR_NEWER
-				using (Vertx.Debugging.Internal.ListPool<Camera>.Get(out var list))
-#else
-				using (UnityEngine.Pool.ListPool<Camera>.Get(out var list))
-#endif
-				{
-					list.AddRange(cameras);
-					OnBeginContextRendering(context, list);
-				}
-			};
-#endif
 			EditorApplication.update = OnUpdate + EditorApplication.update;
 			EditorApplication.playModeStateChanged -= EditorApplicationOnPlayModeStateChanged;
 			EditorApplication.playModeStateChanged += EditorApplicationOnPlayModeStateChanged;
@@ -137,9 +119,7 @@ namespace Vertx.Debugging
 			{
 				_pass = new VertxDebuggingRenderPass { renderPassEvent = RenderPassEvent.AfterRendering + 10 };
 			}
-
-			//_pass.ConfigureInput(ScriptableRenderPassInput.Color | ScriptableRenderPassInput.Depth);
-
+			
 			foreach (Camera camera in cameras)
 			{
 				UniversalAdditionalCameraData cameraData = camera.GetUniversalAdditionalCameraData();
@@ -175,14 +155,19 @@ namespace Vertx.Debugging
 			Profiler.EndSample();
 		}
 
-		private readonly Stack<CommandBufferWrapper> _wrappers = new();
+		private readonly Stack<CommandBufferWrapper> _wrappers = new Stack<CommandBufferWrapper>();
 		
 		internal void ExecuteDrawRenderPass(CommandBuffer commandBuffer, Camera camera)
 		{
-			if (!_wrappers.TryPop(out CommandBufferWrapper wrapper))
+			CommandBufferWrapper wrapper;
+			if (_wrappers.Count == 0)
 				wrapper = new CommandBufferWrapper(commandBuffer);
 			else
+			{
+				wrapper = _wrappers.Pop();
 				wrapper.OverrideCommandBuffer(commandBuffer);
+			}
+
 			ExecuteDrawRenderPass(wrapper, camera);
 			_wrappers.Push(wrapper);
 		}

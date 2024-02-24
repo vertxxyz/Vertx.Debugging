@@ -48,9 +48,9 @@
             "define": "VERTX_URP_9_0_OR_NEWER"
         },
         {
-            "name": "com.unity.collections",
-            "expression": "1.0.0-pre.4",
-            "define": "VERTX_COLLECTIONS_1_0_0_PRE_4_OR_NEWER"
+            "name": "com.unity.render-pipelines.core",
+            "expression": "17.0.1",
+            "define": "VERTX_CORERP_17_0_1_OR_NEWER"
         }
     ],
     "noEngineReferences": false

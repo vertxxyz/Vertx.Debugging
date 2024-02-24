@@ -9,11 +9,7 @@ using UnityEditor;
 #if !UNITY_2022_1_OR_NEWER
 using System.Reflection;
 #endif
-#if !UNITY_2021_1_OR_NEWER
-using Vertx.Debugging.Internal;
-#else
 using UnityEngine.Pool;
-#endif
 
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 
@@ -22,27 +18,27 @@ namespace Vertx.Debugging
 	[InitializeOnLoad]
 	internal static class DrawText
 	{
-		internal static GUIStyle TextStyle => s_TextStyle ?? (s_TextStyle = new GUIStyle(EditorStyles.label) { font = AssetsUtility.JetBrainsMono });
+		internal static GUIStyle TextStyle => s_textStyle ?? (s_textStyle = new GUIStyle(EditorStyles.label) { font = AssetsUtility.JetBrainsMono });
 
-		private static Type GameViewType => s_GameViewType ?? (s_GameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
+		private static Type GameViewType => s_gameViewType ?? (s_gameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
 
 		private static EditorWindow GameView
 		{
 			get
 			{
-				if (s_GameView != null)
-					return s_GameView;
+				if (s_gameView != null)
+					return s_gameView;
 				Object[] gameViewQuery = Resources.FindObjectsOfTypeAll(GameViewType);
 				if (gameViewQuery == null || gameViewQuery.Length == 0)
 					return null;
-				return s_GameView = (EditorWindow)gameViewQuery[0];
+				return s_gameView = (EditorWindow)gameViewQuery[0];
 			}
 		}
 
-		private static readonly GUIContent s_SharedContent = new GUIContent();
-		private static GUIStyle s_TextStyle;
-		private static Type s_GameViewType;
-		private static EditorWindow s_GameView;
+		private static readonly GUIContent s_sharedContent = new();
+		private static GUIStyle s_textStyle;
+		private static Type s_gameViewType;
+		private static EditorWindow s_gameView;
 
 		static DrawText()
 		{
@@ -77,9 +73,7 @@ namespace Vertx.Debugging
 			var commandBuilder = CommandBuilder.Instance;
 			Draw3DText(commandBuilder);
 
-#if UNITY_2021_1_OR_NEWER
 			if ((view & View.Scene) == 0)
-#endif
 				DrawScreenTexts(commandBuilder, view);
 		}
 
@@ -113,7 +107,7 @@ namespace Vertx.Debugging
 						Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
 						
 						GUIContent content = GetGUIContentFromObject(textData.Value);
-						Rect rect = new Rect(textData.ScreenPosition, TextStyle.CalcSize(content));
+						var rect = new Rect(textData.ScreenPosition, TextStyle.CalcSize(content));
 						if(!camera.pixelRect.Overlaps(rect))
 							continue;
 						DrawAtScreenPosition(rect, content, backgroundColor, textColor, null);
@@ -123,7 +117,7 @@ namespace Vertx.Debugging
 
 			void Gather3DText(CommandBuilder.TextDataLists list, List<TextData> text3D)
 			{
-				for (int i = 0; i < list.Count; i++)
+				for (var i = 0; i < list.Count; i++)
 				{
 					TextData textData = list.Elements[i];
 					Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
@@ -153,21 +147,22 @@ namespace Vertx.Debugging
 		private static void DrawScreenTexts(CommandBuilder commandBuilder, View view)
 		{
 			int height = Screen.height;
-			Vector2 position = new Vector2(10, 10);
+			var position = new Vector2(10, 10);
 			bool isNotGameView = (view & View.Game) == 0;
 			DrawScreenText(commandBuilder.DefaultScreenTexts);
 			DrawScreenText(commandBuilder.GizmoScreenTexts);
+			return;
 
 			void DrawScreenText(CommandBuilder.ScreenTextDataLists list)
 			{
-				for (int i = 0; i < list.Count; i++)
+				for (var i = 0; i < list.Count; i++)
 				{
 					if (position.y > height)
 						return;
 					ScreenTextData textData = list.Elements[i];
 					if ((textData.ActiveViews & view) == 0) continue;
 					GUIContent content = GetGUIContentFromObject(textData.Value);
-					Rect rect = new Rect(position, TextStyle.CalcSize(content));
+					var rect = new Rect(position, TextStyle.CalcSize(content));
 					DrawAtScreenPosition(rect, content, textData.BackgroundColor, textData.TextColor, isNotGameView ? textData.Context : null);
 					position.y = rect.yMax + 1;
 				}
@@ -241,8 +236,8 @@ namespace Vertx.Debugging
 
 		internal static GUIContent GetGUIContentFromObject(object text)
 		{
-			s_SharedContent.text = GetContentFromObject(text);
-			return s_SharedContent;
+			s_sharedContent.text = GetContentFromObject(text);
+			return s_sharedContent;
 		}
 
 		/// <summary>

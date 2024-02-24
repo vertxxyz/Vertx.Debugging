@@ -2,7 +2,7 @@ Fast editor debugging and gizmo utilities for Unity.
 Uses instanced rendering to draw shapes efficiently.
 
 > **Note**  
-> Unity 2020.1+  
+> Unity 2022.2+ (all features). 2019.4+ No jobs and burst support, older API.
 > Should support all render pipelines.  
 > Supports drawing from jobs and burst. This package depends on **Burst** and **Mathematics**.  
 > All shapes are wireframe. There is currently no support for solid shapes planned.

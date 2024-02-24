@@ -4,11 +4,7 @@ using Unity.Burst;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
 using UnityEngine;
-#if !UNITY_2021_1_OR_NEWER
-using Vertx.Debugging.Internal;
-#else
 using UnityEngine.Pool;
-#endif
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
 

@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [3.0.0]
 ### Changed
-- Minimum Unity version is now 2020.3.
+- Minimum Unity version is 2022.3.
 - Added dependencies on `com.unity.burst` and `com.unity.mathematics`.
 - Only the API surface is now public. If you want to extend the package use Assembly References.
 - Shapes are now pre-allocated. Change the number of allocations via the Project Settings.

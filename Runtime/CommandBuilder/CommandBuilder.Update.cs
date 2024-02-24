@@ -1,7 +1,4 @@
 #if UNITY_EDITOR
-#if UNITY_2021_1_OR_NEWER
-#define HAS_CONTEXT_RENDERING
-#endif
 using System;
 using System.Linq;
 using UnityEngine;
