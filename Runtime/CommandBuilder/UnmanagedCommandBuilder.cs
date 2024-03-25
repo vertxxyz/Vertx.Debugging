@@ -37,6 +37,8 @@ namespace Vertx.Debugging
 
 		public void Initialise(bool usesDurations, DebuggingSettings.Allocations allocations)
 		{
+			allocations ??= new DebuggingSettings.Allocations();
+			
 			Lines.Initialise(allocations.Lines, usesDurations);
 			DashedLines.Initialise(allocations.DashedLines, usesDurations);
 			Arcs.Initialise(allocations.Arcs, usesDurations);

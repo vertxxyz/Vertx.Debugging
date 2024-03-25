@@ -2,7 +2,6 @@
 using UnityEngine;
 using System;
 using UnityEditor;
-#endif
 
 namespace Vertx.Debugging
 {
@@ -54,3 +53,4 @@ namespace Vertx.Debugging
 		public void Save() => Save(true);
 	}
 }
+#endif

@@ -15,9 +15,13 @@ using UnityEngine.Rendering.Universal;
 
 namespace Vertx.Debugging.PlayerLoop
 {
-	public struct VertxDebuggingInitialization { }
+	public struct VertxDebuggingInitialization
+	{
+	}
 
-	public struct VertxDebuggingFixedUpdate { }
+	public struct VertxDebuggingFixedUpdate
+	{
+	}
 }
 
 namespace Vertx.Debugging
@@ -44,9 +48,12 @@ namespace Vertx.Debugging
 		private VertxDebuggingRenderPass _pass;
 #endif
 		private Camera _lastRenderingCamera;
+
 		private bool _disposeIsQueued;
+
 		// Application.isPlaying, but without the native code transition.
 		private bool _isPlaying;
+
 		// UnityEditor.EditorApplication.isPaused, but without the native code transition.
 		private bool _isPaused;
 
@@ -72,7 +79,7 @@ namespace Vertx.Debugging
 		private CommandBuilder()
 		{
 			Camera.onPostRender += OnPostRender;
-			RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
+			RenderPipelineManager.endContextRendering += OnEndContextRendering;
 			RenderPipelineManager.beginContextRendering += OnBeginContextRendering;
 			EditorApplication.update = OnUpdate + EditorApplication.update;
 			EditorApplication.playModeStateChanged -= EditorApplicationOnPlayModeStateChanged;
@@ -131,9 +138,14 @@ namespace Vertx.Debugging
 #endif
 		}
 
-		private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
+		private void OnEndContextRendering(ScriptableRenderContext context, List<Camera> cameras)
+		{
 			// After cameras are rendered, we have collected gizmos and it is safe to render them.
-			=> RenderGizmosGroup(camera, SceneView.currentDrawingSceneView != null ? RenderingType.Scene : RenderingType.Game);
+			foreach (Camera camera in cameras)
+			{
+				RenderGizmosGroup(camera, SceneView.currentDrawingSceneView != null ? RenderingType.Scene : RenderingType.Game);
+			}
+		}
 
 		private void OnPostRender(Camera camera)
 		{
@@ -156,7 +168,7 @@ namespace Vertx.Debugging
 		}
 
 		private readonly Stack<CommandBufferWrapper> _wrappers = new Stack<CommandBufferWrapper>();
-		
+
 		internal void ExecuteDrawRenderPass(CommandBuffer commandBuffer, Camera camera)
 		{
 			CommandBufferWrapper wrapper;
@@ -171,7 +183,7 @@ namespace Vertx.Debugging
 			ExecuteDrawRenderPass(wrapper, camera);
 			_wrappers.Push(wrapper);
 		}
-		
+
 		internal void ExecuteDrawRenderPass(ICommandBuffer commandBuffer, Camera camera)
 		{
 			RenderingType type = RenderingType.Default;
@@ -215,12 +227,15 @@ namespace Vertx.Debugging
 		private enum RenderingType
 		{
 			Unset = 0,
+
 			// Rendering view
 			Scene = 1,
 			Game = 1 << 1,
+
 			// Call origin
 			Default = 1 << 2,
 			Gizmos = 1 << 3,
+
 			// -
 			GizmosAndGame = Gizmos | Game
 		}

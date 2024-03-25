@@ -18,10 +18,6 @@ namespace Vertx.Debugging
 
 		internal static void AdjustDuration(ref float duration)
 		{
-			ref UnmanagedCommandBuilder builder = ref s_Builder;
-			if (builder.State != UnmanagedCommandBuilder.UpdateState.Update)
-				return;
-
 			if (JobsUtility.IsExecutingJob)
 			{
 				// TODO handle durations within jobs.
@@ -35,6 +31,15 @@ namespace Vertx.Debugging
 				return;
 			}
 
+			ForceAdjustDuration(ref duration);
+		}
+
+		internal static void ForceAdjustDuration(ref float duration)
+		{
+			ref UnmanagedCommandBuilder builder = ref s_Builder;
+			if (builder.State != UnmanagedCommandBuilder.UpdateState.Update)
+				return;
+			
 			// Adjust the duration of calls from FixedUpdate so that they are displayed for the full duration of this fixed step, and won't be cleared
 			// by an Update occurring until that fixed step has actually passed.
 			float fixedDeltaTime = builder.FixedTimeStep;

@@ -366,8 +366,8 @@ namespace Vertx.Debugging
 				float offset = radius * math.cos(0.5f * Angle.Radians);
 				commandBuilder.AppendArc(new Arc(center - cross * offset, Perpendicular, cross, radius, Angle), color, duration);
 
-				quaternion arrowheadRotation = math.mul(quaternion.LookRotation(cross, Perpendicular), quaternion.AxisAngle(math.up(), Angle.Radians * 0.5f - math.PI * 2 + ArrowHeadAngle));
-				float3 arrowRay = new float3(0, 0, headLength);
+				quaternion arrowheadRotation = math.mul(quaternion.LookRotation(cross, Perpendicular), quaternion.AxisAngle(math.up(), Angle.Radians * 0.5f - math.PI * 0.5f + ArrowHeadAngle));
+				var arrowRay = new float3(0, 0, headLength);
 				commandBuilder.AppendLine(new Line(end, end + math.mul(arrowheadRotation, arrowRay)), color, duration);
 				commandBuilder.AppendLine(new Line(end, end + math.mul(math.mul(arrowheadRotation, ArrowheadRotation), arrowRay)), color, duration);
 			}
