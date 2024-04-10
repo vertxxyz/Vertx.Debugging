@@ -22,7 +22,7 @@ namespace Vertx.Debugging
 				Scale = scale;
 				Position = new float3(point.x, point.y, z);
 			}
-			
+
 			public Point2D(float3 position, float scale = 0.3f)
 			{
 				Scale = scale;
@@ -32,7 +32,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float distance = Scale * 0.5f;
@@ -54,18 +54,24 @@ namespace Vertx.Debugging
 			}
 
 			public Ray2D(float2 origin, float2 direction, float z = 0)
-				: this(new float3(origin.x, origin.y, z), direction) { }
+				: this(new float3(origin.x, origin.y, z), direction)
+			{
+			}
 
 			public Ray2D(float3 origin, float angleDegrees)
-				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees))) { }
+				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)))
+			{
+			}
 
 			public Ray2D(float2 origin, float angleDegrees, float z = 0)
-				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)), z) { }
+				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)), z)
+			{
+			}
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> commandBuilder.AppendRay(new Ray(Origin, Direction.xy0()), color, duration);
 #endif
@@ -83,33 +89,39 @@ namespace Vertx.Debugging
 			}
 
 			public Arrow2D(float2 origin, float2 direction, float z = 0)
-				: this(new float3(origin.x, origin.y, z), direction) { }
+				: this(new float3(origin.x, origin.y, z), direction)
+			{
+			}
 
 			public Arrow2D(float3 origin, float angleDegrees)
-				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees))) { }
+				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)))
+			{
+			}
 
 			public Arrow2D(float2 origin, float angleDegrees, float z = 0)
-				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)), z) { }
+				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)), z)
+			{
+			}
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3 lineEnd = Origin + Direction.xy0();
 				commandBuilder.AppendLine(new Line(Origin, lineEnd), color, duration);
-				DrawArrowHead(commandBuilder, lineEnd, Direction, color, duration);
+				DrawArrowHead(ref commandBuilder, lineEnd, Direction, color, duration);
 			}
 
-			internal static void DrawArrowHead(UnmanagedCommandBuilder commandBuilder, float3 arrowPoint, float2 dir, Color color, float duration, float scale = 1)
+			internal static void DrawArrowHead(ref UnmanagedCommandBuilder commandBuilder, float3 arrowPoint, float2 dir, Color color, float duration, float scale = 1)
 			{
 				dir.EnsureNormalized();
 				float3 direction = dir.xy0();
-				DrawArrowHead(commandBuilder, arrowPoint, direction, PerpendicularClockwise(dir).xy0(), color, duration, scale);
+				DrawArrowHead(ref commandBuilder, arrowPoint, direction, PerpendicularClockwise(dir).xy0(), color, duration, scale);
 			}
 
-			internal static void DrawArrowHead(UnmanagedCommandBuilder commandBuilder, float3 arrowPoint, float3 direction, float3 cross, Color color, float duration, float scale = 1)
+			internal static void DrawArrowHead(ref UnmanagedCommandBuilder commandBuilder, float3 arrowPoint, float3 direction, float3 cross, Color color, float duration, float scale = 1)
 			{
 				const float headLength = 0.075f;
 				const float headWidth = 0.05f;
@@ -138,7 +150,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3? previous = null;
@@ -154,7 +166,7 @@ namespace Vertx.Debugging
 
 				if (!origin.HasValue)
 					return;
-				Arrow2D.DrawArrowHead(commandBuilder, origin.Value, previous.Value.xy - origin.Value.xy, color, duration);
+				Arrow2D.DrawArrowHead(ref commandBuilder, origin.Value, previous.Value.xy - origin.Value.xy, color, duration);
 			}
 #endif
 		}
@@ -173,7 +185,7 @@ namespace Vertx.Debugging
 				ShowArrowHeads = showArrowHeads;
 				Scale = 1;
 			}
-			
+
 			public Axis2D(float2 origin, float angleDegrees, float z = 0, float scale = 1, bool showArrowHeads = true)
 			{
 				Position = new float3(origin.x, origin.y, z);
@@ -185,7 +197,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				Angle a = Angle.FromDegrees(AngleDegrees);
@@ -233,7 +245,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => _circle.Draw(ref commandBuilder, color, duration);
 #endif
 		}
@@ -249,14 +261,16 @@ namespace Vertx.Debugging
 			public Arc2D(float2 origin, float rotationDegrees, float radius, Angle angle, float z = 0)
 				=> Arc = new Arc(new float3(origin.x, origin.y, z), quaternion.AxisAngle(math.forward(), rotationDegrees * math.TORADIANS), radius, angle);
 
-			public Arc2D(float2 origin, float rotationDegrees, float radius, float z = 0) : this(origin, rotationDegrees, radius, Angle.FromTurns(1), z) { }
+			public Arc2D(float2 origin, float rotationDegrees, float radius, float z = 0) : this(origin, rotationDegrees, radius, Angle.FromTurns(1), z)
+			{
+			}
 
 			internal Arc2D(float4x4 matrix) => Arc = new Arc(matrix);
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration) => Arc.Draw(ref commandBuilder, color, duration);
 #endif
 		}
@@ -285,11 +299,12 @@ namespace Vertx.Debugging
 					Matrix = float4x4.Scale(new float3(0, 0, 0));
 					return;
 				}
+
 				float4x4 handleMatrix = boxCollider.transform.localToWorldMatrix;
 				handleMatrix.SetRow(0, Vector4.Scale(handleMatrix.GetRow(0), new Vector4(1f, 1f, 0f, 1f)));
 				handleMatrix.SetRow(1, Vector4.Scale(handleMatrix.GetRow(1), new Vector4(1f, 1f, 0f, 1f)));
 				handleMatrix.SetRow(2, new Vector4(0f, 0f, 1f, boxCollider.transform.position.z));
-				
+
 				Matrix = handleMatrix * float4x4.TRS(boxCollider.offset.xy0(), quaternion.identity, ColliderLocalSize(boxCollider).xy0());
 			}
 
@@ -337,7 +352,7 @@ namespace Vertx.Debugging
 				TopRight,
 				BottomRight
 			}
-			
+
 			internal static readonly float3[] s_Vertices =
 			{
 				new float3(-0.5f, -0.5f, 0), // 0
@@ -356,7 +371,7 @@ namespace Vertx.Debugging
 
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float4x4 m = Matrix;
@@ -387,13 +402,15 @@ namespace Vertx.Debugging
 			}
 
 #if VERTX_PHYSICS_2D
-			internal Box2DWithEdgeRadius(BoxCollider2D collider) : this(new Box2D(collider), collider.edgeRadius) { }
+			internal Box2DWithEdgeRadius(BoxCollider2D collider) : this(new Box2D(collider), collider.edgeRadius)
+			{
+			}
 #endif
-			
+
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				Box.Draw(ref commandBuilder, color, duration);
@@ -461,7 +478,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				float3 pointC = new float3(PointA.x, PointB.y, PointA.z);
@@ -493,6 +510,7 @@ namespace Vertx.Debugging
 				///   <para>The capsule sides extend vertically.</para>
 				/// </summary>
 				Vertical,
+
 				/// <summary>
 				///   <para>The capsule sides extend horizontally.</para>
 				/// </summary>
@@ -501,10 +519,14 @@ namespace Vertx.Debugging
 
 #if VERTX_PHYSICS_2D
 			public Capsule2D(float2 point, float2 size, CapsuleDirection2D capsuleDirection, float angleDegrees = 0)
-				: this(point, size, capsuleDirection, angleDegrees, 0) { }
+				: this(point, size, capsuleDirection, angleDegrees, 0)
+			{
+			}
 
 			public Capsule2D(float2 point, float2 size, CapsuleDirection2D capsuleDirection, float angleDegrees, float z)
-				: this(point, size, (Direction)capsuleDirection, angleDegrees, z) { }
+				: this(point, size, (Direction)capsuleDirection, angleDegrees, z)
+			{
+			}
 
 			public Capsule2D(CapsuleCollider2D collider)
 			{
@@ -536,7 +558,9 @@ namespace Vertx.Debugging
 #endif
 
 			public Capsule2D(float2 point, float2 size, Direction capsuleDirection, float angleDegrees = 0)
-				: this(point, size, capsuleDirection, angleDegrees, 0) { }
+				: this(point, size, capsuleDirection, angleDegrees, 0)
+			{
+			}
 
 			internal Capsule2D(float3 pointA, float3 pointB, float radius, float3 verticalDirection, float3 scaledLeft)
 			{
@@ -583,7 +607,7 @@ namespace Vertx.Debugging
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
-			
+
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (math.lengthsq(_verticalDirection) == 0)

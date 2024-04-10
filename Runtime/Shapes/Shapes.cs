@@ -51,9 +51,13 @@ namespace Vertx.Debugging
 
 			public DashedLine(Line line) => Line = line;
 
-			public DashedLine(float3 a, float3 b) : this(new Line(a, b)) { }
+			public DashedLine(float3 a, float3 b) : this(new Line(a, b))
+			{
+			}
 
-			public DashedLine(Ray ray) : this(new Line(ray)) { }
+			public DashedLine(Ray ray) : this(new Line(ray))
+			{
+			}
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -105,9 +109,13 @@ namespace Vertx.Debugging
 				Direction = direction * GetClampedMaxDistance(distance);
 			}
 
-			public Ray(UnityEngine.Ray ray, float distance = math.INFINITY) : this(ray.origin, ray.direction * GetClampedMaxDistance(distance)) { }
+			public Ray(UnityEngine.Ray ray, float distance = math.INFINITY) : this(ray.origin, ray.direction * GetClampedMaxDistance(distance))
+			{
+			}
 
-			public Ray(UnityEngine.Ray2D ray, float distance = math.INFINITY) : this(ray.origin.xy0(), (ray.direction * GetClampedMaxDistance(distance)).xy0()) { }
+			public Ray(UnityEngine.Ray2D ray, float distance = math.INFINITY) : this(ray.origin.xy0(), (ray.direction * GetClampedMaxDistance(distance)).xy0())
+			{
+			}
 
 			public static implicit operator Ray(UnityEngine.Ray ray) => new Ray(ray.origin, ray.direction);
 
@@ -146,7 +154,9 @@ namespace Vertx.Debugging
 				Scale = scale;
 			}
 
-			public Point(float2 position, float scale = 0.3f) : this(new float3(position.x, position.y, 0), scale) { }
+			public Point(float2 position, float scale = 0.3f) : this(new float3(position.x, position.y, 0), scale)
+			{
+			}
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -174,8 +184,13 @@ namespace Vertx.Debugging
 				Direction = direction;
 			}
 
-			public Arrow(float3 origin, quaternion rotation, float length = 1) : this(origin, math.mul(rotation, math.forward()) * length) { }
-			public Arrow(Line line) : this(line.A, line.B - line.A) { }
+			public Arrow(float3 origin, quaternion rotation, float length = 1) : this(origin, math.mul(rotation, math.forward()) * length)
+			{
+			}
+
+			public Arrow(Line line) : this(line.A, line.B - line.A)
+			{
+			}
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -184,10 +199,10 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
-				DrawArrowHead(commandBuilder, Origin, Direction, color, duration);
+				DrawArrowHead(ref commandBuilder, Origin, Direction, color, duration);
 			}
 
-			internal static void DrawArrowHead(UnmanagedCommandBuilder commandBuilder, float3 point, float3 dir, Color color, float duration = 0)
+			internal static void DrawArrowHead(ref UnmanagedCommandBuilder commandBuilder, float3 point, float3 dir, Color color, float duration = 0)
 			{
 				const int segments = 3;
 
@@ -197,23 +212,33 @@ namespace Vertx.Debugging
 				float headLength = HeadLength;
 				float headWidth = HeadWidth;
 
-				if (headLength > length * 0.5f)
+
+				// Find next largest 10x length (e.g. ...100, 10, 1, 0.1...) and use that as the length.
+				float log = math.log10(length);
+				if (log >= 0)
 				{
-					headLength *= length;
-					headWidth *= length;
+					float val = math.pow(10, math.max(1, math.ceil(log)));
+					headLength *= val;
+					headWidth *= val;
+				}
+				else
+				{
+					float val = 1 / math.pow(10, math.ceil(math.abs(log)));
+					headLength *= val;
+					headWidth *= val;
 				}
 
-				void DoDrawArrowHead(float3 center, float3 normal, float radius)
+				void DoDrawArrowHead(float3 center, float3 normal, float radius, ref UnmanagedCommandBuilder commandBuilder)
 				{
-					const float max = math.PI * 2;
+					const float max = math.TAU;
 					float3 tangent = GetValidPerpendicular(normal);
 					float3 bitangent = math.cross(normal, tangent);
 					tangent *= radius;
 					bitangent *= radius;
 					float3 lastPos = center + tangent;
-					for (int i = 1; i <= segments; i++)
+					for (var i = 1; i <= segments; i++)
 					{
-						float angle = i * (1 / (segments * max));
+						float angle = i / (float)segments * max;
 						float2 c = new float2(math.cos(angle), math.sin(angle));
 						float3 nextPos = center + tangent * c.x + bitangent * c.y;
 						commandBuilder.AppendLine(new Line(lastPos, nextPos), color, duration);
@@ -222,7 +247,7 @@ namespace Vertx.Debugging
 					}
 				}
 
-				DoDrawArrowHead(arrowPoint - dir * headLength, dir, headWidth);
+				DoDrawArrowHead(arrowPoint - dir * headLength, dir, headWidth, ref commandBuilder);
 			}
 #endif
 		}
@@ -252,7 +277,7 @@ namespace Vertx.Debugging
 				if (!origin.HasValue)
 					return;
 				float3 direction = previous.Value - origin.Value;
-				Arrow.DrawArrowHead(commandBuilder, origin.Value, direction, color, duration);
+				Arrow.DrawArrowHead(ref commandBuilder, origin.Value, direction, color, duration);
 			}
 #endif
 		}
@@ -273,7 +298,9 @@ namespace Vertx.Debugging
 				Perpendicular = perpendicular;
 			}
 
-			public HalfArrow(float3 origin, float3 direction, float3 perpendicular) : this(new Line(origin, origin + direction), perpendicular) { }
+			public HalfArrow(float3 origin, float3 direction, float3 perpendicular) : this(new Line(origin, origin + direction), perpendicular)
+			{
+			}
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -282,10 +309,10 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendLine(Line, color, duration);
-				DrawHalfArrowHead(commandBuilder, color, duration);
+				DrawHalfArrowHead(ref commandBuilder, color, duration);
 			}
 
-			private void DrawHalfArrowHead(UnmanagedCommandBuilder commandBuilder, Color color, float duration = 0)
+			private void DrawHalfArrowHead(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration = 0)
 			{
 				float3 end = Line.B;
 				float3 dir = Line.A - Line.B;
@@ -321,7 +348,9 @@ namespace Vertx.Debugging
 			public readonly float3 Perpendicular;
 			public readonly Angle Angle;
 
-			public CurvedArrow(float3 origin, float3 direction, float3 perpendicular) : this(origin, direction, perpendicular, Angle.FromTurns(0.1f)) { }
+			public CurvedArrow(float3 origin, float3 direction, float3 perpendicular) : this(origin, direction, perpendicular, Angle.FromTurns(0.1f))
+			{
+			}
 
 			public CurvedArrow(float3 origin, float3 direction, float3 perpendicular, Angle angle)
 			{
@@ -338,9 +367,13 @@ namespace Vertx.Debugging
 				Angle = angle.Turns > 0.5f ? Angle.FromTurns(0.5f) : angle;
 			}
 
-			public CurvedArrow(in Line line, float3 perpendicular) : this(line.A, line.B - line.A, perpendicular) { }
+			public CurvedArrow(in Line line, float3 perpendicular) : this(line.A, line.B - line.A, perpendicular)
+			{
+			}
 
-			public CurvedArrow(in Line line, float3 perpendicular, Angle angle) : this(line.A, line.B - line.A, perpendicular, angle) { }
+			public CurvedArrow(in Line line, float3 perpendicular, Angle angle) : this(line.A, line.B - line.A, perpendicular, angle)
+			{
+			}
 
 #if UNITY_EDITOR
 			private const float ArrowHeadAngle = 30f * math.TORADIANS;
@@ -403,7 +436,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
-				Arrow2D.DrawArrowHead(commandBuilder, Origin + Direction, math.normalizesafe(Direction), Normal, color, duration);
+				Arrow2D.DrawArrowHead(ref commandBuilder, Origin + Direction, math.normalizesafe(Direction), Normal, color, duration);
 			}
 #endif
 		}
@@ -524,7 +557,9 @@ namespace Vertx.Debugging
 					origin,
 					math.mul(quaternion.LookRotation(math.abs(math.dot(direction, normal)) > 0.999f ? GetValidPerpendicular(normal) : direction, normal), Arc.s_Base3DRotation),
 					radius
-				) { }
+				)
+			{
+			}
 
 			/// <summary>
 			/// It's cheaper to use the <see cref="Circle(float3, float3, float3, float)"/> constructor if you already have a perpendicular facing direction for the circle.<br/>
@@ -533,7 +568,9 @@ namespace Vertx.Debugging
 			/// <param name="origin">The center of the circle.</param>
 			/// <param name="normal">The normal facing outwards from the circle.</param>
 			/// <param name="radius">The radius of the circle.</param>
-			public Circle(float3 origin, float3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius) { }
+			public Circle(float3 origin, float3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius)
+			{
+			}
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -564,7 +601,9 @@ namespace Vertx.Debugging
 			/// <summary>
 			/// Creates an Arc
 			/// </summary>
-			internal Arc(float4x4 matrix) : this(matrix, Angle.FromTurns(1)) { }
+			internal Arc(float4x4 matrix) : this(matrix, Angle.FromTurns(1))
+			{
+			}
 
 			public Arc(float3 origin, quaternion rotation, float radius, Angle angle)
 			{
@@ -572,13 +611,19 @@ namespace Vertx.Debugging
 				Matrix = float4x4.TRS(origin, rotation, new float3(radius, radius, radius));
 			}
 
-			public Arc(float3 origin, quaternion rotation, float radius) : this(origin, rotation, radius, Angle.FromTurns(1)) { }
+			public Arc(float3 origin, quaternion rotation, float radius) : this(origin, rotation, radius, Angle.FromTurns(1))
+			{
+			}
 
 			public Arc(float2 origin, float rotationDegrees, float radius, Angle angle)
 				// If NaN is introduced externally by the user this protects against that silently.
-				: this(origin.xy0(), float.IsNaN(rotationDegrees) ? quaternion.identity : quaternion.AxisAngle(math.forward(), rotationDegrees * math.TORADIANS), radius, angle) { }
+				: this(origin.xy0(), float.IsNaN(rotationDegrees) ? quaternion.identity : quaternion.AxisAngle(math.forward(), rotationDegrees * math.TORADIANS), radius, angle)
+			{
+			}
 
-			public Arc(float2 origin, float rotationDegrees, float radius) : this(origin, rotationDegrees, radius, Angle.FromTurns(1)) { }
+			public Arc(float2 origin, float rotationDegrees, float radius) : this(origin, rotationDegrees, radius, Angle.FromTurns(1))
+			{
+			}
 
 			public Arc(float3 origin, float3 normal, float3 direction, float radius, Angle angle)
 				: this(
@@ -586,14 +631,20 @@ namespace Vertx.Debugging
 					math.mul(quaternion.LookRotation(direction, normal), s_Base3DRotation),
 					radius,
 					angle
-				) { }
+				)
+			{
+			}
 
-			public Arc(float3 origin, float3 normal, float3 direction, float radius) : this(origin, normal, direction, radius, Angle.FromTurns(1)) { }
+			public Arc(float3 origin, float3 normal, float3 direction, float radius) : this(origin, normal, direction, radius, Angle.FromTurns(1))
+			{
+			}
 
 			/// <summary>
 			/// It's cheaper to use the <see cref="Arc(float3, float3, float3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
 			/// </summary>
-			public Arc(float3 origin, float3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius, Angle.FromTurns(1)) { }
+			public Arc(float3 origin, float3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius, Angle.FromTurns(1))
+			{
+			}
 
 			/// <param name="chord">A line that makes up the chord of the arc (two positions at the ends of the arc)</param>
 			/// <param name="aim">The direction for the arc to bend towards.</param>
@@ -688,13 +739,17 @@ namespace Vertx.Debugging
 			/// Creates an annulus.
 			/// </summary>
 			public Annulus(float3 origin, quaternion rotation, float innerRadius, float outerRadius)
-				: this(origin, rotation, innerRadius, outerRadius, Angle.FromTurns(1)) { }
+				: this(origin, rotation, innerRadius, outerRadius, Angle.FromTurns(1))
+			{
+			}
 
 			/// <summary>
 			/// Creates an annulus.
 			/// </summary>
 			public Annulus(float3 origin, float3 normal, float3 direction, float innerRadius, float outerRadius)
-				: this(origin, normal, direction, innerRadius, outerRadius, Angle.FromTurns(1)) { }
+				: this(origin, normal, direction, innerRadius, outerRadius, Angle.FromTurns(1))
+			{
+			}
 
 			/// <summary>
 			/// Creates an annulus sector.
@@ -712,7 +767,9 @@ namespace Vertx.Debugging
 			/// Creates an annulus sector.
 			/// </summary>
 			public Annulus(float3 origin, float3 normal, float3 direction, float innerRadius, float outerRadius, Angle sectorWidth)
-				: this(origin, math.mul(quaternion.LookRotation(direction, normal), Arc.s_Base3DRotation), innerRadius, outerRadius, sectorWidth) { }
+				: this(origin, math.mul(quaternion.LookRotation(direction, normal), Arc.s_Base3DRotation), innerRadius, outerRadius, sectorWidth)
+			{
+			}
 
 			/// <summary>
 			/// Uniform annulus sampling.
@@ -792,7 +849,9 @@ namespace Vertx.Debugging
 			public Sphere(float3 origin, quaternion rotation, float radius)
 				=> Matrix = float4x4.TRS(origin, rotation, new float3(radius, radius, radius));
 
-			public Sphere(Transform transform, float radius) : this(transform.position, transform.rotation, radius) { }
+			public Sphere(Transform transform, float radius) : this(transform.position, transform.rotation, radius)
+			{
+			}
 
 			public Sphere(Transform transform) => Matrix = transform.localToWorldMatrix;
 
@@ -889,9 +948,13 @@ namespace Vertx.Debugging
 				Shade3D = shade3D;
 			}
 
-			public Box(float3 position, float3 halfExtents, quaternion orientation, bool shade3D = true) : this(float4x4.TRS(position, orientation, halfExtents), shade3D) { }
+			public Box(float3 position, float3 halfExtents, quaternion orientation, bool shade3D = true) : this(float4x4.TRS(position, orientation, halfExtents), shade3D)
+			{
+			}
 
-			public Box(float3 position, float3 halfExtents, bool shade3D = true) : this(float4x4.TRS(position, quaternion.identity, halfExtents), shade3D) { }
+			public Box(float3 position, float3 halfExtents, bool shade3D = true) : this(float4x4.TRS(position, quaternion.identity, halfExtents), shade3D)
+			{
+			}
 
 			public Box(Transform transform, bool shade3D = true)
 			{
@@ -899,9 +962,13 @@ namespace Vertx.Debugging
 				Matrix = transform.localToWorldMatrix;
 			}
 
-			public Box(Bounds bounds, bool shade3D = true) : this(bounds.center, bounds.extents, quaternion.identity, shade3D) { }
+			public Box(Bounds bounds, bool shade3D = true) : this(bounds.center, bounds.extents, quaternion.identity, shade3D)
+			{
+			}
 
-			public Box(BoundsInt bounds, bool shade3D = true) : this(bounds.center, bounds.size.xyz() * 2f, quaternion.identity, shade3D) { }
+			public Box(BoundsInt bounds, bool shade3D = true) : this(bounds.center, bounds.size.xyz() * 2f, quaternion.identity, shade3D)
+			{
+			}
 
 #if VERTX_PHYSICS
 			public Box(BoxCollider boxCollider)
@@ -986,6 +1053,7 @@ namespace Vertx.Debugging
 						offset = transform.TransformDirection(new float3(0, offsetScalar, 0));
 						break;
 				}
+
 				SpherePosition1 = center - offset;
 				SpherePosition2 = center + offset;
 			}
@@ -1124,6 +1192,7 @@ namespace Vertx.Debugging
 			public readonly quaternion Rotation;
 			public readonly float Height;
 			public readonly float RadiusBase;
+
 			/// <summary>
 			/// If <see cref="RadiusTip"/> is not 0, this may be a conical frustum, not a cone ;)
 			/// </summary>
@@ -1458,6 +1527,124 @@ namespace Vertx.Debugging
 					a.distance * math.cross(b.normal, c.normal) + b.distance * math.cross(c.normal, a.normal) + c.distance * math.cross(a.normal, b.normal)
 				) / -det;
 			}
+		}
+
+		public readonly struct Catenary : IDrawable
+		{
+			public readonly float3 A, B;
+			public readonly float Length;
+			private readonly float _a, _p, _q;
+			private readonly bool _straightLine;
+
+			/// <summary>
+			/// Creates a catenary.<br/>
+			/// The constructor caches details about the catenary's features, which is expensive.
+			/// Depending on frequency, you may want to only recreate the curve when changes occur.
+			/// </summary>
+			/// <param name="a">An anchor point that the catenary is suspended between.</param>
+			/// <param name="b">An anchor point that the catenary is suspended between.</param>
+			/// <param name="length">The arc length of the catenary. It will be a straight line if not enough length is provided.</param>
+			public Catenary(float3 a, float3 b, float length)
+			{
+				(A, B) = b.y < a.y ? (b, a) : (a, b);
+				Length = length;
+				_straightLine = !TryCalculateCatenaryArgs(A, B, Length, out var args);
+				(_a, _p, _q) = args;
+			}
+
+			private static bool TryCalculateCatenaryArgs(float3 p0, float3 p1, float length, out (float a, float p, float q) args)
+			{
+				// Logic modified from https://github.com/Donitzo/godot-catenary.
+				// Which in turn is modified from https://www.alanzucconi.com/2020/12/13/catenary-2/
+				const int minSearchIterations = 16;
+
+				// Arc length.
+				float3 direction = p1 - p0;
+				if (math.length(direction) >= length)
+				{
+					args = default;
+					return false;
+				}
+				
+				// Approximate 'a'
+				float h = math.length(direction.xz);
+				float v = direction.y;
+				float c = math.sqrt(length * length - v * v);
+
+				if (h == 0)
+				{
+					args = default;
+					return false;
+				}
+
+				// Exponentially grow 'a' range.
+				float aMin = 0;
+				float aMax = 1;
+				var i = 0;
+				for (; i < 32 && c < 2 * aMax * math.sinh(h / (2 * aMax)); i++)
+				{
+					aMin = aMax;
+					aMax *= 2;
+				}
+
+				// Binary search for 'a'.
+				i += minSearchIterations;
+
+				float a = 0;
+				while (i > 0)
+				{
+					i -= 1;
+					a = (aMin + aMax) * 0.5f;
+					if (c < 2 * a * math.sinh(h / (2 * a)))
+						aMin = a;
+					else
+						aMax = a;
+				}
+
+				float p = (h - a * math.log((length + v) / (length - v))) / 2;
+				float q = (v - length * (1 / math.tanh(h / (2 * a)))) / 2;
+				args = (a, p, q);
+				return true;
+			}
+
+			/// <summary>
+			/// Evaluate the catenary curve for a position.
+			/// </summary>
+			/// <param name="t">A normalized sampling value.</param>
+			/// <returns>A point on the curve.</returns>
+			public float3 Evaluate(float t)
+			{
+				if (_straightLine)
+					return math.lerp(A, B, t);
+
+				float3 direction = B - A;
+				float l = math.length(direction.xz);
+				float wx = _a * asinh(t * Length / _a - math.sinh(_p / _a)) + _p;
+				float v = wx / l;
+				// y = a * cosh ( (x - p) / a) + q
+				float y = _a * math.cosh((v * l - _p) / _a) + _q;
+				return A + new float3(direction.x * v, y, direction.z * v);
+				float asinh(float x) => math.log(x + math.sqrt(x * x + 1));
+			}
+
+#if UNITY_EDITOR
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+			{
+				if (_straightLine)
+				{
+					commandBuilder.AppendLine(new Line(A, B), color, duration);
+					return;
+				}
+
+				float3 a = Evaluate(0);
+				for (var i = 0; i <= 100; i++)
+				{
+					float3 b = Evaluate(i / 100f);
+					commandBuilder.AppendLine(new Line(a, b), color, duration);
+					a = b;
+				}
+			}
+#endif
 		}
 
 		/// <summary>

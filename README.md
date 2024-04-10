@@ -111,6 +111,7 @@ using static Vertx.Debugging.Shape;
 | `Frustum`                                                    | A camera frustum.                                                                                |
 | `FieldOfView`                                                | A 3D field of view, a spherical sector.                                                          |
 | `MeshNormals`                                                | The normals of a mesh.                                                                           |
+| `Catenary`                                                   | Similar to cable hanging between two points.                                                     |
 | `Ray`                                                        | A line from a position and a direction vector.                                                   |
 | `Ray` (Built-in)                                             | Fallback to `Ray`.                                                                               |
 | `Vector3` (Built-in)                                         | Fallback to `Point`.                                                                             |

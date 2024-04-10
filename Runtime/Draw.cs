@@ -37,11 +37,12 @@ namespace Vertx.Debugging
 		internal static void ForceAdjustDuration(ref float duration)
 		{
 			ref UnmanagedCommandBuilder builder = ref s_Builder;
+			// Check that we're not drawing from gizmos.
 			if (builder.State != UnmanagedCommandBuilder.UpdateState.Update)
 				return;
 			
-			// Adjust the duration of calls from FixedUpdate so that they are displayed for the full duration of this fixed step, and won't be cleared
-			// by an Update occurring until that fixed step has actually passed.
+			// Adjust the duration of calls from FixedUpdate so that they are displayed for the full duration of this fixed step,
+			// and won't be cleared by an Update occurring until that fixed step has actually passed.
 			float fixedDeltaTime = builder.FixedTimeStep;
 			if (duration < fixedDeltaTime)
 			{

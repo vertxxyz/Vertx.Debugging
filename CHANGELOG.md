@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added `[ExecuteAlways]` to Debug Collision/Trigger Events to support visualising during `Physics.Simulate`.
 - Added `RaycastHit` and `RaycastHit2D` constructors to `Shape.Ray`.
 - Added `DrawPhysicsUtility.GetFixedFrameJobDuration` for getting a corrected duration for jobs started from `FixedUpdate` or `FixedStepSimulationSystemGroup`.
+- Added `Shape.Catenary`.
 
 ### Fixed
 - Fixed `D.raw(MeshCollider)` not respecting `color` and `duration`.

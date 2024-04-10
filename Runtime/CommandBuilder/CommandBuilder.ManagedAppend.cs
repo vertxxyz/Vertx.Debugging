@@ -57,7 +57,7 @@ namespace Vertx.Debugging
 							duration += (Time.fixedTime + fixedDeltaTime) - s_TimeThisFrame;
 						}
 					}
-					return duration > 0;
+					return duration >= 0;
 				case UpdateContext.UpdateState.CapturingGizmos:
 					return true;
 				default:
