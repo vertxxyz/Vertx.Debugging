@@ -9,7 +9,7 @@ namespace Vertx.Debugging
 {
 	public static partial class Shape
 	{
-		public readonly struct Angle
+		public readonly struct Angle : IEquatable<Angle>
 		{
 			/// <summary>
 			/// Angle in turns.
@@ -38,6 +38,12 @@ namespace Vertx.Debugging
 			internal Angle Abs() => FromTurns(math.abs(Turns));
 			
 			public static implicit operator float(Angle value) => value.Turns;
+
+			public bool Equals(Angle other) => Turns.Equals(other.Turns);
+
+			public override bool Equals(object obj) => obj is Angle other && Equals(other);
+
+			public override int GetHashCode() => Turns.GetHashCode();
 		}
 
 		/// <summary>

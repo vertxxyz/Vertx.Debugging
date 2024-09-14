@@ -119,7 +119,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				commandBuilder.AppendRay(Ray, castColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
 					new SurfacePoint(result.point, result.normal).Draw(ref commandBuilder, hitColor, duration);
@@ -166,7 +166,7 @@ namespace Vertx.Debugging
 			
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				Quaternion orientation = Quaternion.LookRotation(Direction);
+				quaternion orientation = quaternion.LookRotation(Direction, new float3(0, 1, 0));
 				new Sphere(Origin, orientation, Radius).Draw(ref commandBuilder, castColor, duration, Axes.X | Axes.Z);
 				float3 endPos = Origin + Direction * MaxDistance;
 				new Hemisphere(endPos, orientation, Radius).Draw(ref commandBuilder, castColor, duration);
@@ -174,7 +174,7 @@ namespace Vertx.Debugging
 				commandBuilder.AppendOutline(new Outline(Origin, endPos, Radius), castColor, duration);
 				commandBuilder.AppendOutline(new Outline(endPos, Origin, Radius), castColor, duration);
 				if (Hit.HasValue)
-					new Sphere(Origin + Direction * Hit.Value.distance, Quaternion.LookRotation(Hit.Value.normal), Radius).Draw(ref commandBuilder, hitColor, duration, Axes.X | Axes.Z);
+					new Sphere(Origin + Direction * Hit.Value.distance, quaternion.LookRotation(Hit.Value.normal, new float3(0, 1, 0)), Radius).Draw(ref commandBuilder, hitColor, duration, Axes.X | Axes.Z);
 			}
 #endif
 		}
@@ -224,10 +224,10 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				new SphereCast(Origin, Radius, Direction, null, MaxDistance).Draw(ref commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
-					new Sphere(Origin + Direction * result.distance, Quaternion.LookRotation(result.normal), Radius)
+					new Sphere(Origin + Direction * result.distance, quaternion.LookRotation(result.normal, new float3(0, 1, 0)), Radius)
 						.Draw(ref commandBuilder, hitColor, duration, Axes.X | Axes.Z);
 				}
 			}
@@ -249,11 +249,11 @@ namespace Vertx.Debugging
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
 
-			public BoxCast(float3 center, float3 halfExtents, float3 direction, RaycastHit? hit, Quaternion orientation, float maxDistance = math.INFINITY)
+			public BoxCast(float3 center, float3 halfExtents, float3 direction, RaycastHit? hit, quaternion orientation, float maxDistance = math.INFINITY)
 				: this(new Box(center, halfExtents, orientation), direction, hit, maxDistance) { }
 
 			public BoxCast(float3 center, float3 halfExtents, float3 direction, RaycastHit? hit, float maxDistance = math.INFINITY)
-				: this(center, halfExtents, direction, hit, Quaternion.identity, maxDistance) { }
+				: this(center, halfExtents, direction, hit, quaternion.identity, maxDistance) { }
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -338,17 +338,17 @@ namespace Vertx.Debugging
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
 
-			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, int count, Quaternion orientation, float maxDistance = math.INFINITY)
+			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, int count, quaternion orientation, float maxDistance = math.INFINITY)
 				: this(new Box(center, halfExtents, orientation), direction, results, count, maxDistance) { }
 
 			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, int count, float maxDistance = math.INFINITY)
-				: this(center, halfExtents, direction, results, count, Quaternion.identity, maxDistance) { }
+				: this(center, halfExtents, direction, results, count, quaternion.identity, maxDistance) { }
 
-			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, Quaternion orientation, float maxDistance = math.INFINITY)
+			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, quaternion orientation, float maxDistance = math.INFINITY)
 				: this(center, halfExtents, direction, results, results.Length, orientation, maxDistance) { }
 
 			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, float maxDistance = math.INFINITY)
-				: this(center, halfExtents, direction, results, results.Length, Quaternion.identity, maxDistance) { }
+				: this(center, halfExtents, direction, results, results.Length, quaternion.identity, maxDistance) { }
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -368,7 +368,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				new BoxCast(Box, Direction, null, MaxDistance).Draw(ref commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
 					Box.GetTranslated(Direction * result.distance).Draw(ref commandBuilder, hitColor, duration);
@@ -463,7 +463,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				new CapsuleCast(Capsule, Direction, null, MaxDistance).Draw(ref commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
 					Capsule.GetTranslated(Direction * result.distance).Draw(ref commandBuilder, hitColor, duration);

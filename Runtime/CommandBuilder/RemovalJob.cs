@@ -9,21 +9,17 @@ namespace Vertx.Debugging
 	[BurstCompile]
 	internal struct RemovalJob<T> : IJob where T : unmanaged
 	{
-		[NativeDisableUnsafePtrRestriction]
-		public UnsafeArray<float> Durations;
-		[NativeDisableUnsafePtrRestriction]
-		public UnsafeArray<T> Elements;
-		[ReadOnly]
-		public float DeltaTime;
-
-		public NativeReference<int> Length;
+		[NativeDisableUnsafePtrRestriction] private readonly UnsafeArray<float> _durations;
+		[NativeDisableUnsafePtrRestriction] private readonly UnsafeArray<T> _elements;
+		[ReadOnly] private readonly float _deltaTime;
+		private NativeReference<int> _length;
 
 		public RemovalJob(UnmanagedCommandContainer<T> group, float deltaTime)
 		{
-			Durations = group.Durations;
-			Elements = group.Values;
-			Length = group.LengthForJob;
-			DeltaTime = deltaTime;
+			_durations = group.Durations;
+			_elements = group.Values;
+			_length = group.LengthForJob;
+			_deltaTime = deltaTime;
 		}
 
 		/// <summary>
@@ -32,24 +28,24 @@ namespace Vertx.Debugging
 		/// </summary>
 		public void Execute()
 		{
-			int endIndex = Length.Value;
-			for (int index = Length.Value - 1; index >= 0; index--)
+			int endIndex = _length.Value;
+			for (int index = _length.Value - 1; index >= 0; index--)
 			{
-				float newDuration = Durations[index] - DeltaTime;
+				float newDuration = _durations[index] - _deltaTime;
 				if (newDuration > 0)
 				{
-					Durations[index] = newDuration;
+					_durations[index] = newDuration;
 					// ! Remember to change this when swapping between IJob and IJobFor
 					continue;
 				}
 
 				// RemoveUnorderedAt, shared logic:
 				endIndex--;
-				Durations[index] = Durations[endIndex];
-				Elements[index] = Elements[endIndex];
+				_durations[index] = _durations[endIndex];
+				_elements[index] = _elements[endIndex];
 			}
 
-			Length.Value = endIndex;
+			_length.Value = endIndex;
 		}
 	}
 }

@@ -164,7 +164,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				Raycast.Draw(ref commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 					new Ray(Results[i]).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
@@ -204,7 +204,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				Linecast.Draw(ref commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 					new Ray(Results[i]).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
@@ -249,7 +249,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				float maxDistance = GetClampedMaxDistance(MaxDistance);
-				float3 originMin = new float3(Origin.x, Origin.y, MinDepth);
+				var originMin = new float3(Origin.x, Origin.y, MinDepth);
 				float3 offset = (Direction * maxDistance).xy0();
 				if (MaxDepth - MinDepth < 0.001f)
 				{
@@ -261,7 +261,7 @@ namespace Vertx.Debugging
 					new Circle(originMin, quaternion.identity, Radius).Draw(ref commandBuilder, castColor, duration);
 					new Capsule2D(originMin, originMin + offset, Radius).Draw(ref commandBuilder, castColor, duration);
 
-					float3 originMax = new float3(Origin.x, Origin.y, MaxDepth);
+					var originMax = new float3(Origin.x, Origin.y, MaxDepth);
 
 					new Circle(originMax, quaternion.identity, Radius).Draw(ref commandBuilder, castColor, duration);
 					new Capsule2D(originMax, originMax + offset, Radius).Draw(ref commandBuilder, castColor, duration);
@@ -310,7 +310,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				CircleCast.Draw(ref commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit2D result = Results[i];
 					float2 hitPoint = CircleCast.Origin + CircleCast.Direction * result.distance;
@@ -405,7 +405,7 @@ namespace Vertx.Debugging
 				// Draw the edges that make up the end of the cast. This better indicates the cast direction without having to colour it,
 				// and without drawing a whole box where there's not really explanatory value in seeing it.
 				float4x4 endBox = Box.GetTranslated(offset).Matrix;
-				for (int i = 0; i < 4; i++)
+				for (var i = 0; i < 4; i++)
 				{
 					var point = (Box2D.Point)(1 << i);
 					float3 edge = Box2D.GetPoint(boxMatrix, point);
@@ -469,7 +469,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				BoxCast.Draw(ref commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit2D result = Results[i];
 					BoxCast.Box.GetTranslatedWithZ(BoxCast.Direction * result.distance, result.transform.position.z).Draw(ref commandBuilder, hitColor, duration);
@@ -568,8 +568,8 @@ namespace Vertx.Debugging
 				Angle offsetA = Angle.FromRadians(math.acos(dotA));
 				Angle offsetB = Angle.FromRadians(math.acos(dotB));
 
-				Arc arcA = new Arc(endCapsule.PointA, angle - offsetA.Degrees * 0.5f * sign, Capsule.Radius, offsetB.Abs());
-				Arc arcB = new Arc(endCapsule.PointB, angle + 180 + offsetB.Degrees * 0.5f * sign, Capsule.Radius, offsetA.Abs());
+				var arcA = new Arc(endCapsule.PointA, angle - offsetA.Degrees * 0.5f * sign, Capsule.Radius, offsetB.Abs());
+				var arcB = new Arc(endCapsule.PointB, angle + 180 + offsetB.Degrees * 0.5f * sign, Capsule.Radius, offsetA.Abs());
 				commandBuilder.AppendArc(arcA, castColor, duration);
 				commandBuilder.AppendArc(arcB, castColor, duration);
 				if (hasMax)
@@ -621,7 +621,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
 				CapsuleCast.Draw(ref commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit2D result = Results[i];
 					CapsuleCast.Capsule.GetTranslated(CapsuleCast.Direction * result.distance).Draw(ref commandBuilder, hitColor, duration);

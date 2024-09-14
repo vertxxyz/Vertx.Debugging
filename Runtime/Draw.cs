@@ -40,7 +40,7 @@ namespace Vertx.Debugging
 			// Check that we're not drawing from gizmos.
 			if (builder.State != UnmanagedCommandBuilder.UpdateState.Update)
 				return;
-			
+
 			// Adjust the duration of calls from FixedUpdate so that they are displayed for the full duration of this fixed step,
 			// and won't be cleared by an Update occurring until that fixed step has actually passed.
 			float fixedDeltaTime = builder.FixedTimeStep;
@@ -224,7 +224,7 @@ namespace Vertx.Debugging
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RectInt rect, Color color, float duration = 0)
-			=> raw(new Shape.Box2D(rect.center, rect.size.xy()), color, duration);
+			=> raw(new Shape.Box2D((float2)rect.center, rect.size.xy()), color, duration);
 
 		[Conditional("UNITY_EDITOR")]
 		public static void raw(RectInt rect, float duration = 0) => raw(rect, Color.white, duration);
@@ -248,6 +248,7 @@ namespace Vertx.Debugging
 		public static void raw(Collider collider, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
+			// ReSharper disable Unity.NoNullPatternMatching
 			switch (collider)
 			{
 				case BoxCollider boxCollider:
@@ -269,6 +270,7 @@ namespace Vertx.Debugging
 					// Could be null
 					return;
 			}
+			// ReSharper restore Unity.NoNullPatternMatching
 #endif
 		}
 
@@ -312,6 +314,7 @@ namespace Vertx.Debugging
 		public static void raw(Collider2D collider, Color color, float duration = 0)
 		{
 #if UNITY_EDITOR
+			// ReSharper disable Unity.NoNullPatternMatching
 			switch (collider)
 			{
 				case BoxCollider2D boxCollider:
@@ -339,11 +342,14 @@ namespace Vertx.Debugging
 							new Shape.LineStrip(points).Draw(ref s_Builder, color, duration);
 						}
 					}
+
 					break;
 				default:
 					// Could be null
 					return;
 			}
+			// ReSharper restore Unity.NoNullPatternMatching
+
 #endif
 		}
 
