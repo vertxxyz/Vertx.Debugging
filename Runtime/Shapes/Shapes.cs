@@ -221,28 +221,28 @@ namespace Vertx.Debugging
 		public readonly struct Arrow : IDrawable
 		{
 			public readonly float3 Origin, Direction;
-			internal const float HeadLength = 0.075f;
-			internal const float HeadWidth = 0.05f;
+			public readonly float ArrowheadScale;
 
-			public Arrow(float3 origin, float3 direction)
+			public Arrow(float3 origin, float3 direction, float arrowheadScale = 1)
 			{
 				Origin = origin;
 				Direction = direction;
+				ArrowheadScale = arrowheadScale;
 			}
 
-			public Arrow(Vector3 origin, Vector3 direction) : this((float3)origin, (float3)direction)
+			public Arrow(Vector3 origin, Vector3 direction, float arrowheadScale = 1) : this((float3)origin, (float3)direction, arrowheadScale)
 			{
 			}
 
-			public Arrow(float3 origin, quaternion rotation, float length = 1) : this(origin, math.mul(rotation, math.forward()) * length)
+			public Arrow(float3 origin, quaternion rotation, float length = 1, float arrowheadScale = 1) : this(origin, math.mul(rotation, math.forward()) * length, arrowheadScale)
 			{
 			}
 
-			public Arrow(Vector3 origin, Quaternion rotation, float length = 1) : this((float3)origin, (quaternion)rotation, length)
+			public Arrow(Vector3 origin, Quaternion rotation, float length = 1, float arrowheadScale = 1) : this((float3)origin, (quaternion)rotation, length, arrowheadScale)
 			{
 			}
 
-			public Arrow(Line line) : this(line.A, line.B - line.A)
+			public Arrow(Line line, float arrowheadScale = 1) : this(line.A, line.B - line.A, arrowheadScale)
 			{
 			}
 
@@ -253,35 +253,21 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendRay(new Ray(Origin, Direction), color, duration);
-				DrawArrowHead(ref commandBuilder, Origin, Direction, color, duration);
+				DrawArrowHead(ref commandBuilder, Origin, Direction, ArrowheadScale, color, duration);
 			}
 
-			internal static void DrawArrowHead(ref UnmanagedCommandBuilder commandBuilder, float3 point, float3 dir, Color color, float duration = 0)
+			internal const float HeadLength = 0.075f;
+			internal const float HeadWidth = 0.05f;
+
+			internal static void DrawArrowHead(ref UnmanagedCommandBuilder commandBuilder, float3 point, float3 dir, float scale, Color color, float duration = 0)
 			{
 				const int segments = 3;
 
 				float3 arrowPoint = point + dir;
 				dir.EnsureNormalized(out float length);
 
-				float headLength = HeadLength;
-				float headWidth = HeadWidth;
-
-
-				// Find next largest 10x length (e.g. ...100, 10, 1, 0.1...) and use that as the length.
-				float log = math.log10(length);
-				if (log >= 0)
-				{
-					float val = math.pow(10, math.max(1, math.ceil(log)));
-					headLength *= val;
-					headWidth *= val;
-				}
-				else
-				{
-					float val = 1 / math.pow(10, math.ceil(math.abs(log)));
-					headLength *= val;
-					headWidth *= val;
-				}
-
+				float headLength = HeadLength * length * scale;
+				float headWidth = HeadWidth * length * scale;
 				DoDrawArrowHead(arrowPoint - dir * headLength, dir, headWidth, ref commandBuilder);
 				return;
 
@@ -304,6 +290,21 @@ namespace Vertx.Debugging
 					}
 				}
 			}
+			
+			internal static void DrawHalfArrowHead(ref UnmanagedCommandBuilder commandBuilder, in Line line, float3 perpendicular, float scale, Color color, float duration = 0)
+			{
+				float3 end = line.B;
+				float3 dir = line.A - line.B;
+
+				dir.EnsureNormalized(out float length);
+				float headLength = HeadLength * length * scale;
+				float headWidth = HeadWidth * length * scale;
+				float3 cross = math.cross(dir, perpendicular);
+				float3 a = end + dir * headLength;
+				float3 b = a + cross * headWidth;
+				commandBuilder.AppendLine(new Line(end, b), color, duration);
+				commandBuilder.AppendLine(new Line(a, b), color, duration);
+			}
 #endif
 		}
 
@@ -313,10 +314,17 @@ namespace Vertx.Debugging
 		public readonly struct ArrowStrip : IDrawable
 		{
 			public readonly IEnumerable<float3> Points;
+			public readonly float ArrowheadScale;
 
-			public ArrowStrip(IEnumerable<float3> points) => Points = points;
+			public ArrowStrip(IEnumerable<float3> points, float arrowheadScale = 1)
+			{
+				Points = points;
+				ArrowheadScale = arrowheadScale;
+			}
 
-			public ArrowStrip(IEnumerable<Vector3> points) => Points = points.Select(v => (float3)v);
+			public ArrowStrip(IEnumerable<Vector3> points, float arrowheadScale = 1) : this(points.Select(v => (float3)v), arrowheadScale)
+			{
+			}
 
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
@@ -337,7 +345,7 @@ namespace Vertx.Debugging
 				if (!origin.HasValue)
 					return;
 				float3 direction = previous.Value - origin.Value;
-				Arrow.DrawArrowHead(ref commandBuilder, origin.Value, direction, color, duration);
+				Arrow.DrawArrowHead(ref commandBuilder, origin.Value, direction, ArrowheadScale, color, duration);
 			}
 #endif
 		}
@@ -350,23 +358,25 @@ namespace Vertx.Debugging
 		{
 			public readonly Line Line;
 			public readonly float3 Perpendicular;
+			public readonly float ArrowheadScale;
 
-			public HalfArrow(Line line, float3 perpendicular)
+			public HalfArrow(Line line, float3 perpendicular, float arrowheadScale = 1)
 			{
 				Line = line;
 				perpendicular.EnsureNormalized();
 				Perpendicular = perpendicular;
+				ArrowheadScale = arrowheadScale;
 			}
 
-			public HalfArrow(Line line, Vector3 perpendicular) : this(line, (float3)perpendicular)
+			public HalfArrow(Line line, Vector3 perpendicular, float arrowheadScale = 1) : this(line, (float3)perpendicular, arrowheadScale)
 			{
 			}
 
-			public HalfArrow(float3 origin, float3 direction, float3 perpendicular) : this(new Line(origin, origin + direction), perpendicular)
+			public HalfArrow(float3 origin, float3 direction, float3 perpendicular, float arrowheadScale = 1) : this(new Line(origin, origin + direction), perpendicular, arrowheadScale)
 			{
 			}
 
-			public HalfArrow(Vector3 origin, Vector3 direction, Vector3 perpendicular) : this((float3)origin, (float3)direction, (float3)perpendicular)
+			public HalfArrow(Vector3 origin, Vector3 direction, Vector3 perpendicular, float arrowheadScale = 1) : this((float3)origin, (float3)direction, (float3)perpendicular, arrowheadScale)
 			{
 			}
 
@@ -377,30 +387,7 @@ namespace Vertx.Debugging
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				commandBuilder.AppendLine(Line, color, duration);
-				DrawHalfArrowHead(ref commandBuilder, color, duration);
-			}
-
-			private void DrawHalfArrowHead(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration = 0)
-			{
-				float3 end = Line.B;
-				float3 dir = Line.A - Line.B;
-
-				dir.EnsureNormalized(out float length);
-
-				float headLength = Arrow.HeadLength;
-				float headWidth = Arrow.HeadWidth;
-
-				if (headLength > length * 0.5f)
-				{
-					headLength *= length;
-					headWidth *= length;
-				}
-
-				float3 cross = math.cross(dir, Perpendicular);
-				float3 a = end + dir * headLength;
-				float3 b = a + cross * headWidth;
-				commandBuilder.AppendLine(new Line(end, b), color, duration);
-				commandBuilder.AppendLine(new Line(a, b), color, duration);
+				Arrow.DrawHalfArrowHead(ref commandBuilder, Line, Perpendicular, ArrowheadScale, color, duration);
 			}
 #endif
 		}

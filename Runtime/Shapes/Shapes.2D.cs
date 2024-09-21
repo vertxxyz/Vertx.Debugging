@@ -115,41 +115,43 @@ namespace Vertx.Debugging
 		{
 			public readonly float3 Origin;
 			public readonly float2 Direction;
+			public readonly float ArrowheadScale;
 
-			public Arrow2D(float3 origin, float2 direction)
+			public Arrow2D(float3 origin, float2 direction, float arrowheadScale = 1)
 			{
 				Origin = origin;
 				Direction = direction;
+				ArrowheadScale = arrowheadScale;
 			}
 
-			public Arrow2D(Vector3 origin, Vector2 direction) : this((float3)origin, (float2)direction)
+			public Arrow2D(Vector3 origin, Vector2 direction, float arrowheadScale = 1) : this((float3)origin, (float2)direction, arrowheadScale)
 			{
 			}
 
-			public Arrow2D(float2 origin, float2 direction, float z = 0)
+			public Arrow2D(float2 origin, float2 direction, float z = 0, float arrowheadScale = 1)
 				: this(new float3(origin.x, origin.y, z), direction)
 			{
 			}
 
-			public Arrow2D(Vector2 origin, Vector2 direction, float z = 0) : this((float2)origin, (float2)direction, z)
+			public Arrow2D(Vector2 origin, Vector2 direction, float z = 0, float arrowheadScale = 1) : this((float2)origin, (float2)direction, z, arrowheadScale)
 			{
 			}
 
-			public Arrow2D(float3 origin, float angleDegrees)
-				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)))
+			public Arrow2D(float3 origin, float angleDegrees, float arrowheadScale = 1)
+				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)), arrowheadScale)
 			{
 			}
 
-			public Arrow2D(Vector3 origin, float angleDegrees) : this((float3)origin, angleDegrees)
+			public Arrow2D(Vector3 origin, float angleDegrees, float arrowheadScale = 1) : this((float3)origin, angleDegrees, arrowheadScale)
 			{
 			}
 
-			public Arrow2D(float2 origin, float angleDegrees, float z = 0)
-				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)), z)
+			public Arrow2D(float2 origin, float angleDegrees, float z = 0, float arrowheadScale = 1)
+				: this(origin, GetDirectionFromAngle(Angle.FromDegrees(angleDegrees)), z, arrowheadScale)
 			{
 			}
 
-			public Arrow2D(Vector2 origin, float angleDegrees, float z = 0) : this((float2)origin, angleDegrees, z)
+			public Arrow2D(Vector2 origin, float angleDegrees, float z = 0, float arrowheadScale = 1) : this((float2)origin, angleDegrees, z, arrowheadScale)
 			{
 			}
 
@@ -161,7 +163,7 @@ namespace Vertx.Debugging
 			{
 				float3 lineEnd = Origin + Direction.xy0();
 				commandBuilder.AppendLine(new Line(Origin, lineEnd), color, duration);
-				DrawArrowHead(ref commandBuilder, lineEnd, Direction, color, duration);
+				DrawArrowHead(ref commandBuilder, lineEnd, Direction, color, duration, ArrowheadScale);
 			}
 
 			internal static void DrawArrowHead(ref UnmanagedCommandBuilder commandBuilder, float3 arrowPoint, float2 dir, Color color, float duration, float scale = 1)
@@ -192,18 +194,17 @@ namespace Vertx.Debugging
 		public readonly struct ArrowStrip2D : IDrawable
 		{
 			public readonly IEnumerable<float2> Points;
-			public readonly float Z;
+			public readonly float Z, ArrowheadScale;
 
-			public ArrowStrip2D(IEnumerable<float2> points, float z = 0)
+			public ArrowStrip2D(IEnumerable<float2> points, float z = 0, float arrowheadScale = 1)
 			{
 				Points = points;
 				Z = z;
+				ArrowheadScale = arrowheadScale;
 			}
 
-			public ArrowStrip2D(IEnumerable<Vector2> points, float z = 0)
+			public ArrowStrip2D(IEnumerable<Vector2> points, float z = 0, float arrowheadScale = 1) : this(points.Select(v => (float2)v), z, arrowheadScale)
 			{
-				Points = points.Select(v => (float2)v);
-				Z = z;
 			}
 
 #if UNITY_EDITOR
@@ -225,7 +226,7 @@ namespace Vertx.Debugging
 
 				if (!origin.HasValue)
 					return;
-				Arrow2D.DrawArrowHead(ref commandBuilder, origin.Value, previous.Value.xy - origin.Value.xy, color, duration);
+				Arrow2D.DrawArrowHead(ref commandBuilder, origin.Value, previous.Value.xy - origin.Value.xy, color, duration, ArrowheadScale);
 			}
 #endif
 		}

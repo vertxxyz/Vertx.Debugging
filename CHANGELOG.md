@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added `RaycastHit` and `RaycastHit2D` constructors to `Shape.Ray`.
 - Added `DrawPhysicsUtility.GetFixedFrameJobDuration` for getting a corrected duration for jobs started from `FixedUpdate` or `FixedStepSimulationSystemGroup`.
 - Added `Shape.Catenary`.
+- Added arrowhead scale parameter to arrow functions.
 
 ### Fixed
 - Fixed `D.raw(MeshCollider)` not respecting `color` and `duration`.

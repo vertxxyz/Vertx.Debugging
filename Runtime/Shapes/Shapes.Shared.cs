@@ -1,7 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
@@ -99,7 +101,7 @@ namespace Vertx.Debugging
 
 		private static float3 GetValidAxisAligned(float3 normal)
 		{
-			float3 alternate = new float3(0, 0, 1);
+			var alternate = new float3(0, 0, 1);
 			if (math.abs(math.dot(normal, alternate)) > 0.707f)
 				alternate = new float3(0, 1, 0);
 			return alternate;
@@ -213,7 +215,7 @@ namespace Vertx.Debugging
 
 		private static bool HasZeroDistanceHit(RaycastHit[] results, int resultCount)
 		{
-			for (int i = 0; i < resultCount; i++)
+			for (var i = 0; i < resultCount; i++)
 			{
 				if (results[i].distance == 0)
 					return true;
@@ -224,7 +226,7 @@ namespace Vertx.Debugging
 
 		// ReSharper disable CompareOfFloatsByEqualityOperator
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static bool IsWhite(Color c) => c.r == 1 && c.g == 1 && c.b == 1 && c.a == 1;
+		private static bool IsWhite(Color c) => c is { r: 1, g: 1, b: 1, a: 1 };
 		// ReSharper restore CompareOfFloatsByEqualityOperator
 
 		public static class BoxUtility
@@ -302,7 +304,7 @@ namespace Vertx.Debugging
 			{
 				const float epsilon = 0.00001f;
 
-				Direction direction = Direction.None;
+				var direction = Direction.None;
 				if (dotRight < -epsilon)
 					direction |= Direction.Left;
 				else if (dotRight > epsilon)
@@ -323,8 +325,8 @@ namespace Vertx.Debugging
 
 			public static int CountDirections(Direction direction)
 			{
-				int counter = 0;
-				for (int i = 1; i <= (int)Direction.Back; i++)
+				var counter = 0;
+				for (var i = 1; i <= (int)Direction.Back; i++)
 				{
 					if ((direction & (Direction)(1 << i)) != 0)
 						counter++;

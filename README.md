@@ -1,8 +1,10 @@
 Fast editor debugging and gizmo utilities for Unity.  
 Uses instanced rendering to draw shapes efficiently.
 
-> **Note**  
-> Unity 2022.2+ (all features). 2019.4+ No jobs and burst support, older API.
+> [!NOTE]  
+> Unity 2022.2+ (all features).  
+> 2019.4+ No jobs and burst support, older API.  
+> 
 > Should support all render pipelines.  
 > Supports drawing from jobs and burst. This package depends on **Burst** and **Mathematics**.  
 > All shapes are wireframe. There is currently no support for solid shapes planned.
@@ -68,7 +70,7 @@ using Physics = Vertx.Debugging.DrawPhysics;
 
 </details>
 
-> **Note**  
+> [!NOTE]  
 > If you find you have rendering issues like upside-down depth testing, or artifacts in the game view: This is a Unity bug.  
 > You can disable Depth Write and Depth Test in the problematic view using the settings in **Project Settings > Vertx > Debugging**.  
 > If you're on a version of Unity where the settings UI doesn't work, it's another Unity bug, thanks Unity!

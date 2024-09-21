@@ -1,5 +1,4 @@
 #if VERTX_PHYSICS_2D
-using System;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
