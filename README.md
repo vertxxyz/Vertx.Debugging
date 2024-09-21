@@ -158,10 +158,12 @@ using static Vertx.Debugging.Shape;
 
 ### Extensions
   
-The `Shape` class is partial. You can add `IDrawable` or `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+1. Use Assembly Definition References to add a class to the runtime assembly.
+2. The `Shape` class is partial. You can add `IDrawable` or `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+3. Use the `UnmanagedCommandBuilder` `Append` functions to create your own shapes, or combine other shapes by directly calling their `Draw` functions.  
 
-Use the `UnmanagedCommandBuilder` `Append` functions to create your own shapes, or combine other shapes by directly calling their `Draw` functions.  
-Don't recursively call `D.raw` from inside of `IDrawable/IDrawableCast.Draw`, as it will cause issues with `FixedUpdate` drawing.
+> [!WARNING]  
+> Don't recursively call `D.raw` from inside of `IDrawable/IDrawableCast.Draw`, as it will cause issues with `FixedUpdate` drawing.
 
 </td></tr></table>
 </details>

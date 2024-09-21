@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added `DrawPhysicsUtility.GetFixedFrameJobDuration` for getting a corrected duration for jobs started from `FixedUpdate` or `FixedStepSimulationSystemGroup`.
 - Added `Shape.Catenary`.
 - Added arrowhead scale parameter to arrow functions.
+- Added overloads to `Arc` and `Annulus` that take a From and To angle.
 
 ### Fixed
 - Fixed `D.raw(MeshCollider)` not respecting `color` and `duration`.

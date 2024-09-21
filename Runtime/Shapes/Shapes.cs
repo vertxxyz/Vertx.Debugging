@@ -290,7 +290,7 @@ namespace Vertx.Debugging
 					}
 				}
 			}
-			
+
 			internal static void DrawHalfArrowHead(ref UnmanagedCommandBuilder commandBuilder, in Line line, float3 perpendicular, float scale, Color color, float duration = 0)
 			{
 				float3 end = line.B;
@@ -706,63 +706,115 @@ namespace Vertx.Debugging
 			internal static readonly quaternion Base3DRotation = quaternion.Euler(90 * math.TORADIANS, -90 * math.TORADIANS, 0);
 
 
+			/// <summary>
+			/// Creates an Arc
+			/// </summary>
 			public Arc(float4x4 matrix, Angle angle)
 			{
 				Matrix = matrix;
 				Angle = angle;
 			}
 
+			/// <inheritdoc />
 			public Arc(Matrix4x4 matrix, Angle angle) : this((float4x4)matrix, angle)
 			{
 			}
 
-			/// <summary>
-			/// Creates an Arc
-			/// </summary>
+			/// <inheritdoc />
 			internal Arc(float4x4 matrix) : this(matrix, Angle.FromTurns(1))
 			{
 			}
 
+			/// <inheritdoc />
 			public Arc(Matrix4x4 matrix) : this((float4x4)matrix)
 			{
 			}
 
+			/// <inheritdoc />
 			public Arc(float3 origin, quaternion rotation, float radius, Angle angle)
-			{
-				Angle = angle;
-				Matrix = float4x4.TRS(origin, rotation, new float3(radius, radius, radius));
-			}
-
-			public Arc(Vector3 origin, Quaternion rotation, float radius, Angle angle) : this((float3)origin, (quaternion)rotation, radius, angle)
+				: this(float4x4.TRS(origin, rotation, new float3(radius, radius, radius)), angle)
 			{
 			}
 
+			/// <inheritdoc />
+			public Arc(Vector3 origin, Quaternion rotation, float radius, Angle angle)
+				: this((float3)origin, (quaternion)rotation, radius, angle)
+			{
+			}
+
+			/// <inheritdoc />
+			public Arc(float3 origin, quaternion rotation, float radius, Angle fromAngle, Angle toAngle)
+				: this(origin, GetAdjustedRotation(rotation, fromAngle, toAngle, out Angle total), radius, total)
+			{
+			}
+
+			/// <inheritdoc />
+			public Arc(Vector3 origin, Quaternion rotation, float radius, Angle fromAngle, Angle toAngle)
+				: this((float3)origin, (quaternion)rotation, radius, fromAngle, toAngle)
+			{
+			}
+
+			/// <inheritdoc />
 			public Arc(float3 origin, quaternion rotation, float radius) : this(origin, rotation, radius, Angle.FromTurns(1))
 			{
 			}
 
+			/// <inheritdoc />
 			public Arc(Vector3 origin, Quaternion rotation, float radius) : this((float3)origin, (quaternion)rotation, radius)
 			{
 			}
 
+			/// <inheritdoc />
 			public Arc(float2 origin, float rotationDegrees, float radius, Angle angle)
-				// If NaN is introduced externally by the user this protects against that silently.
-				: this(origin.xy0(), float.IsNaN(rotationDegrees) ? quaternion.identity : quaternion.AxisAngle(math.forward(), rotationDegrees * math.TORADIANS), radius, angle)
+				: this(
+					origin.xy0(),
+					// If NaN is introduced externally by the user this protects against that silently.
+					float.IsNaN(rotationDegrees) ? quaternion.identity : quaternion.AxisAngle(math.forward(), rotationDegrees * math.TORADIANS),
+					radius,
+					angle
+				)
 			{
 			}
 
+			/// <inheritdoc />
 			public Arc(Vector2 origin, float rotationDegrees, float radius, Angle angle) : this((float2)origin, rotationDegrees, radius, angle)
 			{
 			}
 
+			/// <inheritdoc />
+			public Arc(float2 origin, float rotationDegrees, float radius, Angle fromAngle, Angle toAngle)
+				: this(
+					origin.xy0(),
+					GetAdjustedRotation(
+						// If NaN is introduced externally by the user this protects against that silently.
+						float.IsNaN(rotationDegrees) ? quaternion.identity : quaternion.AxisAngle(math.forward(), rotationDegrees * math.TORADIANS),
+						fromAngle,
+						toAngle,
+						out Angle total
+					),
+					radius,
+					total
+				)
+			{
+			}
+
+			/// <inheritdoc />
+			public Arc(Vector2 origin, float rotationDegrees, float radius, Angle fromAngle, Angle toAngle)
+				: this((float2)origin, rotationDegrees, radius, fromAngle, toAngle)
+			{
+			}
+
+			/// <inheritdoc />
 			public Arc(float2 origin, float rotationDegrees, float radius) : this(origin, rotationDegrees, radius, Angle.FromTurns(1))
 			{
 			}
 
+			/// <inheritdoc />
 			public Arc(Vector2 origin, float rotationDegrees, float radius) : this((float2)origin, rotationDegrees, radius)
 			{
 			}
 
+			/// <inheritdoc />
 			public Arc(float3 origin, float3 normal, float3 direction, float radius, Angle angle)
 				: this(
 					origin,
@@ -773,29 +825,54 @@ namespace Vertx.Debugging
 			{
 			}
 
-			public Arc(Vector3 origin, Vector3 normal, Vector3 direction, float radius, Angle angle) : this((float3)origin, (float3)normal, (float3)direction, radius, angle)
+			/// <inheritdoc />
+			public Arc(Vector3 origin, Vector3 normal, Vector3 direction, float radius, Angle angle)
+				: this((float3)origin, (float3)normal, (float3)direction, radius, angle)
+			{
+			}
+			
+			/// <inheritdoc />
+			public Arc(float3 origin, float3 normal, float3 direction, float radius, Angle fromAngle, Angle toAngle)
+				: this(
+					origin,
+					GetAdjustedRotation(math.mul(quaternion.LookRotation(direction, normal), Base3DRotation), fromAngle, toAngle, out Angle total),
+					radius,
+					total
+				)
 			{
 			}
 
-			public Arc(float3 origin, float3 normal, float3 direction, float radius) : this(origin, normal, direction, radius, Angle.FromTurns(1))
+			/// <inheritdoc />
+			public Arc(Vector3 origin, Vector3 normal, Vector3 direction, float radius, Angle fromAngle, Angle toAngle)
+				: this((float3)origin, (float3)normal, (float3)direction, radius, fromAngle, toAngle)
 			{
 			}
 
-			public Arc(Vector3 origin, Vector3 normal, Vector3 direction, float radius) : this((float3)origin, (float3)normal, (float3)direction, radius)
+			/// <inheritdoc />
+			public Arc(float3 origin, float3 normal, float3 direction, float radius)
+				: this(origin, normal, direction, radius, Angle.FromTurns(1))
+			{
+			}
+
+			/// <inheritdoc />
+			public Arc(Vector3 origin, Vector3 normal, Vector3 direction, float radius)
+				: this((float3)origin, (float3)normal, (float3)direction, radius)
 			{
 			}
 
 			/// <summary>
 			/// It's cheaper to use the <see cref="Arc(float3, float3, float3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
 			/// </summary>
-			public Arc(float3 origin, float3 normal, float radius) : this(origin, normal, GetValidPerpendicular(normal), radius, Angle.FromTurns(1))
+			public Arc(float3 origin, float3 normal, float radius)
+				: this(origin, normal, GetValidPerpendicular(normal), radius, Angle.FromTurns(1))
 			{
 			}
 
 			/// <summary>
 			/// It's cheaper to use the <see cref="Arc(float3, float3, float3, float)"/> constructor if you already have a perpendicular facing direction for the circle.
 			/// </summary>
-			public Arc(Vector3 origin, Vector3 normal, float radius) : this((float3)origin, (float3)normal, radius)
+			public Arc(Vector3 origin, Vector3 normal, float radius)
+				: this((float3)origin, (float3)normal, radius)
 			{
 			}
 
@@ -868,6 +945,13 @@ namespace Vertx.Debugging
 			public static Angle GetAngle(float radius, float chordLength) => Angle.FromRadians(math.asin(chordLength / (2f * radius)) * 2);
 			public static float GetChordLength(in Angle angle, float radius) => 2f * radius * math.sin(angle.Radians * 0.5f);
 
+			internal static quaternion GetAdjustedRotation(quaternion rotation, Angle fromAngle, Angle toAngle, out Angle total)
+			{
+				float middleRadians = (fromAngle.Radians + toAngle.Radians) / 2f;
+				total = Angle.FromTurns(toAngle - fromAngle);
+				return math.mul(rotation, quaternion.RotateZ(-middleRadians));
+			}
+
 #if UNITY_EDITOR
 			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 				=> Draw(ref commandBuilder, color, duration);
@@ -892,26 +976,24 @@ namespace Vertx.Debugging
 			public readonly float InnerRadius, OuterRadius;
 			public readonly Angle SectorWidth;
 
-			/// <summary>
-			/// Creates an annulus.
-			/// </summary>
+			/// <inheritdoc />
 			public Annulus(float3 origin, quaternion rotation, float innerRadius, float outerRadius)
 				: this(origin, rotation, innerRadius, outerRadius, Angle.FromTurns(1))
 			{
 			}
 
+			/// <inheritdoc />
 			public Annulus(Vector3 origin, Quaternion rotation, float innerRadius, float outerRadius) : this((float3)origin, (quaternion)rotation, innerRadius, outerRadius)
 			{
 			}
 
-			/// <summary>
-			/// Creates an annulus.
-			/// </summary>
+			/// <inheritdoc />
 			public Annulus(float3 origin, float3 normal, float3 direction, float innerRadius, float outerRadius)
 				: this(origin, normal, direction, innerRadius, outerRadius, Angle.FromTurns(1))
 			{
 			}
 
+			/// <inheritdoc />
 			public Annulus(Vector3 origin, Vector3 normal, Vector3 direction, float innerRadius, float outerRadius) : this((float3)origin, (float3)normal, (float3)direction, innerRadius, outerRadius)
 			{
 			}
@@ -928,19 +1010,43 @@ namespace Vertx.Debugging
 				OuterRadius = outerRadius;
 			}
 
+			/// <inheritdoc />
 			public Annulus(Vector3 origin, Quaternion rotation, float innerRadius, float outerRadius, Angle sectorWidth) : this((float3)origin, (quaternion)rotation, innerRadius, outerRadius, sectorWidth)
 			{
 			}
 
-			/// <summary>
-			/// Creates an annulus sector.
-			/// </summary>
+			/// <inheritdoc />
+			public Annulus(float3 origin, quaternion rotation, float innerRadius, float outerRadius, Angle fromAngle, Angle toAngle)
+				: this(origin, Arc.GetAdjustedRotation(rotation, fromAngle, toAngle, out Angle total), innerRadius, outerRadius, total)
+			{
+			}
+
+			/// <inheritdoc />
+			public Annulus(Vector3 origin, Quaternion rotation, float innerRadius, float outerRadius, Angle fromAngle, Angle toAngle)
+				: this((float3)origin, (quaternion)rotation, innerRadius, outerRadius, fromAngle, toAngle)
+			{
+			}
+
+			/// <inheritdoc />
 			public Annulus(float3 origin, float3 normal, float3 direction, float innerRadius, float outerRadius, Angle sectorWidth)
 				: this(origin, math.mul(quaternion.LookRotation(direction, normal), Arc.Base3DRotation), innerRadius, outerRadius, sectorWidth)
 			{
 			}
 
+			/// <inheritdoc />
 			public Annulus(Vector3 origin, Vector3 normal, Vector3 direction, float innerRadius, float outerRadius, Angle sectorWidth) : this((float3)origin, (float3)normal, (float3)direction, innerRadius, outerRadius, sectorWidth)
+			{
+			}
+
+			/// <inheritdoc />
+			public Annulus(float3 origin, float3 normal, float3 direction, float innerRadius, float outerRadius, Angle fromAngle, Angle toAngle)
+				: this(origin, math.mul(quaternion.LookRotation(direction, normal), Arc.Base3DRotation), innerRadius, outerRadius, fromAngle, toAngle)
+			{
+			}
+
+			/// <inheritdoc />
+			public Annulus(Vector3 origin, Vector3 normal, Vector3 direction, float innerRadius, float outerRadius, Angle fromAngle, Angle toAngle)
+				: this((float3)origin, (float3)normal, (float3)direction, innerRadius, outerRadius, fromAngle, toAngle)
 			{
 			}
 
@@ -990,7 +1096,8 @@ namespace Vertx.Debugging
 
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
-				commandBuilder.AppendArc(new Arc(Origin, Rotation, InnerRadius, SectorWidth), color, duration);
+				if (math.abs(InnerRadius) > 0.0001f)
+					commandBuilder.AppendArc(new Arc(Origin, Rotation, InnerRadius, SectorWidth), color, duration);
 				if (math.abs(InnerRadius - OuterRadius) < 0.0001f)
 					return;
 				commandBuilder.AppendArc(new Arc(Origin, Rotation, OuterRadius, SectorWidth), color, duration);
@@ -1960,7 +2067,7 @@ namespace Vertx.Debugging
 				// y = a * cosh ( (x - p) / a) + q
 				float y = _a * math.cosh((v * l - _p) / _a) + _q;
 				return A + new float3(direction.x * v, y, direction.z * v);
-				
+
 				float asinh(float x) => math.log(x + math.sqrt(x * x + 1));
 			}
 
