@@ -2,7 +2,7 @@ Fast editor debugging and gizmo utilities for Unity.
 Uses instanced rendering to draw shapes efficiently.
 
 > [!NOTE]  
-> Unity 2022.2+ (all features).  
+> Unity 2022.2+ (all features) - Version 3.0.0 and above.  
 > 2019.4+ No jobs and burst support, older API.  
 > 
 > Should support all render pipelines.  

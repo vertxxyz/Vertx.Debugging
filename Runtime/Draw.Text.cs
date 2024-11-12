@@ -6,9 +6,6 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using static Vertx.Debugging.Shape;
 using UnityEditor;
-#if !UNITY_2022_1_OR_NEWER
-using System.Reflection;
-#endif
 using UnityEngine.Pool;
 
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
@@ -20,25 +17,8 @@ namespace Vertx.Debugging
 	{
 		internal static GUIStyle TextStyle => s_textStyle ?? (s_textStyle = new GUIStyle(EditorStyles.label) { font = AssetsUtility.JetBrainsMono });
 
-		private static Type GameViewType => s_gameViewType ?? (s_gameViewType = typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView"));
-
-		private static EditorWindow GameView
-		{
-			get
-			{
-				if (s_gameView != null)
-					return s_gameView;
-				Object[] gameViewQuery = Resources.FindObjectsOfTypeAll(GameViewType);
-				if (gameViewQuery == null || gameViewQuery.Length == 0)
-					return null;
-				return s_gameView = (EditorWindow)gameViewQuery[0];
-			}
-		}
-
 		private static readonly GUIContent s_sharedContent = new();
 		private static GUIStyle s_textStyle;
-		private static Type s_gameViewType;
-		private static EditorWindow s_gameView;
 
 		static DrawText()
 		{
@@ -71,13 +51,14 @@ namespace Vertx.Debugging
 		private static void DoOnGUI(View view)
 		{
 			var commandBuilder = CommandBuilder.Instance;
-			Draw3DText(commandBuilder);
+			
+			Draw3DText(commandBuilder, (view & View.Scene) != 0);
 
 			if ((view & View.Scene) == 0)
 				DrawScreenTexts(commandBuilder, view);
 		}
 
-		private static void Draw3DText(CommandBuilder commandBuilder)
+		private static void Draw3DText(CommandBuilder commandBuilder, bool isSceneView)
 		{
 			if (Event.current.type != EventType.Repaint)
 				return;
@@ -92,37 +73,39 @@ namespace Vertx.Debugging
 				Gather3DText(commandBuilder.DefaultTexts, text3D);
 				Gather3DText(commandBuilder.GizmoTexts, text3D);
 
+				// No 3d text to draw.
+				if (text3D.Count <= 0) return;
+				
 				// 3D text is collected and sorted by distance before being displayed.
-				if (text3D.Count > 0)
-				{
-					text3D.Sort((a, b) => b.Distance.CompareTo(a.Distance));
+				text3D.Sort((a, b) => b.Distance.CompareTo(a.Distance));
 
-					foreach (TextData textData in text3D)
-					{
-						//------DRAW-------
-						Color backgroundColor = textData.BackgroundColor;
-						Color textColor = textData.TextColor;
-						backgroundColor.a *= textData.Alpha;
-						textColor.a *= textData.Alpha;
-						Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
+				foreach (TextData textData in text3D)
+				{
+					//------DRAW-------
+					Color backgroundColor = textData.BackgroundColor;
+					Color textColor = textData.TextColor;
+					backgroundColor.a *= textData.Alpha;
+					textColor.a *= textData.Alpha;
 						
-						GUIContent content = GetGUIContentFromObject(textData.Value);
-						var rect = new Rect(textData.ScreenPosition, TextStyle.CalcSize(content));
-						if(!camera.pixelRect.Overlaps(rect))
-							continue;
-						DrawAtScreenPosition(rect, content, backgroundColor, textColor, null);
-					}
+					GUIContent content = GetGUIContentFromObject(textData.Value);
+					var rect = new Rect(textData.ScreenPosition, TextStyle.CalcSize(content));
+					// text is not on screen.
+					if (!textData.Camera.pixelRect.Overlaps(rect))
+						continue;
+					DrawAtScreenPosition(rect, content, backgroundColor, textColor, null);
 				}
 			}
+
+			return;
 
 			void Gather3DText(CommandBuilder.TextDataLists list, List<TextData> text3D)
 			{
 				for (var i = 0; i < list.Count; i++)
 				{
 					TextData textData = list.Elements[i];
-					Camera camera = SceneView.currentDrawingSceneView?.camera ?? textData.Camera;
-					if (camera == null) continue;
-					if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, camera)) continue;
+					textData.Camera = isSceneView ? SceneView.currentDrawingSceneView?.camera : textData.Camera;
+					if (textData.Camera == null) continue;
+					if (!WorldToGUIPoint(textData.Position, out Vector2 screenPos, out float distance, textData.Camera)) continue;
 					float alpha;
 					if (uses3DIcons)
 					{
@@ -169,39 +152,9 @@ namespace Vertx.Debugging
 			}
 		}
 
-#if !UNITY_2022_1_OR_NEWER
-		private static Func<bool> s_use3dGizmos;
-		private static Func<float> s_iconSize;
-#endif
+		private static bool Uses3DIcons => GizmoUtility.use3dIcons;
 
-		private static bool Uses3DIcons
-		{
-			get
-			{
-#if UNITY_2022_1_OR_NEWER
-				return GizmoUtility.use3dIcons;
-#else
-				if (s_use3dGizmos == null)
-					s_use3dGizmos = (Func<bool>)Delegate.CreateDelegate(typeof(Func<bool>), Type.GetType("UnityEditor.AnnotationUtility,UnityEditor").GetProperty("use3dGizmos", BindingFlags.Static | BindingFlags.NonPublic).GetMethod);
-				return s_use3dGizmos();
-#endif
-			}
-		}
-
-		private static float IconSize
-		{
-			get
-			{
-#if UNITY_2022_1_OR_NEWER
-				return GizmoUtility.iconSize;
-#else
-				if (s_iconSize == null)
-					s_iconSize = (Func<float>)Delegate.CreateDelegate(typeof(Func<float>), Type.GetType("UnityEditor.AnnotationUtility,UnityEditor").GetProperty("iconSize", BindingFlags.Static | BindingFlags.NonPublic).GetMethod);
-				return s_iconSize();
-#endif
-			}
-		}
-
+		private static float IconSize => GizmoUtility.iconSize;
 
 		internal static void DrawAtScreenPosition(Rect rect, GUIContent content, Color backgroundColor, Color textColor, Object context)
 		{
@@ -258,7 +211,7 @@ namespace Vertx.Debugging
 				return false;
 			}
 
-			Vector2 viewScreenVector = new Vector2(viewPos.x, 1 - viewPos.y);
+			var viewScreenVector = new Vector2(viewPos.x, 1 - viewPos.y);
 			viewScreenVector /= EditorGUIUtility.pixelsPerPoint;
 			point = new Vector2(viewScreenVector.x * camera.pixelWidth, viewScreenVector.y * camera.pixelHeight);
 			return true;

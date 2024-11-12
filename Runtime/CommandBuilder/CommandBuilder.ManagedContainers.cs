@@ -74,7 +74,7 @@ namespace Vertx.Debugging
 			// ReSharper disable InconsistentNaming
 			protected readonly List<float> _durations = new List<float>();
 			protected readonly List<T> _elements = new List<T>();
-			protected bool _isDirty = true;
+			protected bool _isDirty = true; // Currently unused.
 			// ReSharper restore InconsistentNaming
 
 			public int Count => _elements.Count;
