@@ -17,6 +17,7 @@ namespace Vertx.Debugging
 #endif
 	
 	[AddComponentMenu("Debugging/Debug Trigger Events")]
+	[ExecuteAlways]
 	public sealed class DebugTriggerEvents : MonoBehaviour
 	{
 		[SerializeField] private Type _type = Type.Enter;

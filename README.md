@@ -1,10 +1,13 @@
 Fast editor debugging and gizmo utilities for Unity.  
 Uses instanced rendering to draw shapes efficiently.
 
-> **Note**  
-> Unity 2019.4+  
+> [!NOTE]  
+> Unity 2022.2+ (all features) - Version 3.0.0 and above.  
+> 2019.4+ No jobs and burst support, older API.  
+> 
 > Should support all render pipelines.  
-> Debugging from jobs and builds is not supported, I recommend [Aline](http://arongranberg.com/aline/) if you need that functionality.
+> Supports drawing from jobs and burst. This package depends on **Burst** and **Mathematics**.  
+> All shapes are wireframe. There is currently no support for solid shapes planned.
 
 https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-9316-78f7d4fbea1a.mp4
 
@@ -14,7 +17,7 @@ https://user-images.githubusercontent.com/21963717/194199755-a63d8ebc-0cc7-4268-
 <table><tr><td>
 
   
-### Example
+#### Example
 
 ```csharp
 // Draw a sphere with the specified color.
@@ -29,10 +32,11 @@ D.raw(new Shape.Sphere(position, radius), hit, duration);
 D.raw(new Shape.SphereCastAll(position, direction, radius, hits, hitCount, 10), duration);
 ```
 
+#### Available contexts
 You can call these methods from most places, `Update`, `LateUpdate`, `FixedUpdate`, `OnDrawGizmos`, and with `ExecuteAlways`/`ExecuteInEditMode`.  
 If drawn from a gizmo context, `duration` parameters will be ignored. `Gizmos.matrix` works, `Gizmos.color` is unsupported. Gizmos are not pickable.
 
-### Code stripping
+#### Code stripping
 Calls to these methods are stripped when building. You do not have to remove code or use defines.  
 If your code spans many statements, only the method call will be stripped. 
 </td></tr></table>
@@ -43,7 +47,7 @@ If your code spans many statements, only the method call will be stripped.
   <summary>Drawing <code>Physics</code> and <code>Physics2D</code> operations</summary>
 <table><tr><td>
 
-### Example
+#### Example
 You can replace calls to `Physics` and `Physics2D` methods with `DrawPhysics` and `DrawPhysics2D` to simply draw the results of a physics operation.
 
 ```csharp
@@ -53,7 +57,7 @@ int count = DrawPhysics.RaycastNonAlloc(r, results, distance);
 Use `DrawPhysicsSettings.SetDuration` or `Duration` to override the length of time the casts draw for. You will need to reset this value manually.
 Calls to `Duration` cannot be stripped, I would recommend using `SetDuration` if this is important to you.
 
-### Code stripping
+#### Code stripping
 The drawing within these methods will be stripped, and the original method is attempted to be inlined, but this is not consistent.  
 A single method call doesn't matter when compared to a physics operation, but you can completely strip these calls by instead declaring:
 
@@ -66,13 +70,13 @@ using Physics = Vertx.Debugging.DrawPhysics;
 
 </details>
 
-> **Note**  
+> [!NOTE]  
 > If you find you have rendering issues like upside-down depth testing, or artifacts in the game view: This is a Unity bug.  
 > You can disable Depth Write and Depth Test in the problematic view using the settings in **Project Settings > Vertx > Debugging**.  
 > If you're on a version of Unity where the settings UI doesn't work, it's another Unity bug, thanks Unity!
 
 ## Shapes
-Drawable shapes and casts are contained within the `Shape` class. Statically import the class if you use them often:
+Drawable shapes and casts are contained within the `Shape` class. You can statically import the class if you use them often:
 
 ```csharp
 using static Vertx.Debugging.Shape;
@@ -109,6 +113,7 @@ using static Vertx.Debugging.Shape;
 | `Frustum`                                                    | A camera frustum.                                                                                |
 | `FieldOfView`                                                | A 3D field of view, a spherical sector.                                                          |
 | `MeshNormals`                                                | The normals of a mesh.                                                                           |
+| `Catenary`                                                   | Similar to cable hanging between two points.                                                     |
 | `Ray`                                                        | A line from a position and a direction vector.                                                   |
 | `Ray` (Built-in)                                             | Fallback to `Ray`.                                                                               |
 | `Vector3` (Built-in)                                         | Fallback to `Point`.                                                                             |
@@ -153,8 +158,12 @@ using static Vertx.Debugging.Shape;
 
 ### Extensions
   
-The `Shape` class is partial. You can add `IDrawable` and `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
-Use the `CommandBuilder` `Append` functions to create your own shapes, or combine other shapes by calling their `Draw` functions.
+1. Use Assembly Definition References to add a class to the runtime assembly.
+2. The `Shape` class is partial. You can add `IDrawable` or `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+3. Use the `UnmanagedCommandBuilder` `Append` functions to create your own shapes, or combine other shapes by directly calling their `Draw` functions.  
+
+> [!WARNING]  
+> Don't recursively call `D.raw` from inside of `IDrawable/IDrawableCast.Draw`, as it will cause issues with `FixedUpdate` drawing.
 
 </td></tr></table>
 </details>
@@ -175,6 +184,12 @@ Components to draw physics events and common object attributes.
 | Debug Mesh Normals     | Draws normals for a (read/write) Mesh.              |
 
 </details>
+
+## Drawing from jobs
+Drawing from jobs is supported (parallel, and bursted).  
+Note that drawing from jobs scheduled from a fixed timestep context like `FixedUpdate` or `FixedStepSimulationSystemGroup` is not time-adjusted which may cause flickering based on the framerate,
+you must manually call `DrawPhysicsUtility.GetFixedFrameJobDuration` to get a time-adjusted duration, and pass it to `D.raw` to draw shapes correctly in this context.  
+Calls that are not jobified
 
 ## Installation
 [![openupm](https://img.shields.io/npm/v/com.vertx.debugging?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.vertx.debugging/)
@@ -197,10 +212,7 @@ Components to draw physics events and common object attributes.
 1. Select **Add package by Name** or **Add package from Git URL**.
 1. Enter `com.vertx.debugging`.
 1. Select **Add**.
-  
-> **Note**  
-> This package will benefit from [Burst](https://docs.unity3d.com/Packages/com.unity.burst@latest/), though it's an optional dependency.
-
+1. If Burst is added for the first time or its version is changed you will need to restart Unity.
 </td></tr></table>
   
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z42ZYHB)

@@ -14,10 +14,6 @@ namespace Vertx.Debugging.Editor
 				EditorGUILayout.HelpBox("MeshFilter is not assigned.", MessageType.Warning);
 			else if (meshFilter.sharedMesh == null)
 				EditorGUILayout.HelpBox("MeshFilter has no assigned mesh.", MessageType.Warning);
-#if !UNITY_2020_1_OR_NEWER
-			else if (!meshFilter.sharedMesh.isReadable)
-				EditorGUILayout.HelpBox("Mesh assigned to MeshFilter is not marked as Read/Write.", MessageType.Warning);
-#endif
 		}
 	}
 }

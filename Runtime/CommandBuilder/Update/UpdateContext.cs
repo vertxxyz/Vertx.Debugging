@@ -14,8 +14,7 @@ namespace Vertx.Debugging
 		public enum UpdateState
 		{
 			Update,
-			CapturingGizmos,
-			Ignore
+			CapturingGizmos
 		}
 
 		public static UpdateState State { get; private set; }
@@ -27,6 +26,10 @@ namespace Vertx.Debugging
 				return;
 
 			State = UpdateState.CapturingGizmos;
+			
+			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.State = UnmanagedCommandBuilder.UpdateState.Gizmos;
+			
 			CommandBuilder.Instance.ClearGizmoGroup();
 		}
 
@@ -37,7 +40,12 @@ namespace Vertx.Debugging
 			SceneView.duringSceneGui += OnDuringSceneGUI;
 		}
 
-		public static void ForceStateToUpdate() => State = UpdateState.Update;
+		public static void ForceStateToUpdate()
+		{
+			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.State = UnmanagedCommandBuilder.UpdateState.Update;
+			State = UpdateState.Update;
+		}
 
 		private static void OnDuringSceneGUI(SceneView obj)
 		{
@@ -48,7 +56,8 @@ namespace Vertx.Debugging
 				return;
 			if (State == UpdateState.CapturingGizmos)
 				CommandBuilder.Instance.RenderGizmosGroup(true);
-			State = UpdateState.Update;
+
+			ForceStateToUpdate();
 		}
 
 		public static void OnGUI()
@@ -62,8 +71,8 @@ namespace Vertx.Debugging
 			
 			if (State == UpdateState.CapturingGizmos)
 				CommandBuilder.Instance.RenderGizmosGroup(false);
-			
-			State = UpdateState.Update;
+
+			ForceStateToUpdate();
 		}
 	}
 }
