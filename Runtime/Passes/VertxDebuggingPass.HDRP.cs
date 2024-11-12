@@ -14,10 +14,10 @@ namespace Vertx.Debugging
 
 #if VERTX_HDRP_9_0_OR_NEWER
 		protected override void Execute(CustomPassContext context)
-			=> CommandBuilder.Instance.ExecuteDrawRenderPass(context.renderContext, context.cmd, context.hdCamera.camera);
+			=> CommandBuilder.Instance.ExecuteDrawRenderPass(context.cmd, context.hdCamera.camera);
 #else
 		protected override void Execute(ScriptableRenderContext context, CommandBuffer cmd, HDCamera camera, CullingResults cullingResult)
-			=> CommandBuilder.Instance.ExecuteDrawRenderPass(context, cmd, renderingData.cameraData.camera);
+			=> CommandBuilder.Instance.ExecuteDrawRenderPass(cmd, renderingData.cameraData.camera);
 #endif
 
 		protected override void Cleanup() { }

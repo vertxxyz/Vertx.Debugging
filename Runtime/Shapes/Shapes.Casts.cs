@@ -1,4 +1,5 @@
 #if VERTX_PHYSICS
+using Unity.Mathematics;
 using UnityEngine;
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
 // ReSharper disable MemberCanBePrivate.Global
@@ -13,28 +14,34 @@ namespace Vertx.Debugging
 			public readonly Ray Ray;
 			public readonly RaycastHit? Hit;
 
-			public Raycast(Vector3 origin, Vector3 direction, RaycastHit? hit, float distance = Mathf.Infinity)
+			public Raycast(float3 origin, float3 direction, RaycastHit? hit, float distance = math.INFINITY)
 			{
 				Ray = new Ray(origin, direction, distance);
 				Hit = hit;
 			}
 
-			public Raycast(UnityEngine.Ray ray, RaycastHit? hit, float distance = Mathf.Infinity) : this(ray.origin, ray.direction, hit, distance) { }
+			public Raycast(UnityEngine.Ray ray, RaycastHit? hit, float distance = math.INFINITY) : this(ray.origin, ray.direction, hit, distance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				Ray.Draw(commandBuilder, castColor, duration);
+				commandBuilder.AppendRay(Ray, castColor, duration);
 				if (Hit.HasValue)
-					new SurfacePoint(Hit.Value.point, Hit.Value.normal).Draw(commandBuilder, hitColor, duration);
+					new SurfacePoint(Hit.Value.point, Hit.Value.normal).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -44,26 +51,32 @@ namespace Vertx.Debugging
 			public readonly Line Line;
 			public readonly RaycastHit? Hit;
 
-			public Linecast(Vector3 start, Vector3 end, RaycastHit? hit)
+			public Linecast(float3 start, float3 end, RaycastHit? hit)
 			{
 				Line = new Line(start, end);
 				Hit = hit;
 			}
 			
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				Line.Draw(commandBuilder, castColor, duration);
+				commandBuilder.AppendLine(Line, castColor, duration);
 				if (Hit.HasValue)
-					new SurfacePoint(Hit.Value.point, Hit.Value.normal).Draw(commandBuilder, hitColor, duration);
+					new SurfacePoint(Hit.Value.point, Hit.Value.normal).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -74,36 +87,42 @@ namespace Vertx.Debugging
 			public readonly RaycastHit[] Results;
 			public readonly int ResultCount;
 
-			public RaycastAll(Vector3 origin, Vector3 direction, RaycastHit[] results, int resultCount, float distance = Mathf.Infinity)
+			public RaycastAll(float3 origin, float3 direction, RaycastHit[] results, int resultCount, float distance = math.INFINITY)
 			{
-				direction.EnsureNormalized();
+				direction = math.normalizesafe(direction);
 				Ray = new Ray(origin, direction, distance);
 				Results = results;
 				ResultCount = resultCount;
 			}
 
-			public RaycastAll(Vector3 origin, Vector3 direction, RaycastHit[] results, float distance = Mathf.Infinity) : this(origin, direction, results, results.Length, distance) { }
+			public RaycastAll(float3 origin, float3 direction, RaycastHit[] results, float distance = math.INFINITY) : this(origin, direction, results, results.Length, distance) { }
 
-			public RaycastAll(UnityEngine.Ray ray, RaycastHit[] results, int resultCount, float distance = Mathf.Infinity) : this(ray.origin, ray.direction, results, resultCount, distance) { }
+			public RaycastAll(UnityEngine.Ray ray, RaycastHit[] results, int resultCount, float distance = math.INFINITY) : this(ray.origin, ray.direction, results, resultCount, distance) { }
 
-			public RaycastAll(UnityEngine.Ray ray, RaycastHit[] results, float distance = Mathf.Infinity) : this(ray, results, results.Length, distance) { }
+			public RaycastAll(UnityEngine.Ray ray, RaycastHit[] results, float distance = math.INFINITY) : this(ray, results, results.Length, distance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				Ray.Draw(commandBuilder, castColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				commandBuilder.AppendRay(Ray, castColor, duration);
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
-					new SurfacePoint(result.point, result.normal).Draw(commandBuilder, hitColor, duration);
+					new SurfacePoint(result.point, result.normal).Draw(ref commandBuilder, hitColor, duration);
 				}
 			}
 #endif
@@ -112,13 +131,13 @@ namespace Vertx.Debugging
 		public readonly struct SphereCast : IDrawableCast
 		{
 			// Not using a Sphere because it has unnecessary overhead baked into the orientation.
-			public readonly Vector3 Origin;
+			public readonly float3 Origin;
 			public readonly float Radius;
-			public readonly Vector3 Direction;
+			public readonly float3 Direction;
 			public readonly float MaxDistance;
 			public readonly RaycastHit? Hit;
 
-			public SphereCast(Vector3 origin, float radius, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
+			public SphereCast(float3 origin, float radius, float3 direction, RaycastHit? hit, float maxDistance = math.INFINITY)
 			{
 				Origin = origin;
 				direction.EnsureNormalized();
@@ -128,28 +147,34 @@ namespace Vertx.Debugging
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
 
-			public SphereCast(UnityEngine.Ray ray, float radius, RaycastHit? hit, float maxDistance = Mathf.Infinity) : this(ray.origin, radius, ray.direction, hit, maxDistance) { }
+			public SphereCast(UnityEngine.Ray ray, float radius, RaycastHit? hit, float maxDistance = math.INFINITY) : this(ray.origin, radius, ray.direction, hit, maxDistance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				Quaternion orientation = Quaternion.LookRotation(Direction);
-				new Sphere(Origin, orientation, Radius).Draw(commandBuilder, castColor, duration);
-				Vector3 endPos = Origin + Direction * MaxDistance;
-				new Hemisphere(endPos, orientation, Radius).Draw(commandBuilder, castColor, duration);
+				quaternion orientation = quaternion.LookRotation(Direction, new float3(0, 1, 0));
+				new Sphere(Origin, orientation, Radius).Draw(ref commandBuilder, castColor, duration, Axes.X | Axes.Z);
+				float3 endPos = Origin + Direction * MaxDistance;
+				new Hemisphere(endPos, orientation, Radius).Draw(ref commandBuilder, castColor, duration);
 
 				commandBuilder.AppendOutline(new Outline(Origin, endPos, Radius), castColor, duration);
 				commandBuilder.AppendOutline(new Outline(endPos, Origin, Radius), castColor, duration);
 				if (Hit.HasValue)
-					new Sphere(Origin + Direction * Hit.Value.distance, Quaternion.LookRotation(Hit.Value.normal), Radius).Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);
+					new Sphere(Origin + Direction * Hit.Value.distance, quaternion.LookRotation(Hit.Value.normal, new float3(0, 1, 0)), Radius).Draw(ref commandBuilder, hitColor, duration, Axes.X | Axes.Z);
 			}
 #endif
 		}
@@ -157,14 +182,14 @@ namespace Vertx.Debugging
 		public readonly struct SphereCastAll : IDrawableCast
 		{
 			// Not using a Sphere because it has unnecessary overhead baked into the orientation.
-			public readonly Vector3 Origin;
+			public readonly float3 Origin;
 			public readonly float Radius;
-			public readonly Vector3 Direction;
+			public readonly float3 Direction;
 			public readonly float MaxDistance;
 			public readonly RaycastHit[] Results;
 			public readonly int ResultCount;
 
-			public SphereCastAll(Vector3 origin, float radius, Vector3 direction, RaycastHit[] results, int resultCount, float maxDistance = Mathf.Infinity)
+			public SphereCastAll(float3 origin, float radius, float3 direction, RaycastHit[] results, int resultCount, float maxDistance = math.INFINITY)
 			{
 				Origin = origin;
 				direction.EnsureNormalized();
@@ -175,29 +200,35 @@ namespace Vertx.Debugging
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
 
-			public SphereCastAll(Vector3 origin, float radius, Vector3 direction, RaycastHit[] results, float maxDistance = Mathf.Infinity) : this(origin, radius, direction, results, results.Length, maxDistance) { }
+			public SphereCastAll(float3 origin, float radius, float3 direction, RaycastHit[] results, float maxDistance = math.INFINITY) : this(origin, radius, direction, results, results.Length, maxDistance) { }
 
-			public SphereCastAll(UnityEngine.Ray ray, float radius, RaycastHit[] results, int resultCount, float distance = Mathf.Infinity) : this(ray.origin, radius, ray.direction, results, resultCount, distance) { }
+			public SphereCastAll(UnityEngine.Ray ray, float radius, RaycastHit[] results, int resultCount, float distance = math.INFINITY) : this(ray.origin, radius, ray.direction, results, resultCount, distance) { }
 
-			public SphereCastAll(UnityEngine.Ray ray, float radius, RaycastHit[] results, float distance = Mathf.Infinity) : this(ray, radius, results, results.Length, distance) { }
+			public SphereCastAll(UnityEngine.Ray ray, float radius, RaycastHit[] results, float distance = math.INFINITY) : this(ray, radius, results, results.Length, distance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				new SphereCast(Origin, Radius, Direction, null, MaxDistance).Draw(commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				new SphereCast(Origin, Radius, Direction, null, MaxDistance).Draw(ref commandBuilder, castColor, hitColor, duration);
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
-					new Sphere(Origin + Direction * result.distance, Quaternion.LookRotation(result.normal), Radius)
-						.Draw(commandBuilder, hitColor, duration, Axes.X | Axes.Z);
+					new Sphere(Origin + Direction * result.distance, quaternion.LookRotation(result.normal, new float3(0, 1, 0)), Radius)
+						.Draw(ref commandBuilder, hitColor, duration, Axes.X | Axes.Z);
 				}
 			}
 #endif
@@ -206,11 +237,11 @@ namespace Vertx.Debugging
 		public readonly struct BoxCast : IDrawableCast
 		{
 			public readonly Box Box;
-			public readonly Vector3 Direction;
+			public readonly float3 Direction;
 			public readonly float MaxDistance;
 			public readonly RaycastHit? Hit;
 
-			public BoxCast(Box box, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
+			public BoxCast(Box box, float3 direction, RaycastHit? hit, float maxDistance = math.INFINITY)
 			{
 				Box = box;
 				Direction = direction;
@@ -218,40 +249,48 @@ namespace Vertx.Debugging
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
 
-			public BoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit? hit, Quaternion orientation, float maxDistance = Mathf.Infinity)
+			public BoxCast(float3 center, float3 halfExtents, float3 direction, RaycastHit? hit, quaternion orientation, float maxDistance = math.INFINITY)
 				: this(new Box(center, halfExtents, orientation), direction, hit, maxDistance) { }
 
-			public BoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
-				: this(center, halfExtents, direction, hit, Quaternion.identity, maxDistance) { }
+			public BoxCast(float3 center, float3 halfExtents, float3 direction, RaycastHit? hit, float maxDistance = math.INFINITY)
+				: this(center, halfExtents, direction, hit, quaternion.identity, maxDistance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				Box.Draw(commandBuilder, castColor, duration);
+				Box.Draw(ref commandBuilder, castColor, duration);
 				if (Hit.HasValue)
-					Box.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
+					Box.GetTranslated(Direction * Hit.Value.distance).Draw(ref commandBuilder, hitColor, duration);
 
-				Vector3 offset = Direction * MaxDistance;
+				float3 offset = Direction * MaxDistance;
 				
 				// Draw connectors
-				Matrix4x4 boxMatrix = Box.Matrix;
-				Vector3 position = boxMatrix.MultiplyPoint3x4(Vector3.zero);
-				Vector3 up = boxMatrix.MultiplyPoint3x4(new Vector3(0, 1, 0)) - position;
-				Vector3 right = boxMatrix.MultiplyPoint3x4(new Vector3(1, 0, 0)) - position;
-				Vector3 forward = boxMatrix.MultiplyPoint3x4(new Vector3(0, 0, 1)) - position;
+				float4x4 boxMatrix = Box.Matrix;
+				float3 position = boxMatrix.MultiplyPoint3x4(float3.zero);
+				float3 up = boxMatrix.MultiplyPoint3x4(new float3(0, 1, 0)) - position;
+				float3 right = boxMatrix.MultiplyPoint3x4(new float3(1, 0, 0)) - position;
+				float3 forward = boxMatrix.MultiplyPoint3x4(new float3(0, 0, 1)) - position;
 
+				
+				
 				BoxUtility.Direction direction = BoxUtility.ConstructDirection(
-					Vector3.Dot(right, Direction),
-					Vector3.Dot(up, Direction),
-					Vector3.Dot(forward, Direction)
+					math.dot(right, Direction),
+					math.dot(up, Direction),
+					math.dot(forward, Direction)
 				);
 
 				/*foreach (var point in BoxUtility.Points)
@@ -262,20 +301,20 @@ namespace Vertx.Debugging
 					int count = BoxUtility.CountDirections(matchedDirections);
 					if (count != 1 && count != 2)
 						continue;
-					Vector3 coordinate = Box.Matrix.MultiplyPoint3x4(point.Coordinate) - position;
+					float3 coordinate = Box.Matrix.MultiplyPoint3x4(point.Coordinate) - position;
 					commandBuilder.AppendOutline(new Outline(position, offset, coordinate), castColor, duration, DrawModifications.Custom2);
 				}*/
 				commandBuilder.AppendCast(new Cast(boxMatrix, offset), castColor, duration);
 				
 				// Draw box end
-				Matrix4x4 boxEnd = Box.GetTranslated(offset).Matrix;
+				float4x4 boxEnd = Box.GetTranslated(offset).Matrix;
 				foreach (var edge in BoxUtility.Edges)
 				{
 					BoxUtility.Direction matchedDirections = edge.Direction & direction;
 					if (matchedDirections == 0)
 						continue;
-					Vector3 a = boxEnd.MultiplyPoint3x4(edge.A);
-					Vector3 b = boxEnd.MultiplyPoint3x4(edge.B);
+					float3 a = boxEnd.MultiplyPoint3x4(edge.A);
+					float3 b = boxEnd.MultiplyPoint3x4(edge.B);
 					commandBuilder.AppendOutline(new Outline(a, b, boxEnd.MultiplyVector(edge.A + edge.B)), castColor, duration, DrawModifications.Custom2);
 				}
 			}
@@ -285,12 +324,12 @@ namespace Vertx.Debugging
 		public readonly struct BoxCastAll : IDrawableCast
 		{
 			public readonly Box Box;
-			public readonly Vector3 Direction;
+			public readonly float3 Direction;
 			public readonly float MaxDistance;
 			public readonly RaycastHit[] Results;
 			public readonly int ResultCount;
 
-			public BoxCastAll(Box box, Vector3 direction, RaycastHit[] results, int count, float maxDistance = Mathf.Infinity)
+			public BoxCastAll(Box box, float3 direction, RaycastHit[] results, int count, float maxDistance = math.INFINITY)
 			{
 				Box = box;
 				Direction = direction;
@@ -299,34 +338,40 @@ namespace Vertx.Debugging
 				MaxDistance = GetClampedMaxDistance(maxDistance);
 			}
 
-			public BoxCastAll(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] results, int count, Quaternion orientation, float maxDistance = Mathf.Infinity)
+			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, int count, quaternion orientation, float maxDistance = math.INFINITY)
 				: this(new Box(center, halfExtents, orientation), direction, results, count, maxDistance) { }
 
-			public BoxCastAll(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] results, int count, float maxDistance = Mathf.Infinity)
-				: this(center, halfExtents, direction, results, count, Quaternion.identity, maxDistance) { }
+			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, int count, float maxDistance = math.INFINITY)
+				: this(center, halfExtents, direction, results, count, quaternion.identity, maxDistance) { }
 
-			public BoxCastAll(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] results, Quaternion orientation, float maxDistance = Mathf.Infinity)
+			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, quaternion orientation, float maxDistance = math.INFINITY)
 				: this(center, halfExtents, direction, results, results.Length, orientation, maxDistance) { }
 
-			public BoxCastAll(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] results, float maxDistance = Mathf.Infinity)
-				: this(center, halfExtents, direction, results, results.Length, Quaternion.identity, maxDistance) { }
+			public BoxCastAll(float3 center, float3 halfExtents, float3 direction, RaycastHit[] results, float maxDistance = math.INFINITY)
+				: this(center, halfExtents, direction, results, results.Length, quaternion.identity, maxDistance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				new BoxCast(Box, Direction, null, MaxDistance).Draw(commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				new BoxCast(Box, Direction, null, MaxDistance).Draw(ref commandBuilder, castColor, hitColor, duration);
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
-					Box.GetTranslated(Direction * result.distance).Draw(commandBuilder, hitColor, duration);
+					Box.GetTranslated(Direction * result.distance).Draw(ref commandBuilder, hitColor, duration);
 				}
 			}
 #endif
@@ -335,11 +380,11 @@ namespace Vertx.Debugging
 		public readonly struct CapsuleCast : IDrawableCast
 		{
 			public readonly Capsule Capsule;
-			public readonly Vector3 Direction;
+			public readonly float3 Direction;
 			public readonly float MaxDistance;
 			public readonly RaycastHit? Hit;
 
-			public CapsuleCast(Capsule capsule, Vector3 direction, RaycastHit? hit, float maxDistance = Mathf.Infinity)
+			public CapsuleCast(Capsule capsule, float3 direction, RaycastHit? hit, float maxDistance = math.INFINITY)
 			{
 				Capsule = capsule;
 				Direction = direction;
@@ -348,27 +393,33 @@ namespace Vertx.Debugging
 			}
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				Capsule.Draw(commandBuilder, castColor, duration);
+				Capsule.Draw(ref commandBuilder, castColor, duration);
 				Capsule endCapsule = Capsule.GetTranslated(Direction * MaxDistance);
-				endCapsule.Draw(commandBuilder, castColor, duration);
-				Vector3 radiusA = (Capsule.SpherePosition1 - Capsule.SpherePosition2).normalized * Capsule.Radius;
-				Vector3 radiusB = -radiusA;
+				endCapsule.Draw(ref commandBuilder, castColor, duration);
+				float3 radiusA = math.normalizesafe(Capsule.SpherePosition1 - Capsule.SpherePosition2) * Capsule.Radius;
+				float3 radiusB = -radiusA;
 				commandBuilder.AppendOutline(new Outline(Capsule.SpherePosition1, endCapsule.SpherePosition1, radiusA), castColor, duration, DrawModifications.Custom);
 				commandBuilder.AppendOutline(new Outline(endCapsule.SpherePosition1, Capsule.SpherePosition1, radiusA), castColor, duration, DrawModifications.Custom);
 				commandBuilder.AppendOutline(new Outline(endCapsule.SpherePosition2, Capsule.SpherePosition2, radiusB), castColor, duration, DrawModifications.Custom);
 				commandBuilder.AppendOutline(new Outline(Capsule.SpherePosition2, endCapsule.SpherePosition2, radiusB), castColor, duration, DrawModifications.Custom);
 				if (Hit.HasValue)
-					Capsule.GetTranslated(Direction * Hit.Value.distance).Draw(commandBuilder, hitColor, duration);
+					Capsule.GetTranslated(Direction * Hit.Value.distance).Draw(ref commandBuilder, hitColor, duration);
 			}
 #endif
 		}
@@ -377,12 +428,12 @@ namespace Vertx.Debugging
 		public readonly struct CapsuleCastAll : IDrawableCast
 		{
 			public readonly Capsule Capsule;
-			public readonly Vector3 Direction;
+			public readonly float3 Direction;
 			public readonly float MaxDistance;
 			public readonly RaycastHit[] Results;
 			public readonly int ResultCount;
 
-			public CapsuleCastAll(Capsule capsule, Vector3 direction, RaycastHit[] results, int count, float maxDistance = Mathf.Infinity)
+			public CapsuleCastAll(Capsule capsule, float3 direction, RaycastHit[] results, int count, float maxDistance = math.INFINITY)
 			{
 				Capsule = capsule;
 				Direction = direction;
@@ -391,25 +442,31 @@ namespace Vertx.Debugging
 				MaxDistance = maxDistance;
 			}
 
-			public CapsuleCastAll(Capsule capsule, Vector3 direction, RaycastHit[] results, float maxDistance = Mathf.Infinity)
+			public CapsuleCastAll(Capsule capsule, float3 direction, RaycastHit[] results, float maxDistance = math.INFINITY)
 				: this(capsule, direction, results, results.Length, maxDistance) { }
 
 #if UNITY_EDITOR
-			public void Draw(CommandBuilder commandBuilder, Color color, float duration)
+			void IDrawable.Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
+				=> Draw(ref commandBuilder, color, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color color, float duration)
 			{
 				if (IsWhite(color))
-					Draw(commandBuilder, CastColor, HitColor, duration);
+					Draw(ref commandBuilder, CastColor, HitColor, duration);
 				else
-					Draw(commandBuilder, color, color, duration);
+					Draw(ref commandBuilder, color, color, duration);
 			}
 
-			public void Draw(CommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+			void IDrawableCast.Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
+				=> Draw(ref commandBuilder, castColor, hitColor, duration);
+			
+			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				new CapsuleCast(Capsule, Direction, null, MaxDistance).Draw(commandBuilder, castColor, hitColor, duration);
-				for (int i = 0; i < ResultCount; i++)
+				new CapsuleCast(Capsule, Direction, null, MaxDistance).Draw(ref commandBuilder, castColor, hitColor, duration);
+				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
-					Capsule.GetTranslated(Direction * result.distance).Draw(commandBuilder, hitColor, duration);
+					Capsule.GetTranslated(Direction * result.distance).Draw(ref commandBuilder, hitColor, duration);
 				}
 			}
 #endif

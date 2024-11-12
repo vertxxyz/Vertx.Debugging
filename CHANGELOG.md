@@ -4,10 +4,36 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [3.0.0]
+### Changed
+- Minimum Unity version is 2022.3.
+- Added dependencies on `com.unity.burst` and `com.unity.mathematics`.
+- Only the API surface is now public. If you want to extend the package use Assembly References.
+- Shapes are now pre-allocated. Change the number of allocations via the Project Settings.
+- Axis colors are now in Preferences.
+- `DashedLine` is now backed by `Line` instead of two Vector3s.
+
+### Improved
+- Added support for drawing from Jobs and Burst-compiled functions.
+
+### Added
+- Added `[ExecuteAlways]` to Debug Collision/Trigger Events to support visualising during `Physics.Simulate`.
+- Added `RaycastHit` and `RaycastHit2D` constructors to `Shape.Ray`.
+- Added `DrawPhysicsUtility.GetFixedFrameJobDuration` for getting a corrected duration for jobs started from `FixedUpdate` or `FixedStepSimulationSystemGroup`.
+- Added `Shape.Catenary`.
+- Added arrowhead scale parameter to arrow functions.
+- Added overloads to `Arc` and `Annulus` that take a From and To angle.
+
+### Fixed
+- Fixed `D.raw(MeshCollider)` not respecting `color` and `duration`.
+
+### Removed
+- Removed the internal `CircleCache` class. If your extensions relied on it, sorry, it was removed for burst compatibility.
+
 ## [2.3.0]
 ### Added
-- Added FieldOfView.
-- Added Flip functions to Cone and Pyramid
+- Added `Shape.FieldOfView`.
+- Added a `Flip` function to `Shape.Cone` and `Pyramid`.
 
 ### Fixed
 - Added missing axis support for CapsuleCollider drawing.
