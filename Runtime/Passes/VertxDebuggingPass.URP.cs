@@ -50,6 +50,13 @@ namespace Vertx.Debugging
 			{
 				var cameraData = frameData.Get<UniversalCameraData>();
 				var resourceData = frameData.Get<UniversalResourceData>();
+
+				if (!resourceData.activeColorTexture.IsValid())
+				{
+					// https://github.com/vertxxyz/Vertx.Debugging/issues/44
+					return;
+				}
+				
 				passData.Camera = cameraData.camera;
 				passData.Wrappers = s_wrappers;
 				passData.Color = resourceData.activeColorTexture;
@@ -61,7 +68,7 @@ namespace Vertx.Debugging
 				builder.UseBuffer(boxesHandle, AccessFlags.ReadWrite);
 				builder.UseBuffer(outlinesHandle, AccessFlags.ReadWrite);
 				builder.UseBuffer(castsHandle, AccessFlags.ReadWrite);
-
+				
 				builder.UseTexture(passData.Color, AccessFlags.Write);
 				builder.UseTexture(passData.Depth, AccessFlags.ReadWrite);
 

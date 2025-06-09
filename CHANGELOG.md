@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Internal visibility to assemblies named "Vertx.Debugging.Runtime.Extensions".
 
+### Fixed
+- Prevented an invalid resource exception when rendering in a context with no color buffer.
+
 ## [3.0.0]
 ### Changed
 - Minimum Unity version is 2022.3.
