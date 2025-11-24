@@ -71,6 +71,9 @@ using Physics = Vertx.Debugging.DrawPhysics;
 </details>
 
 > [!NOTE]  
+> Gizmos must be enabled in the view.  
+> 3D gizmos support fading, but may be inconsistent between Unity versions.
+> 
 > If you find you have rendering issues like upside-down depth testing, or artifacts in the game view: This is a Unity bug.  
 > You can disable Depth Write and Depth Test in the problematic view using the settings in **Project Settings > Vertx > Debugging**.  
 > If you're on a version of Unity where the settings UI doesn't work, it's another Unity bug, thanks Unity!
@@ -158,9 +161,11 @@ using static Vertx.Debugging.Shape;
 
 ### Extensions
   
-1. Use Assembly Definition References to add a class to the runtime assembly.
-2. The `Shape` class is partial. You can add `IDrawable` or `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
-3. Use the `UnmanagedCommandBuilder` `Append` functions to create your own shapes, or combine other shapes by directly calling their `Draw` functions.  
+1. Reference the runtime assembly by either:
+    - Using Assembly Definition References to add a class to the runtime assembly.
+    - Creating an Assembly Definition named "Vertx.Debugging.Runtime.Extensions" and referencing `Vertx.Debugging.Runtime`.
+1. The `Shape` class is partial. You can add `IDrawable` or `IDrawableCast` structs to the class, which will be compatible with `D.raw<T>(T shape)`.  
+1. Use the `UnmanagedCommandBuilder` `Append` functions to create your own shapes, or combine other shapes by directly calling their `Draw` functions.  
 
 > [!WARNING]  
 > Don't recursively call `D.raw` from inside of `IDrawable/IDrawableCast.Draw`, as it will cause issues with `FixedUpdate` drawing.
@@ -189,7 +194,6 @@ Components to draw physics events and common object attributes.
 Drawing from jobs is supported (parallel, and bursted).  
 Note that drawing from jobs scheduled from a fixed timestep context like `FixedUpdate` or `FixedStepSimulationSystemGroup` is not time-adjusted which may cause flickering based on the framerate,
 you must manually call `DrawPhysicsUtility.GetFixedFrameJobDuration` to get a time-adjusted duration, and pass it to `D.raw` to draw shapes correctly in this context.  
-Calls that are not jobified
 
 ## Installation
 [![openupm](https://img.shields.io/npm/v/com.vertx.debugging?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.vertx.debugging/)

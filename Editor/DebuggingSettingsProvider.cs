@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.Collections.LowLevel.Unsafe;
@@ -12,7 +11,7 @@ using UnityEngine.UIElements;
 
 namespace Vertx.Debugging
 {
-	internal class DebuggingSettingsProvider : SettingsProvider
+	internal sealed class DebuggingSettingsProvider : SettingsProvider
 	{
 		private SerializedObject _serializedObject;
 		private SerializedProperty
@@ -199,4 +198,3 @@ namespace Vertx.Debugging
 		}
 	}
 }
-#endif

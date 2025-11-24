@@ -113,7 +113,7 @@ namespace Vertx.Debugging
 			if (gizmosMatrix == Matrix4x4.identity)
 				return;
 			float4x4 matrix = gizmosMatrix;
-			outline = new Shape.Outline(matrix.MultiplyPoint3x4(outline.A), matrix.MultiplyPoint3x4(outline.B), matrix.MultiplyPoint3x4(outline.C));
+			outline = new Shape.Outline(matrix.MultiplyPoint3x4(outline.A), matrix.MultiplyPoint3x4(outline.B), matrix.MultiplyVector(outline.C));
 		}
 
 		[BurstDiscard]

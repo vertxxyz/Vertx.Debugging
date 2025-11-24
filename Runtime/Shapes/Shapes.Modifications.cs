@@ -40,8 +40,8 @@ namespace Vertx.Debugging
 			res.z = c0[2] * point.x + c1[2] * point.y + c2[2] * point.z + c3[2];
 			return res;
 		}
-        
-		private static float3 MultiplyVector(this float4x4 matrix, float3 vector)
+
+		internal static float3 MultiplyVector(this float4x4 matrix, float3 vector)
 		{
 			float3 res;
 			float4 c0 = matrix.c0;

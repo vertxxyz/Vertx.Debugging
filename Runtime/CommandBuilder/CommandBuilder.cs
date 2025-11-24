@@ -48,9 +48,7 @@ namespace Vertx.Debugging
 		private VertxDebuggingRenderPass _pass;
 #endif
 		private Camera _lastRenderingCamera;
-
-		private bool _disposeIsQueued;
-
+		
 		// Application.isPlaying, but without the native code transition.
 		private bool _isPlaying;
 
@@ -353,8 +351,7 @@ namespace Vertx.Debugging
 		/// </summary>
 		private void InitialiseDisposal()
 		{
-			if (_disposeIsQueued) return;
-			_disposeIsQueued = true;
+			AssemblyReloadEvents.beforeAssemblyReload -= Dispose;
 			AssemblyReloadEvents.beforeAssemblyReload += Dispose;
 		}
 
