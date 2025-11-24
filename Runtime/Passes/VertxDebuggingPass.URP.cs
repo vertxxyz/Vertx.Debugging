@@ -27,7 +27,7 @@ namespace Vertx.Debugging
 		private class PassData
 		{
 			public Camera Camera;
-
+ 
 			public Stack<UnsafeCommandBufferWrapper> Wrappers;
 			public TextureHandle Color;
 			public TextureHandle Depth;
@@ -89,6 +89,7 @@ namespace Vertx.Debugging
 		}
 #endif
 
+#if !VERTX_CORERP_17_4_0_OR_NEWER
 		/// <summary>
 		/// This method is called by the renderer before executing the render pass.
 		/// Override this method if you need to to configure render targets and their clear state, and to create temporary render target textures.
@@ -123,6 +124,7 @@ namespace Vertx.Debugging
 		public override void FrameCleanup(CommandBuffer cmd)
 		{
 		}
+#endif
 	}
 }
 #endif
