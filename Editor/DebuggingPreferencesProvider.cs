@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
@@ -10,7 +9,7 @@ using UnityEngine.UIElements;
 
 namespace Vertx.Debugging
 {
-	internal class DebuggingPreferencesProvider : SettingsProvider
+	internal sealed class DebuggingPreferencesProvider : SettingsProvider
 	{
 		private SerializedObject _serializedObject;
 		private SerializedProperty _colors;
@@ -93,4 +92,3 @@ namespace Vertx.Debugging
 		}
 	}
 }
-#endif
