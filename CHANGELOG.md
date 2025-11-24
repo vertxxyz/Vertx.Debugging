@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Fixed certain shape (capsule for example) outlines disconnecting when using Gizmos.matrix.
 - Prevented an invalid resource exception when rendering in a context with no color buffer.
+- Compatibility issues with URP 17.4.
 
 ## [3.0.0]
 ### Changed
