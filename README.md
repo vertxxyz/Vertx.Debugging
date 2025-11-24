@@ -89,10 +89,10 @@ using static Vertx.Debugging.Shape;
 <summary>Shape list</summary>
 
 ### General
-| Name         | Description                                                                                                                                       |
-|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Text`       | A label in the scene at the provided position. (Text respects 3D gizmo fade distance)                                                             |
-| `ScreenText` | A label in the top left of the view.<br>Draws using an [Overlay](https://docs.unity3d.com/Manual/overlays.html) in the Scene view when available. |
+| Name         | Description                                                                                                                                                                                |
+|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Text`       | A label in the scene at the provided position. (Text respects 3D gizmo fade distance)<br/>**Not currently supported in jobs.**                                                             |
+| `ScreenText` | A label in the top left of the view.<br>Draws using an [Overlay](https://docs.unity3d.com/Manual/overlays.html) in the Scene view when available.<br/>**Not currently supported in jobs.** |
 
 
 ### 3D
@@ -191,7 +191,8 @@ Components to draw physics events and common object attributes.
 </details>
 
 ## Drawing from jobs
-Drawing from jobs is supported (parallel, and bursted).  
+Drawing shapes **other than text** from jobs is supported (parallel, and bursted).  
+
 Note that drawing from jobs scheduled from a fixed timestep context like `FixedUpdate` or `FixedStepSimulationSystemGroup` is not time-adjusted which may cause flickering based on the framerate,
 you must manually call `DrawPhysicsUtility.GetFixedFrameJobDuration` to get a time-adjusted duration, and pass it to `D.raw` to draw shapes correctly in this context.  
 
