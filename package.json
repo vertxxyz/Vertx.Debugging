@@ -1,7 +1,7 @@
 {
   "name": "com.vertx.debugging",
   "displayName": "Debugging",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "unity": "2022.2",
   "description": "Fast editor debugging and gizmo utilities.\n\n★ Donations help support the development of packages like these ★\n",
   "author": {

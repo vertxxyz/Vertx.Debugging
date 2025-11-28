@@ -19,8 +19,10 @@ namespace Vertx.Debugging
 
 		public static UpdateState State { get; private set; }
 
-		[DrawGizmo((GizmoType)int.MaxValue)]
-		private static void OnDrawGizmos(Transform transform, GizmoType type)
+		[DrawGizmo((GizmoType)~0)]
+		// NOTE: This used to use Transform, as every scene has a Transform. But this caused a performance issue (#48).
+		// Not every scene has a Camera, but this will have to do.
+		private static void OnDrawGizmos(Camera camera, GizmoType type)
 		{
 			if (State == UpdateState.CapturingGizmos)
 				return;
