@@ -166,15 +166,20 @@ namespace Vertx.Debugging
 			
 			internal void Draw(ref UnmanagedCommandBuilder commandBuilder, Color castColor, Color hitColor, float duration)
 			{
-				quaternion orientation = quaternion.LookRotation(Direction, new float3(0, 1, 0));
-				new Sphere(Origin, orientation, Radius).Draw(ref commandBuilder, castColor, duration, Axes.X | Axes.Z);
+				quaternion orientation = quaternion.LookRotation(Direction, GetValidPerpendicular(Direction));
+				new Sphere(Origin, orientation, Radius)
+					.Draw(ref commandBuilder, castColor, duration, Axes.X | Axes.Z);
 				float3 endPos = Origin + Direction * MaxDistance;
 				new Hemisphere(endPos, orientation, Radius).Draw(ref commandBuilder, castColor, duration);
 
 				commandBuilder.AppendOutline(new Outline(Origin, endPos, Radius), castColor, duration);
 				commandBuilder.AppendOutline(new Outline(endPos, Origin, Radius), castColor, duration);
 				if (Hit.HasValue)
-					new Sphere(Origin + Direction * Hit.Value.distance, quaternion.LookRotation(Hit.Value.normal, new float3(0, 1, 0)), Radius).Draw(ref commandBuilder, hitColor, duration, Axes.X | Axes.Z);
+				{
+					float3 normal = Hit.Value.normal;
+					new Sphere(Origin + Direction * Hit.Value.distance, quaternion.LookRotation(normal, GetValidPerpendicular(normal)), Radius)
+						.Draw(ref commandBuilder, hitColor, duration, Axes.X | Axes.Z);
+				}
 			}
 #endif
 		}
@@ -227,7 +232,7 @@ namespace Vertx.Debugging
 				for (var i = 0; i < ResultCount; i++)
 				{
 					RaycastHit result = Results[i];
-					new Sphere(Origin + Direction * result.distance, quaternion.LookRotation(result.normal, new float3(0, 1, 0)), Radius)
+					new Sphere(Origin + Direction * result.distance, quaternion.LookRotation(result.normal, GetValidPerpendicular(result.normal)), Radius)
 						.Draw(ref commandBuilder, hitColor, duration, Axes.X | Axes.Z);
 				}
 			}
