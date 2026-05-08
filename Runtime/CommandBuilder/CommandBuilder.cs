@@ -116,6 +116,9 @@ namespace Vertx.Debugging
 
 		private void OnBeginContextRendering(ScriptableRenderContext context, List<Camera> cameras)
 		{
+			ClearGizmoGroup();
+			UpdateContext.ForceStateToGizmos();
+			
 #if VERTX_URP
 			if (RenderPipelineUtility.Pipeline != CurrentPipeline.URP)
 				return;
@@ -143,6 +146,8 @@ namespace Vertx.Debugging
 			{
 				RenderGizmosGroup(camera, SceneView.currentDrawingSceneView != null ? RenderingType.Scene : RenderingType.Game);
 			}
+			
+			UpdateContext.ForceStateToUpdate();
 		}
 
 		private void OnPostRender(Camera camera)
@@ -212,7 +217,7 @@ namespace Vertx.Debugging
 			Graphics.ExecuteCommandBuffer(_gizmosGroup.BuiltInCommandBuffer.CommandBuffer);
 		}
 
-		internal void ClearGizmoGroup()
+		private void ClearGizmoGroup()
 		{
 			_gizmosGroup.Clear();
 			UnmanagedCommandBuilder.Instance.Data.Gizmos.Clear();
@@ -242,8 +247,6 @@ namespace Vertx.Debugging
 		{
 			_pauseCapture.CommitCurrentPausedFrame();
 			_lastRenderingCamera = camera;
-			UpdateContext.ForceStateToUpdate();
-
 			if (!ShouldRenderCamera(camera, renderingType))
 				return false;
 
