@@ -13,21 +13,21 @@ namespace Vertx.Debugging
 
 	internal static class RenderPipelineUtility
 	{
-		private static bool s_Initialised;
-		private static CurrentPipeline s_CurrentPipeline;
+		private static bool s_initialised;
+		private static CurrentPipeline s_currentPipeline;
 
-		public static CurrentPipeline PipelineCached => s_Initialised ? s_CurrentPipeline : Pipeline;
+		public static CurrentPipeline PipelineCached => s_initialised ? s_currentPipeline : Pipeline;
 
 		public static CurrentPipeline Pipeline
 		{
 			get
 			{
-				s_Initialised = true;
+				s_initialised = true;
 				switch (GraphicsSettings.currentRenderPipeline)
 				{
 #if VERTX_URP
-					case UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset _:
-						return s_CurrentPipeline = CurrentPipeline.URP;
+					case UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset:
+						return s_currentPipeline = CurrentPipeline.URP;
 #endif
 #if VERTX_HDRP
 					case UnityEngine.Rendering.HighDefinition.HDRenderPipelineAsset asset:
@@ -39,10 +39,10 @@ namespace Vertx.Debugging
 							);
 						}
 
-						return s_CurrentPipeline = CurrentPipeline.HDRP;
+						return s_currentPipeline = CurrentPipeline.HDRP;
 #endif
 					default:
-						return s_CurrentPipeline = CurrentPipeline.BuiltIn;
+						return s_currentPipeline = CurrentPipeline.BuiltIn;
 				}
 			}
 		}

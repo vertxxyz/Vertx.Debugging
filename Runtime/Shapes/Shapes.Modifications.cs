@@ -12,11 +12,13 @@ namespace Vertx.Debugging
 	{
 		internal static float4 ToFloat4(this Color color) => new float4(color.r, color.g, color.b, color.a);
 		
+		// ReSharper disable InconsistentNaming
 		internal static float2 xy(this Vector3 value) => new float2(value.x, value.y);
 		internal static float3 xy0(this float2 value) => new float3(value.x, value.y, 0);
 		internal static float3 xy0(this Vector2 value) => new float3(value.x, value.y, 0);
 		internal static float3 xyz(this Vector3Int value) => new float3(value.x, value.y, value.z);
 		internal static float2 xy(this Vector2Int value) => new float2(value.x, value.y);
+		// ReSharper restore InconsistentNaming
 
 		private static float4 GetRow(this float4x4 matrix, int row) => new float4(matrix.c0[row], matrix.c1[row], matrix.c2[row], matrix.c3[row]);
         

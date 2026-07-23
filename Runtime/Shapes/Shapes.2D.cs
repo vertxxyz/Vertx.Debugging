@@ -129,7 +129,7 @@ namespace Vertx.Debugging
 			}
 
 			public Arrow2D(float2 origin, float2 direction, float z = 0, float arrowheadScale = 1)
-				: this(new float3(origin.x, origin.y, z), direction)
+				: this(new float3(origin.x, origin.y, z), direction, arrowheadScale)
 			{
 			}
 
@@ -370,9 +370,9 @@ namespace Vertx.Debugging
 
 			internal Box2D(float4x4 matrix) => Matrix = matrix;
 
-			public Box2D(float2 origin, float2 size, float angleDegrees = default, float z = 0) => Matrix = float4x4.TRS(new float3(origin.x, origin.y, z), quaternion.AxisAngle(math.forward(), angleDegrees * math.TORADIANS), size.xy0());
+			public Box2D(float2 origin, float2 size, float angleDegrees = 0, float z = 0) => Matrix = float4x4.TRS(new float3(origin.x, origin.y, z), quaternion.AxisAngle(math.forward(), angleDegrees * math.TORADIANS), size.xy0());
 
-			public Box2D(Vector2 origin, Vector2 size, float angleDegrees = default, float z = 0) : this((float2)origin, (float2)size, angleDegrees, z)
+			public Box2D(Vector2 origin, Vector2 size, float angleDegrees = 0, float z = 0) : this((float2)origin, (float2)size, angleDegrees, z)
 			{
 			}
 
@@ -442,7 +442,7 @@ namespace Vertx.Debugging
 					(point & Point.Bottom) != 0 ? -0.5f : 0 + (point & Point.Top) != 0 ? 0.5f : 0,
 					0
 				);
-				return MultiplyPoint3x4(matrix, position);
+				return matrix.MultiplyPoint3x4(position);
 			}
 
 #if UNITY_EDITOR
@@ -691,6 +691,15 @@ namespace Vertx.Debugging
 
 			public Capsule2D(Vector2 point, Vector2 size, Direction capsuleDirection, float angleDegrees = 0) : this((float2)point, (float2)size, capsuleDirection, angleDegrees)
 			{
+			}
+			
+			public Capsule2D(Vector2 centerA, Vector2 centerB, float radius)
+			{
+				_pointA = new float3(centerA.x, centerA.y, 0);
+				_pointB = new float3(centerB.x, centerB.y, 0);
+				_radius = radius;
+				_verticalDirection = math.normalize(_pointA - _pointB);
+				_scaledLeft = PerpendicularCounterClockwise(_verticalDirection) * _radius;
 			}
 
 			internal Capsule2D(float3 pointA, float3 pointB, float radius, float3 verticalDirection, float3 scaledLeft)

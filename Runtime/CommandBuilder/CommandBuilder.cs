@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
@@ -229,6 +230,7 @@ namespace Vertx.Debugging
 		[Flags]
 		private enum RenderingType
 		{
+			[PublicAPI]
 			Unset = 0,
 
 			// Rendering view

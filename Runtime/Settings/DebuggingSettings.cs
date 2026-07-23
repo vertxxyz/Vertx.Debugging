@@ -8,7 +8,7 @@ namespace Vertx.Debugging
 	[FilePath(Path, FilePathAttribute.Location.ProjectFolder)]
 	internal class DebuggingSettings : ScriptableSingleton<DebuggingSettings>
 	{
-		public const string Path = "ProjectSettings/VertxDebuggingSettings.asset";
+		private const string Path = "ProjectSettings/VertxDebuggingSettings.asset";
 		
 		/// <summary>
 		/// This must match <see cref="CommandBuilder.RenderingType"/> Scene and Game

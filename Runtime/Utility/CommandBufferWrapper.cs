@@ -36,20 +36,20 @@ namespace Vertx.Debugging
 #if VERTX_CORERP_17_0_1_OR_NEWER
 	internal sealed class UnsafeCommandBufferWrapper : ICommandBuffer
 	{
-		public UnsafeCommandBuffer CommandBuffer { get; private set; }
+		private UnsafeCommandBuffer _commandBuffer;
 
 		public UnsafeCommandBufferWrapper(UnsafeCommandBuffer commandBuffer) =>
-			CommandBuffer = commandBuffer;
+			_commandBuffer = commandBuffer;
 
-		public void OverrideCommandBuffer(UnsafeCommandBuffer commandBuffer) => CommandBuffer = commandBuffer;
+		public void OverrideCommandBuffer(UnsafeCommandBuffer commandBuffer) => _commandBuffer = commandBuffer;
 
-		public void SetGlobalMatrix(int key, Matrix4x4 matrix) => CommandBuffer.SetGlobalMatrix(key, matrix);
+		public void SetGlobalMatrix(int key, Matrix4x4 matrix) => _commandBuffer.SetGlobalMatrix(key, matrix);
 
 		public void SetBufferData<T>(GraphicsBuffer buffer, NativeArray<T> data, int nativeBufferStartIndex, int graphicsBufferStartIndex, int count) where T : unmanaged
-			=> CommandBuffer.SetBufferData(buffer, data, nativeBufferStartIndex, graphicsBufferStartIndex, count);
+			=> _commandBuffer.SetBufferData(buffer, data, nativeBufferStartIndex, graphicsBufferStartIndex, count);
 
 		public void DrawMeshInstancedProcedural(Mesh mesh, int submeshIndex, Material material, int shaderPass, int count, MaterialPropertyBlock properties)
-			=> CommandBuffer.DrawMeshInstancedProcedural(mesh, submeshIndex, material, shaderPass, count, properties);
+			=> _commandBuffer.DrawMeshInstancedProcedural(mesh, submeshIndex, material, shaderPass, count, properties);
 	}
 #endif
 }

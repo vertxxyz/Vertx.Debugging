@@ -6,7 +6,7 @@ namespace Vertx.Debugging
 {
 	internal sealed class BufferWrapper<T> where T : unmanaged
 	{
-		internal GraphicsBuffer Buffer { get; set; }
+		internal GraphicsBuffer Buffer { get; private set; }
 
 		private readonly int _bufferId;
 
