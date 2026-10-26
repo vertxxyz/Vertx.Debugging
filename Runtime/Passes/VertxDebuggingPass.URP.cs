@@ -81,7 +81,7 @@ namespace Vertx.Debugging
 					else
 						wrapper.OverrideCommandBuffer(context.cmd);
 
-					// context.cmd.SetRenderTarget(data.Color, data.Depth, 0);
+					context.cmd.SetRenderTarget(data.Color, data.Depth, 0);
 					CommandBuilder.Instance.ExecuteDrawRenderPass(wrapper, data.Camera);
 					passData.Wrappers.Push(wrapper);
 				});

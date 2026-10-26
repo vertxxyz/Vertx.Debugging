@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - A centerA, centerB, and radius, constructor for Shape.Capsule2D.
 
 ### Fixed
+- Fixed shapes drawing outside of the scene view (hopefully).
 - Fixed inconsistent rendering due to change introduced in 3.0.2.
 - Fixed missing Arrow2D arrowheadScale application in one constructor.
 
