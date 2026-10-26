@@ -11,6 +11,7 @@ using UnityEngine;
 
 namespace Vertx.Debugging
 {
+	[PublicAPI]
 	public static partial class Shape
 	{
 		/// <summary>
@@ -593,7 +594,7 @@ namespace Vertx.Debugging
 			public SurfacePoint(float3 origin, float3 direction)
 			{
 				Origin = origin;
-				EnsureNormalized(ref direction, out float length);
+				direction.EnsureNormalized(out float length);
 				Direction = direction;
 				Radius = length * 0.05f;
 			}
@@ -605,7 +606,7 @@ namespace Vertx.Debugging
 			public SurfacePoint(float3 origin, float3 direction, float radius)
 			{
 				Origin = origin;
-				EnsureNormalized(ref direction, out _);
+				direction.EnsureNormalized(out _);
 				Direction = direction;
 				Radius = radius;
 			}

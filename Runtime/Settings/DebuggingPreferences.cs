@@ -8,7 +8,7 @@ namespace Vertx.Debugging
 	[FilePath(Path, FilePathAttribute.Location.PreferencesFolder)]
 	internal class DebuggingPreferences : ScriptableSingleton<DebuggingPreferences>
 	{
-		public const string Path = "VertxDebuggingPreferences.asset";
+		private const string Path = "VertxDebuggingPreferences.asset";
 
 		[Serializable]
 		public class ColorGroup

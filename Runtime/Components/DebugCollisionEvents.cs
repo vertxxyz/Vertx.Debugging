@@ -1,4 +1,5 @@
 ﻿using System;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Vertx.Debugging
@@ -37,6 +38,7 @@ namespace Vertx.Debugging
         [Flags]
         private enum Type : byte
         {
+	        [PublicAPI]
             None,
             Enter = 1,
             Stay = 1 << 1,

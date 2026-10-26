@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 using Unity.Burst;
 using Unity.Jobs.LowLevel.Unsafe;
 using Unity.Mathematics;
@@ -11,6 +12,7 @@ using UnityEngine.Pool;
 namespace Vertx.Debugging
 {
 	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	[PublicAPI]
 	public static class D
 	{
 #if UNITY_EDITOR

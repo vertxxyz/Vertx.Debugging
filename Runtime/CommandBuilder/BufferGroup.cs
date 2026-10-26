@@ -37,8 +37,6 @@ namespace Vertx.Debugging
 		// Command buffer only used by the Built-in render pipeline.
 		public CommandBufferWrapper BuiltInCommandBuffer { get; private set; }
 
-		private BufferGroup() { }
-
 		public BufferGroup(string commandBufferName, UnmanagedCommandGroup unmanagedGroup)
 		{
 			_commandBufferName = commandBufferName;

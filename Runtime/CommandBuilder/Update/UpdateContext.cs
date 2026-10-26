@@ -27,12 +27,7 @@ namespace Vertx.Debugging
 			if (State == UpdateState.CapturingGizmos)
 				return;
 
-			State = UpdateState.CapturingGizmos;
-			
-			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
-			builder.State = UnmanagedCommandBuilder.UpdateState.Gizmos;
-			
-			CommandBuilder.Instance.ClearGizmoGroup();
+			ForceStateToGizmos();
 		}
 
 		[InitializeOnLoadMethod]
@@ -47,6 +42,13 @@ namespace Vertx.Debugging
 			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
 			builder.State = UnmanagedCommandBuilder.UpdateState.Update;
 			State = UpdateState.Update;
+		}
+		
+		public static void ForceStateToGizmos()
+		{
+			ref UnmanagedCommandBuilder builder = ref UnmanagedCommandBuilder.Instance.Data;
+			builder.State = UnmanagedCommandBuilder.UpdateState.Gizmos;
+			State = UpdateState.CapturingGizmos;
 		}
 
 		private static void OnDuringSceneGUI(SceneView obj)

@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using Unity.Mathematics;
 using static Vertx.Debugging.Shape;
 
@@ -10,6 +11,7 @@ using static Vertx.Debugging.Shape;
 
 namespace Vertx.Debugging
 {
+	[PublicAPI]
 	public static class DrawPhysics2D
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
